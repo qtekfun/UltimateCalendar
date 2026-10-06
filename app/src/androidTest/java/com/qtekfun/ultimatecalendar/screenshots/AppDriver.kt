@@ -14,7 +14,6 @@ import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.ComposeTestRule
-import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onRoot
@@ -76,9 +75,9 @@ class AppDriver(private val compose: ComposeTestRule, base: Context, locale: Loc
     fun openEvent(title: String) {
         waitForText(title)
         runCatching {
-            compose.onAllNodes(hasScrollAction()).onFirst().performScrollToNode(hasText(title))
+            compose.onAllNodes(hasScrollAction()).onFirst().performScrollToNode(titled(title))
         }
-        compose.onAllNodesWithText(title).onFirst().performClick()
+        compose.onAllNodes(titled(title)).onFirst().performClick()
         compose.waitForIdle()
     }
 
@@ -90,10 +89,14 @@ class AppDriver(private val compose: ComposeTestRule, base: Context, locale: Loc
 
     fun string(id: Int): String = l10n.getString(id)
 
-    fun waitForText(text: String) = waitUntil { has(hasText(text)) }
+    fun waitForText(text: String) = waitUntil { has(titled(text)) }
 
     private fun waitForDescription(description: String) =
         waitUntil { has(hasContentDescription(description)) }
+
+    /** Event rows may describe themselves instead of exposing their title as text. */
+    private fun titled(text: String) =
+        hasText(text) or hasContentDescription(text, substring = true)
 
     private fun has(matcher: SemanticsMatcher) =
         compose.onAllNodes(matcher).fetchSemanticsNodes().isNotEmpty()

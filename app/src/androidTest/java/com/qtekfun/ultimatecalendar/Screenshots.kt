@@ -197,13 +197,25 @@ class Screenshots {
         try {
             DeviceTools.openShade()
             Thread.sleep(SHADE_MS)
-            snap(locale, "6_invitation_notification", DeviceTools.screen())
+            snap(locale, "6_invitation_notification", notificationCard(DeviceTools.screen()))
         } finally {
             DeviceTools.closeShade()
             context.getSystemService(NotificationManager::class.java).cancelAll()
             runBlocking { notified.replaceAll(emptyList()) }
         }
     }
+
+    /**
+     * Only the card of the notification: the shade around it shows the emulator's own notices and
+     * today's real date.
+     */
+    private fun notificationCard(screen: Bitmap): Bitmap = Bitmap.createBitmap(
+        screen,
+        0,
+        (screen.height * CARD_TOP).toInt(),
+        screen.width,
+        (screen.height * CARD_HEIGHT).toInt()
+    )
 
     /** Sets the app language and the demo data; returns the week that was loaded. */
     private fun prepare(locale: StoreLocale): DemoWeek {
@@ -258,6 +270,8 @@ class Screenshots {
         const val SHADE_MS = 2_500L
         const val LOCALE_TIMEOUT_MS = 10_000L
         const val POLL_MS = 100L
+        const val CARD_TOP = 0.215f
+        const val CARD_HEIGHT = 0.235f
         const val DUMP_LINES = 20
         const val TABLET_DP = 600
     }
