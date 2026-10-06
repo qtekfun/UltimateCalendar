@@ -69,13 +69,13 @@ class DiagTest {
                 }
             }
             val b = CalendarContract.Instances.CONTENT_URI.buildUpon()
-            ContentUris.appendId(b, start - 86_400_000)
-            ContentUris.appendId(b, start + 10 * 86_400_000)
+            ContentUris.appendId(b, start - 30 * 86_400_000)
+            ContentUris.appendId(b, start + 60 * 86_400_000)
             cr.query(
                 b.build(),
                 arrayOf(CalendarContract.Instances.EVENT_ID, CalendarContract.Instances.BEGIN, CalendarContract.Instances.TITLE, Events.STATUS, Events.ORIGINAL_ID),
-                "${Events.CALENDAR_ID}=?",
-                arrayOf(calId.toString()),
+                null,
+                null,
                 null
             )?.use { c ->
                 while (c.moveToNext()) {
@@ -95,16 +95,24 @@ class DiagTest {
             report.append("cancel failed ${e.javaClass.name}: ${e.message}\n")
         }
         dump("after cancel")
+        Thread.sleep(2_000)
+        dump("after cancel + 2s")
         try {
             val x = ContentValues().apply {
                 put(Events.ORIGINAL_INSTANCE_TIME, start + 2 * 86_400_000)
                 put(Events.TITLE, "Moved")
                 put(Events.DTSTART, start + 2 * 86_400_000)
-                put(Events.DTEND, start + 2 * 86_400_000 + 3_600_000)
+                put(Events.DURATION, "P1800S")
                 put(Events.EVENT_TIMEZONE, "Europe/Madrid")
                 put(Events.ALL_DAY, 0)
                 put(Events.STATUS, Events.STATUS_CONFIRMED)
                 put(Events.CALENDAR_ID, calId)
+                put(Events.AVAILABILITY, 0)
+                put(Events.HAS_ALARM, 0)
+                put(Events.HAS_ATTENDEE_DATA, 0)
+                putNull(Events.EVENT_LOCATION)
+                putNull(Events.DESCRIPTION)
+                putNull(Events.EVENT_COLOR)
             }
             val u = cr.insert(ContentUris.withAppendedId(Events.CONTENT_EXCEPTION_URI, evId), x)
             report.append("edit inserted $u\n")
