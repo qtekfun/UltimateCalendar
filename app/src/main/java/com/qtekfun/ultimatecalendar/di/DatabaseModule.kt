@@ -8,6 +8,7 @@ import androidx.room3.Room
 import androidx.sqlite.driver.AndroidSQLiteDriver
 import com.qtekfun.ultimatecalendar.data.local.UltimateCalendarDatabase
 import com.qtekfun.ultimatecalendar.data.local.dao.CalendarSettingsDao
+import com.qtekfun.ultimatecalendar.data.local.dao.NotifiedInvitationDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -40,4 +41,8 @@ object DatabaseModule {
     @Provides
     fun calendarSettingsDao(database: UltimateCalendarDatabase): CalendarSettingsDao =
         database.calendarSettingsDao()
+
+    @Provides
+    fun notifiedInvitationDao(database: UltimateCalendarDatabase): NotifiedInvitationDao =
+        database.notifiedInvitationDao()
 }
