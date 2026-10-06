@@ -33,6 +33,7 @@ import com.qtekfun.ultimatecalendar.domain.recurrence.OccurrenceKey
 import com.qtekfun.ultimatecalendar.domain.recurrence.RecurrenceEngine
 import com.qtekfun.ultimatecalendar.domain.recurrence.SeriesInstances
 import com.qtekfun.ultimatecalendar.domain.recurrence.key
+import com.qtekfun.ultimatecalendar.domain.reminders.EventReminders
 import com.qtekfun.ultimatecalendar.domain.result.CalendarError
 import com.qtekfun.ultimatecalendar.domain.result.CalendarResult
 import com.qtekfun.ultimatecalendar.domain.search.SearchMatcher
@@ -113,11 +114,24 @@ class CalDavCalendarSource @Inject constructor(
         range: TimeRange,
         calendarIds: Set<CalendarId>?
     ): CalendarResult<List<EventInstance>> = guarded {
-        val account = accounts.current() ?: return@guarded emptyList()
-        val scope = scope(account, calendarIds)
-        if (scope.isEmpty()) return@guarded emptyList()
+        occurrences(range, calendarIds).map { it.instance }
+    }
+
+    /** Straight from the stored series, so the reminders cost no more than the instances. */
+    override suspend fun instancesWithReminders(
+        range: TimeRange,
+        calendarIds: Set<CalendarId>?
+    ): CalendarResult<List<EventReminders>> = guarded { occurrences(range, calendarIds) }
+
+    private suspend fun occurrences(
+        range: TimeRange,
+        calendarIds: Set<CalendarId>?
+    ): List<EventReminders> {
+        val account = accounts.current()
+        val scope = account?.let { scope(it, calendarIds) }.orEmpty()
+        if (account == null || scope.isEmpty()) return emptyList()
         val me = CalDavMapping.addresses(account)
-        eventRows.inWindow(
+        return eventRows.inWindow(
             scope.map {
                 it.id
             },
@@ -126,7 +140,11 @@ class CalDavCalendarSource @Inject constructor(
         )
             .filter { it.status != EventStatus.CANCELLED }
             .flatMap { instancesOf(it, range, me) }
-            .sortedWith(compareBy({ it.time.startIn(ZoneOffset.UTC) }, { it.eventId.value }))
+            .sortedWith(
+                compareBy({
+                    it.instance.time.startIn(ZoneOffset.UTC)
+                }, { it.instance.eventId.value })
+            )
     }
 
     override suspend fun search(
@@ -294,15 +312,23 @@ class CalDavCalendarSource @Inject constructor(
         row: DavEventEntity,
         range: TimeRange,
         me: List<String>
-    ): List<EventInstance> {
+    ): List<EventReminders> {
         val series = StoredSeries.read(row).series
         return expand(series, range).map { instance ->
             val attendees = CalDavEdits.attendeesAt(series, instance.time)
-            CalDavMapping.instance(
-                instance.copy(
-                    selfStatus = attendees.firstOrNull { it.isOneOf(me) }?.status,
-                    hasAttendees = attendees.isNotEmpty()
-                )
+            // A changed occurrence has the reminders and notes of its own component.
+            val own = series.overrides.firstNotNullOfOrNull { override ->
+                override.replacement?.takeIf { it.time == instance.time }
+            } ?: series.event
+            EventReminders(
+                instance = CalDavMapping.instance(
+                    instance.copy(
+                        selfStatus = attendees.firstOrNull { it.isOneOf(me) }?.status,
+                        hasAttendees = attendees.isNotEmpty()
+                    )
+                ),
+                reminders = own.reminders,
+                description = own.description?.ifEmpty { null }
             )
         }
     }

@@ -11,6 +11,7 @@ import com.qtekfun.ultimatecalendar.domain.model.EventDraft
 import com.qtekfun.ultimatecalendar.domain.model.EventId
 import com.qtekfun.ultimatecalendar.domain.model.EventInstance
 import com.qtekfun.ultimatecalendar.domain.model.TimeRange
+import com.qtekfun.ultimatecalendar.domain.reminders.EventReminders
 import com.qtekfun.ultimatecalendar.domain.result.CalendarError
 import com.qtekfun.ultimatecalendar.domain.result.CalendarResult
 import com.qtekfun.ultimatecalendar.domain.search.SearchableEvent
@@ -22,6 +23,7 @@ import kotlinx.coroutines.flow.emptyFlow
  * Stands in while no real source is bound in Hilt (until T05): every call fails with
  * [CalendarError.SourceFailure] and nothing ever changes. See `InvitationCheckModule`.
  */
+@Suppress("TooManyFunctions")
 object UnavailableCalendarSource : CalendarSource {
     override val changes: Flow<Unit> = emptyFlow()
 
@@ -31,6 +33,11 @@ object UnavailableCalendarSource : CalendarSource {
         range: TimeRange,
         calendarIds: Set<CalendarId>?
     ): CalendarResult<List<EventInstance>> = unavailable()
+
+    override suspend fun instancesWithReminders(
+        range: TimeRange,
+        calendarIds: Set<CalendarId>?
+    ): CalendarResult<List<EventReminders>> = unavailable()
 
     override suspend fun search(
         query: String,

@@ -23,6 +23,7 @@ import com.qtekfun.ultimatecalendar.domain.model.EventDraft
 import com.qtekfun.ultimatecalendar.domain.model.EventId
 import com.qtekfun.ultimatecalendar.domain.model.EventInstance
 import com.qtekfun.ultimatecalendar.domain.model.TimeRange
+import com.qtekfun.ultimatecalendar.domain.reminders.EventReminders
 import com.qtekfun.ultimatecalendar.domain.result.CalendarResult
 import com.qtekfun.ultimatecalendar.domain.search.SearchableEvent
 import kotlinx.coroutines.Dispatchers
@@ -144,6 +145,12 @@ class ProviderCalendarSourceContractTest(private val scenario: Scenario) {
             range: TimeRange,
             calendarIds: Set<CalendarId>?
         ): CalendarResult<List<EventInstance>> = inner.instances(range, calendarIds ?: ids)
+
+        override suspend fun instancesWithReminders(
+            range: TimeRange,
+            calendarIds: Set<CalendarId>?
+        ): CalendarResult<List<EventReminders>> =
+            inner.instancesWithReminders(range, calendarIds ?: ids)
 
         override suspend fun search(
             query: String,

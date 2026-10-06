@@ -14,6 +14,7 @@ import com.qtekfun.ultimatecalendar.data.source.provider.ProviderFailure
 import com.qtekfun.ultimatecalendar.data.source.provider.ProviderGateway
 import com.qtekfun.ultimatecalendar.data.source.provider.ProviderOp
 import com.qtekfun.ultimatecalendar.data.source.provider.ProviderQuery
+import com.qtekfun.ultimatecalendar.data.source.provider.ProviderReminderReads
 import com.qtekfun.ultimatecalendar.data.source.provider.ProviderSearch
 import com.qtekfun.ultimatecalendar.data.source.provider.ProviderStore
 import com.qtekfun.ultimatecalendar.data.source.provider.ProviderTable
@@ -29,6 +30,7 @@ import com.qtekfun.ultimatecalendar.domain.model.EventDraft
 import com.qtekfun.ultimatecalendar.domain.model.EventId
 import com.qtekfun.ultimatecalendar.domain.model.EventInstance
 import com.qtekfun.ultimatecalendar.domain.model.TimeRange
+import com.qtekfun.ultimatecalendar.domain.reminders.EventReminders
 import com.qtekfun.ultimatecalendar.domain.result.CalendarError
 import com.qtekfun.ultimatecalendar.domain.result.CalendarResult
 import com.qtekfun.ultimatecalendar.domain.search.SearchMatcher
@@ -55,6 +57,7 @@ import kotlinx.coroutines.withContext
  * the calendar's owner, without making the owner an attendee.
  */
 @Singleton
+@Suppress("TooManyFunctions")
 class ProviderCalendarSource @Inject constructor(
     private val gateway: ProviderGateway,
     @IoDispatcher private val dispatcher: CoroutineDispatcher
@@ -62,6 +65,7 @@ class ProviderCalendarSource @Inject constructor(
     private val store = ProviderStore(gateway)
     private val exceptions = SeriesExceptions(store)
     private val search = ProviderSearch(gateway)
+    private val reminderReads = ProviderReminderReads(gateway)
 
     override val changes: Flow<Unit> get() = gateway.changes
 
@@ -82,6 +86,13 @@ class ProviderCalendarSource @Inject constructor(
             .mapNotNull { InstanceMapping.toInstance(it, range) }
             .filter { calendarIds == null || it.calendarId in calendarIds }
             .sortedBy { it.time.startIn(ZoneOffset.UTC) }
+    }
+
+    override suspend fun instancesWithReminders(
+        range: TimeRange,
+        calendarIds: Set<CalendarId>?
+    ): CalendarResult<List<EventReminders>> = guarded(dispatcher) {
+        reminderReads.read(range, calendarIds)
     }
 
     override suspend fun search(

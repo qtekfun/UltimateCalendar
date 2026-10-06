@@ -11,6 +11,7 @@ import com.qtekfun.ultimatecalendar.domain.model.EventDraft
 import com.qtekfun.ultimatecalendar.domain.model.EventId
 import com.qtekfun.ultimatecalendar.domain.model.EventInstance
 import com.qtekfun.ultimatecalendar.domain.model.TimeRange
+import com.qtekfun.ultimatecalendar.domain.reminders.EventReminders
 import com.qtekfun.ultimatecalendar.domain.result.CalendarError
 import com.qtekfun.ultimatecalendar.domain.result.CalendarResult
 import com.qtekfun.ultimatecalendar.domain.search.SearchableEvent
@@ -44,6 +45,14 @@ class CompositeCalendarSource(
         ask(calendarIds, calDav = false) { provider.instances(range, it) },
         ask(calendarIds, calDav = true) { caldav.instances(range, it) }
     ) { list -> list.sortedBy { it.time.startIn(ZoneOffset.UTC) } }
+
+    override suspend fun instancesWithReminders(
+        range: TimeRange,
+        calendarIds: Set<CalendarId>?
+    ): CalendarResult<List<EventReminders>> = merged(
+        ask(calendarIds, calDav = false) { provider.instancesWithReminders(range, it) },
+        ask(calendarIds, calDav = true) { caldav.instancesWithReminders(range, it) }
+    ) { list -> list.sortedBy { it.instance.time.startIn(ZoneOffset.UTC) } }
 
     override suspend fun search(
         query: String,

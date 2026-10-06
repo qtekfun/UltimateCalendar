@@ -15,6 +15,7 @@ import com.qtekfun.ultimatecalendar.domain.model.EventId
 import com.qtekfun.ultimatecalendar.domain.model.EventInstance
 import com.qtekfun.ultimatecalendar.domain.model.EventTime
 import com.qtekfun.ultimatecalendar.domain.model.TimeRange
+import com.qtekfun.ultimatecalendar.domain.reminders.EventReminders
 import com.qtekfun.ultimatecalendar.domain.result.CalendarError
 import com.qtekfun.ultimatecalendar.domain.result.CalendarResult
 import com.qtekfun.ultimatecalendar.domain.search.SearchableEvent
@@ -137,6 +138,7 @@ object DemoData {
 }
 
 /** A read-only [CalendarSource] over [DemoData], for the demo screens. */
+@Suppress("TooManyFunctions")
 class DemoCalendarSource(private val zone: ZoneId, private val today: LocalDate) : CalendarSource {
     private val unsupported = CalendarResult.Failure(CalendarError.ReadOnly)
 
@@ -153,6 +155,11 @@ class DemoCalendarSource(private val zone: ZoneId, private val today: LocalDate)
             .filter { it.time.startIn(zone) < range.end && it.time.endIn(zone) > range.start }
             .sortedBy { it.time.startIn(zone) }
     )
+
+    override suspend fun instancesWithReminders(
+        range: TimeRange,
+        calendarIds: Set<CalendarId>?
+    ): CalendarResult<List<EventReminders>> = CalendarResult.Success(emptyList())
 
     override suspend fun search(
         query: String,

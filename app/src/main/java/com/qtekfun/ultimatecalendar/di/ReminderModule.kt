@@ -3,6 +3,7 @@
 
 package com.qtekfun.ultimatecalendar.di
 
+import com.qtekfun.ultimatecalendar.data.reminders.CalendarReminderEventSource
 import com.qtekfun.ultimatecalendar.data.settings.RepositoryReminderSettings
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationReReminders
 import com.qtekfun.ultimatecalendar.domain.reminders.ReminderEventSource
@@ -23,11 +24,14 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import java.time.ZoneId
-import kotlinx.coroutines.flow.flowOf
 
 @Module
 @InstallIn(SingletonComponent::class)
 interface ReminderBindingsModule {
+    /** The occurrences of the app's one calendar source, with their reminders (RF-08). */
+    @Binds
+    fun events(source: CalendarReminderEventSource): ReminderEventSource
+
     @Binds
     fun reReminders(coordinator: ReRemindCoordinator): InvitationReReminders
 
@@ -52,8 +56,4 @@ interface ReminderBindingsModule {
 object ReminderModule {
     @Provides
     fun systemZone(): SystemZone = SystemZone { ZoneId.systemDefault() }
-
-    /** No calendar source yet (T04, T05): nothing reminds until one is bound here. */
-    @Provides
-    fun eventSource(): ReminderEventSource = ReminderEventSource { _, _ -> flowOf(emptyList()) }
 }
