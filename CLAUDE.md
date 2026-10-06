@@ -64,7 +64,7 @@ Lee siempre `SPEC.md` (qué construir) y `PLAN.md` (en qué orden) antes de empe
 - Empieza en modo plan: propón el enfoque y espera confirmación antes de tocar código.
 - Commits siguiendo **Conventional Commits** (`feat:`, `fix:`, `perf:`, `test:`, `refactor:`, `docs:`, `build:`, `ci:`, `chore:`), pequeños y atómicos. **El título de la PR también**, porque se fusiona con squash y release-please calcula la versión y el CHANGELOG a partir de él: `feat` sube minor, `fix`/`perf` suben patch, `!` o `BREAKING CHANGE:` sube major.
 - No hagas `git push --force`, no reescribas historia compartida, no hagas commit ni push a `master`. Los hooks de `.claude/` lo bloquean; no intentes saltártelos.
-- Abre la PR con `gh pr create` rellenando la plantilla; espera la CI y arregla lo que falle. No fusiones tú: fusiona el usuario.
+- Abre la PR con `gh pr create` rellenando la plantilla; espera la CI y arregla lo que falle. Cuando todos los checks pasen, fusiona tú con `gh pr merge --squash` (decisión del usuario, 2026-10-06); si algo falla, no fusiones.
 - Al terminar cada tarea: resume en 2-3 líneas qué se hizo y qué queda; marca la tarea en `PLAN.md` (con `*Resultado:*` si algo cambió respecto al plan) y anota decisiones en `SPEC.md` §9 con fecha y tarea.
 - Si la spec es ambigua o falta información: **pregunta**, no inventes.
 
