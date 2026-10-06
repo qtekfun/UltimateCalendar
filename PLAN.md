@@ -44,7 +44,8 @@ Reglas: una tarea cada vez, en su rama `feat/<tarea>`, con `./gradlew check` en 
 ## Fase 3 — Interfaz (experiencia Google Calendar)
 - [x] **T12 Primer arranque + asistente de fiabilidad** (RF-01), copiado de UltimateTasks, con detección de otras apps de calendario que avisan.
   - *Resultado:* hecho en código, sin probar en teléfono real (queda para el autor: diálogos de permisos, pantallas de OPPO/vivo/Xiaomi/Honor/Samsung, aviso de prueba y detección de otras apps). Lógica pura en `domain/firstrun` (fabricante, pantallas del fabricante, plan de pasos según permisos, entrega del aviso de prueba, otras apps de calendario) con tests; UI fina en `ui/firstrun` (`FirstRunHost` en `MainActivity`, `LocalOpenWizard` para abrirlo desde otras pantallas). La marca de "ya mostrado" va tras la interfaz `FirstRunFlag` (T23 puede moverla). `<queries>` lista solo las 12 apps de `OtherCalendarApps.KNOWN` (un test las mantiene sincronizadas). Sin paso de "apps sin uso" ni interruptores de modo alarma/robusto: llegan con Ajustes (T23).
-- [ ] **T13 Esqueleto de navegación**: barra superior con mes/selector de fecha, botón Hoy, búsqueda, bandeja con contador; cajón de calendarios (RF-02); FAB de nuevo evento.
+- [x] **T13 Esqueleto de navegación**: barra superior con mes/selector de fecha, botón Hoy, búsqueda, bandeja con contador; cajón de calendarios (RF-02); FAB de nuevo evento.
+  - *Resultado:* `AppNavigation` (estado `NavState` guardado, como en UltimateTasks, sin librería de navegación) con `ShellScreen`: cabecera con mes y selector de fecha, Hoy, búsqueda y bandeja con contador; cajón con las vistas, calendarios por cuenta (color y casilla que escribe el ajuste local de visibilidad) y Ajustes; FAB. Vistas, búsqueda, nuevo evento, bandeja y Ajustes son marcadores para T14–T17, T22, T20, T21 y T23. Lógica de fechas pura en `domain.navigation` (`ViewPeriods`, `DateRange`, `AccountCalendars`) y `ShellViewModel` con un único `StateFlow`. `TemporaryCalendarSourceModule` enlaza una fuente vacía hasta T05 (T05 debe borrarlo); `PendingInvitations` vacío hasta T21.
 - [ ] **T14 Vista Agenda** (RF-03).
 - [ ] **T15 Vistas Día y 3 días**: línea de horas, todo el día arriba, solapes en columnas, hora actual, invitaciones con contorno, tocar hueco = creación rápida.
 - [ ] **T16 Vista Semana**.
@@ -75,7 +76,8 @@ Reglas: una tarea cada vez, en su rama `feat/<tarea>`, con `./gradlew check` en 
 ## Fase 6 — CalDAV propio (RF-12)
 - [ ] **T33 Copiar de UltimateTasks** el cliente CalDAV, lector/escritor iCalendar (con su corpus de ida y vuelta, ampliado con `VEVENT` de Google, Nextcloud, Outlook y Apple) y Login Flow v2 + Keystore.
 - [ ] **T34 Room como fuente de verdad, cola y resolutor** (copiados). **100 % de cobertura.**
-- [ ] **T35 Motor de recurrencia de eventos** (`RRULE`, `EXDATE`, `RDATE`, `RECURRENCE-ID`, zonas horarias). **100 % de cobertura.**
+- [x] **T35 Motor de recurrencia de eventos** (`RRULE`, `EXDATE`, `RDATE`, `RECURRENCE-ID`, zonas horarias). **100 % de cobertura.**
+  *Resultado:* `RecurrenceEngine.expand(EventSeries, TimeRange, zone)` devuelve `Expansion` (`Complete`, `LimitReached`, `Unsupported`); sin dependencias nuevas y con `RecurrenceRule` intacta. Cobertura 100 % de líneas y ramas en `domain.recurrence`.
 - [ ] **T36 `CalDavCalendarSource`**: la suite de contrato pasa con MockWebServer; planificación en el servidor para invitar y responder.
 - [ ] **T37 Login y gestión de la cuenta CalDAV** en la UI; la copia de seguridad incluye la sesión opcional.
 
