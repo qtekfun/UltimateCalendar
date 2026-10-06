@@ -68,7 +68,9 @@ class SubscriptionRepository @Inject constructor(
                 ParsedSubscriptionUrl.Invalid -> AddResult.Invalid
 
                 is ParsedSubscriptionUrl.Valid ->
-                    insert(parsed, name, color, interval, true).also { reschedule() }
+                    insert(parsed, name, color, interval, true).also {
+                        if (it is AddResult.Added) reschedule()
+                    }
             }
         }
 
