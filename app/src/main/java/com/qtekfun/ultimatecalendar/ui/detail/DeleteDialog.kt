@@ -31,7 +31,7 @@ import com.qtekfun.ultimatecalendar.ui.theme.Dimens
 import com.qtekfun.ultimatecalendar.ui.theme.Spacing
 
 @StringRes
-private fun RecurrenceScope.label() = when (this) {
+internal fun RecurrenceScope.label() = when (this) {
     RecurrenceScope.THIS -> R.string.detail_scope_this
     RecurrenceScope.THIS_AND_FOLLOWING -> R.string.detail_scope_following
     RecurrenceScope.ALL -> R.string.detail_scope_all
@@ -93,11 +93,18 @@ internal fun DeleteDialog(
     )
 }
 
-/** The three ways to delete part of a series, as one group of 48 dp radio rows. */
+/**
+ * The ways to change part of a series, as one group of 48 dp radio rows: all three by default,
+ * or the [options] a caller allows. Shared by the delete dialog and the move dialog (T18).
+ */
 @Composable
-private fun ScopeChoices(selected: RecurrenceScope, onSelect: (RecurrenceScope) -> Unit) {
+internal fun ScopeChoices(
+    selected: RecurrenceScope,
+    options: List<RecurrenceScope> = RecurrenceScope.entries,
+    onSelect: (RecurrenceScope) -> Unit
+) {
     Column(Modifier.selectableGroup()) {
-        RecurrenceScope.entries.forEach { option ->
+        options.forEach { option ->
             Row(
                 Modifier
                     .fillMaxWidth()

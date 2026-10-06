@@ -22,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
@@ -48,6 +49,7 @@ import com.qtekfun.ultimatecalendar.ui.agenda.AgendaScreen
 import com.qtekfun.ultimatecalendar.ui.components.AnimatedPeriod
 import com.qtekfun.ultimatecalendar.ui.components.CalendarSnackbarHost
 import com.qtekfun.ultimatecalendar.ui.components.CreateFab
+import com.qtekfun.ultimatecalendar.ui.components.LocalSnackbarHost
 import com.qtekfun.ultimatecalendar.ui.components.PeriodKey
 import com.qtekfun.ultimatecalendar.ui.components.rememberFabScrollState
 import com.qtekfun.ultimatecalendar.ui.month.MonthScreen
@@ -143,19 +145,21 @@ fun ShellContent(
             content = content
         )
     }
-    when (layout.navigation) {
-        NavigationStyle.PERMANENT_DRAWER -> PermanentNavigationDrawer(
-            drawerContent = { drawerContent(true) },
-            modifier = modifier,
-            content = scaffold
-        )
+    CompositionLocalProvider(LocalSnackbarHost provides snackbarHost) {
+        when (layout.navigation) {
+            NavigationStyle.PERMANENT_DRAWER -> PermanentNavigationDrawer(
+                drawerContent = { drawerContent(true) },
+                modifier = modifier,
+                content = scaffold
+            )
 
-        NavigationStyle.MODAL_DRAWER -> ModalNavigationDrawer(
-            modifier = modifier,
-            drawerState = drawer,
-            drawerContent = { drawerContent(false) },
-            content = scaffold
-        )
+            NavigationStyle.MODAL_DRAWER -> ModalNavigationDrawer(
+                modifier = modifier,
+                drawerState = drawer,
+                drawerContent = { drawerContent(false) },
+                content = scaffold
+            )
+        }
     }
 }
 

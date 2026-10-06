@@ -15,12 +15,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.qtekfun.ultimatecalendar.R
 import com.qtekfun.ultimatecalendar.domain.detail.EventRef
+import com.qtekfun.ultimatecalendar.domain.editor.EditorRequest
 import com.qtekfun.ultimatecalendar.domain.layout.AdaptiveLayout
 import com.qtekfun.ultimatecalendar.domain.navigation.CalendarView
 import com.qtekfun.ultimatecalendar.notify.NotificationRoute
 import com.qtekfun.ultimatecalendar.ui.adaptive.PaneDialog
 import com.qtekfun.ultimatecalendar.ui.adaptive.currentAdaptiveLayout
 import com.qtekfun.ultimatecalendar.ui.detail.EventDetailScreen
+import com.qtekfun.ultimatecalendar.ui.editor.EventEditorRoute
 import com.qtekfun.ultimatecalendar.ui.invitations.InvitationsScreen
 import com.qtekfun.ultimatecalendar.ui.search.SearchScreen
 import com.qtekfun.ultimatecalendar.ui.settings.SettingsScreen
@@ -30,8 +32,7 @@ import com.qtekfun.ultimatecalendar.ui.shell.ShellScreen
 import com.qtekfun.ultimatecalendar.ui.shell.ShellViewModel
 
 /**
- * The shell and what opens from it; back returns to the shell. Every destination except the
- * shell is a placeholder for a later task.
+ * The shell and what opens from it; back returns to the shell.
  *
  * On a wide window (see [AdaptiveLayout]) the event detail opens beside the Agenda instead of
  * covering the shell, and search and the invitations tray are dialogs over it. All of that is
@@ -48,20 +49,22 @@ fun AppNavigation(routes: NotificationRoutes = remember { NotificationRoutes() }
     val view by remember { derivedStateOf { shellState.value.view } }
     OpenRequestedRoute(routes, nav)
     val dialogs = layout.overlaysAsDialogs
-    val detailInPane = layout.detailInPane(view, overlayOpen = nav.search || nav.invitations)
+    val detailInPane = layout.detailInPane(view, nav.overlayOpen())
     // T12: the first-run wizard (RF-01) becomes the first branch of this `when`.
     when {
         // Search stays under what opens from it (an event's detail, the editor): back returns here.
-        !dialogs && nav.search && !nav.eventDetail && !nav.newEvent -> SearchScreen(
+        nav.searchIsScreen(dialogs) -> SearchScreen(
             onBack = { nav.search = false },
             onOpenEvent = { nav.open(EventRef.of(it)) }
         )
 
-        // T20: the event editor replaces this placeholder.
-        nav.newEvent -> Placeholder(R.string.shell_new_event) { nav.newEvent = false }
+        nav.newEvent -> EventEditorRoute(
+            request = nav.editorOrNew(),
+            onClose = nav::closeEditor
+        )
 
         // The detail comes before the tray, so back from the detail returns to the tray.
-        nav.eventDetail && !detailInPane -> FullScreenDetail(nav)
+        nav.eventDetail && !detailInPane -> EventDetailRoute(nav, inPane = false)
 
         !dialogs && nav.invitations -> {
             BackHandler { nav.invitations = false }
@@ -83,30 +86,6 @@ fun AppNavigation(routes: NotificationRoutes = remember { NotificationRoutes() }
     }
 }
 
-/** The event detail covering the shell (phones, and the views that have no second pane). */
-@Composable
-private fun FullScreenDetail(nav: NavState) {
-    val ref = nav.detailRef
-    if (ref == null) {
-        nav.eventDetail = false
-    } else {
-        // T20: the editor replaces this placeholder; it will take the occurrence.
-        EventDetailScreen(
-            ref = ref,
-            onBack = { nav.eventDetail = false },
-            onEdit = {
-                nav.eventDetail = false
-                nav.newEvent = true
-            }
-        )
-    }
-}
-
-private fun NavState.open(ref: EventRef) {
-    detailRef = ref
-    eventDetail = true
-}
-
 /** The shell's way out to the rest of the app. */
 private fun shellActions(nav: NavState, layout: AdaptiveLayout) = ShellActions(
     // Leaving the Agenda closes the detail beside it: the other views open it full screen.
@@ -118,26 +97,36 @@ private fun shellActions(nav: NavState, layout: AdaptiveLayout) = ShellActions(
         }
     },
     onSearch = { nav.search = true },
-    onNewEvent = { nav.newEvent = true },
+    onNewEvent = { nav.openEditor() },
     onInvitations = { nav.invitations = true },
     onSettings = { nav.settings = true },
     onHelp = { nav.help = true },
     onOpenEvent = { nav.open(EventRef.of(it)) },
-    // T20: the editor will take the tapped time; for now it opens the same placeholder.
-    onCreateAt = { nav.newEvent = true }
+    onCreateAt = { nav.openEditor(EditorRequest.New(it)) }
 )
 
 /** The Agenda's second pane: the same detail screen the phone opens full screen. */
-private fun NavState.detailPane() = DetailPane(detailRef.takeIf { eventDetail }) { ref ->
-    EventDetailScreen(
-        ref = ref,
-        onBack = { eventDetail = false },
-        onEdit = {
-            eventDetail = false
-            newEvent = true
-        },
-        inPane = true
-    )
+private fun NavState.detailPane() = DetailPane(detailRef.takeIf { eventDetail }) {
+    EventDetailRoute(this, inPane = true)
+}
+
+/** The detail of the event in [NavState.detailRef]; edit opens the editor on the same occurrence. */
+@Composable
+private fun EventDetailRoute(nav: NavState, inPane: Boolean) {
+    val ref = nav.detailRef
+    if (ref == null) {
+        nav.eventDetail = false
+    } else {
+        EventDetailScreen(
+            ref = ref,
+            onBack = { nav.eventDetail = false },
+            onEdit = {
+                nav.eventDetail = false
+                nav.openEditor(EditorRequest.Edit(ref))
+            },
+            inPane = inPane
+        )
+    }
 }
 
 /** Search and the invitations tray in a dialog over the shell, on wide windows. */

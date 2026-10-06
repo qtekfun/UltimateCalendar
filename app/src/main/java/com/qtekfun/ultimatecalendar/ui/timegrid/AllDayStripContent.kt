@@ -18,6 +18,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,13 +29,17 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import com.qtekfun.ultimatecalendar.R
+import com.qtekfun.ultimatecalendar.domain.timegrid.AllDayBar
 import com.qtekfun.ultimatecalendar.domain.timegrid.AllDayLanes
-import com.qtekfun.ultimatecalendar.domain.timegrid.TimeGridPage
+import java.time.ZoneOffset
 
-private val ALL_DAY_ROW = 48.dp
+internal val ALL_DAY_ROW = 48.dp
 private const val MAX_ALL_DAY_ROWS = 3
 private const val EXPANDED_ALL_DAY_ROWS = 6
 
@@ -45,39 +50,39 @@ private const val EXPANDED_ALL_DAY_ROWS = 6
  */
 @Composable
 internal fun AllDayStripContent(
-    page: TimeGridPage,
+    ui: PageDragUi,
     days: DaysLayout,
     callbacks: GridCallbacks,
     rowLimit: Int?
 ) {
+    val page = ui.page
     if (page.allDay.isEmpty()) return
-    var expanded by remember(page) { mutableStateOf(false) }
+    var expanded by remember(page.days) { mutableStateOf(false) }
     val strip = AllDayLanes.limit(
         page,
         if (rowLimit != null && !expanded) rowLimit else page.allDayRows
     )
     val cap = if (rowLimit == null) MAX_ALL_DAY_ROWS else EXPANDED_ALL_DAY_ROWS
+    SideEffect { ui.surface?.stripBars = strip.bars }
     Row(
         Modifier
             .fillMaxWidth()
             .heightIn(max = ALL_DAY_ROW * minOf(strip.rows, cap))
+            .onPlaced { ui.surface?.stripViewport = it }
             .verticalScroll(rememberScrollState())
     ) {
         Box(Modifier.width(days.metrics.gutter).height(ALL_DAY_ROW), Alignment.Center) {
             if (expanded) LessButton { expanded = false }
         }
         DaysArea(days.sideways, Modifier.weight(1f)) {
-            Box(Modifier.width(days.width).height(ALL_DAY_ROW * strip.rows)) {
+            Box(
+                Modifier
+                    .width(days.width)
+                    .height(ALL_DAY_ROW * strip.rows)
+                    .onPlaced { ui.surface?.strip = it }
+            ) {
                 val dayWidth = days.width / page.days.size
-                strip.bars.forEach { bar ->
-                    AllDayEventBar(
-                        bar,
-                        callbacks.onOpenEvent,
-                        Modifier
-                            .offset(dayWidth * bar.firstDay, ALL_DAY_ROW * bar.row)
-                            .size(dayWidth * (bar.lastDay - bar.firstDay + 1), ALL_DAY_ROW)
-                    )
-                }
+                StripBars(strip.bars, ui, callbacks, dayWidth)
                 strip.hidden.forEachIndexed { day, count ->
                     if (count > 0) {
                         MoreCell(
@@ -128,5 +133,36 @@ private fun LessButton(onClick: () -> Unit) {
             color = MaterialTheme.colorScheme.primary,
             maxLines = 1
         )
+    }
+}
+
+@Composable
+private fun StripBars(
+    bars: List<AllDayBar>,
+    ui: PageDragUi,
+    callbacks: GridCallbacks,
+    dayWidth: Dp
+) {
+    bars.forEach { bar ->
+        val isGhost = bar.instance == ui.ghost
+        val actions = moveActions(bar.instance, ui, ZoneOffset.UTC)
+        AllDayEventBar(
+            bar,
+            callbacks.onOpenEvent,
+            Modifier
+                .offset(dayWidth * bar.firstDay, ALL_DAY_ROW * bar.row)
+                .size(dayWidth * (bar.lastDay - bar.firstDay + 1), ALL_DAY_ROW)
+                .zIndex(if (isGhost) 1f else 0f)
+                .semantics { customActions = actions },
+            lifted = isGhost
+        )
+        if (isGhost && ui.tooltip != null) {
+            DragTooltip(
+                ui.tooltip,
+                dayWidth * bar.firstDay,
+                ALL_DAY_ROW * bar.row,
+                Modifier.zIndex(2f)
+            )
+        }
     }
 }
