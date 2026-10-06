@@ -42,11 +42,17 @@ class ContentResolverGateway @Inject constructor(@ApplicationContext context: Co
                 signals.trySend(Unit)
             }
         }
-        resolver.registerContentObserver(
-            "content://${CalendarContract.AUTHORITY}".toUri(),
-            true,
-            observer
-        )
+        try {
+            resolver.registerContentObserver(
+                "content://${CalendarContract.AUTHORITY}".toUri(),
+                true,
+                observer
+            )
+        } catch (_: SecurityException) {
+            // No calendar permission (yet): nothing can change that this app may see, and the
+            // reads that follow report the missing permission. Throwing here would crash the app.
+            return@flow
+        }
         try {
             for (signal in signals) emit(signal)
         } finally {
