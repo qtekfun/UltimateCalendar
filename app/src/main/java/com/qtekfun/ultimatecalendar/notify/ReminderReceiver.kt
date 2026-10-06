@@ -29,13 +29,21 @@ class ReminderReceiver : BroadcastReceiver() {
     @Inject
     lateinit var recovery: MissedReminderRecovery
 
+    @Inject
+    lateinit var testReminder: TestReminder
+
     override fun onReceive(context: Context, intent: Intent) {
         val reminder = read(intent) ?: return
         notifier.show(reminder, missed = false)
         val pending = goAsync()
         scope.launch {
             try {
-                recovery.markShown(reminder)
+                // The wizard's test reminder is not planned: only its arrival matters.
+                if (reminder.id == TestReminder.ID) {
+                    testReminder.arrived()
+                } else {
+                    recovery.markShown(reminder)
+                }
                 recovery.recover()
             } finally {
                 pending.finish()

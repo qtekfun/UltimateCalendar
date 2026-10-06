@@ -120,4 +120,46 @@
     <string name="backup_wrong_passphrase">Wrong passphrase, or the file was altered</string>
     <string name="backup_invalid">This is not a backup of UltimateCalendar</string>
     <string name="backup_newer_version">This backup comes from a newer version of the app. Update it first.</string>
+
+    <string name="wizard_title">Set up UltimateCalendar</string>
+    <string name="wizard_intro">Your events come from the calendars on this phone, and their reminders must arrive on time even when the phone saves battery. These steps take a minute, and you can come back to them later.</string>
+    <string name="wizard_allowed">Allowed</string>
+    <string name="wizard_allow">Allow</string>
+    <string name="wizard_calendar_title">Calendar access</string>
+    <string name="wizard_calendar_why">UltimateCalendar shows and edits the calendars of the accounts on this phone. Nothing is sent anywhere by the app.</string>
+    <string name="wizard_calendar_blocked">The system no longer shows its dialog. Open the app settings › Permissions › Calendar and allow it.</string>
+    <string name="wizard_account_title">Add an account with calendars</string>
+    <string name="wizard_account_why">No calendars were found on this phone. For Google Calendar, add your Google account in the phone’s Settings › Accounts and make sure Calendar sync is on. For Nextcloud, Radicale or any CalDAV server, install DAVx5 and add the account there. Come back when done: this step disappears as soon as a calendar shows up.</string>
+    <string name="wizard_open_accounts">Open accounts</string>
+    <string name="wizard_notifications_title">Notifications</string>
+    <string name="wizard_notifications_why">Without them no reminder or invitation can be shown.</string>
+    <string name="wizard_notifications_blocked">The system no longer shows its dialog. Open the notification settings and allow them.</string>
+    <string name="wizard_open_notification_settings">Open notification settings</string>
+    <string name="wizard_exact_title">Exact alarms</string>
+    <string name="wizard_exact_why">So reminders ring at their minute, not when the system feels like it.</string>
+    <string name="wizard_battery_title">No battery restrictions</string>
+    <string name="wizard_battery_why">Battery savers delay alarms with the screen off. UltimateCalendar only wakes up for your reminders.</string>
+    <string name="wizard_maker">Your phone’s own settings</string>
+    <string name="wizard_maker_coloros">ColorOS (OPPO, OnePlus, realme): open the app settings › Battery usage and turn on “Allow background activity”, “Allow auto launch” and “Allow launch by other apps”. Then, in Recents, lock UltimateCalendar (padlock) so cleaning does not close it.</string>
+    <string name="wizard_maker_xiaomi">MIUI / HyperOS: in the app settings, turn on Autostart and set Battery saver to “No restrictions”.</string>
+    <string name="wizard_maker_huawei">EMUI / HarmonyOS (Huawei, Honor): in Battery › App launch, set UltimateCalendar to “Manage manually” and turn on the three options.</string>
+    <string name="wizard_maker_samsung">One UI: in Battery, choose “Unrestricted”, and make sure the app is not in “Sleeping apps”.</string>
+    <string name="wizard_maker_vivo">Funtouch OS / OriginOS: in i Manager › App manager › Autostart, turn on UltimateCalendar; in Battery › Background power consumption, allow it. Then, in Recents, lock the app so cleaning does not close it.</string>
+    <string name="wizard_maker_other">If reminders still arrive late, check the app’s battery settings and allow it to run in the background.</string>
+    <string name="wizard_open_maker_settings">Open phone settings</string>
+    <string name="wizard_other_title">Other calendar apps</string>
+    <string name="wizard_other_why">These apps on your phone can remind you of the same events, so each reminder would ring twice. Open each one’s notification settings and turn off its event reminders; UltimateCalendar reminds you instead.</string>
+    <string name="wizard_other_open">Open notifications of %1$s</string>
+    <string name="wizard_test_title">Test reminder</string>
+    <string name="wizard_test_why">A real reminder, set like any other, arrives in one minute. If it is late or does not come, review the steps above.</string>
+    <string name="wizard_test_button">Send a test reminder</string>
+    <string name="wizard_test_notification">Test reminder</string>
+    <string name="wizard_done">Done</string>
+    <string name="test_waiting">Set for %1$s. Leave the app if you like and wait for it…</string>
+    <string name="test_on_time">It arrived at %1$s, on time.</string>
+    <string name="test_missing">It did not arrive (it was due at %1$s). Check the steps above.</string>
+    <plurals name="test_late">
+        <item quantity="one">It arrived at %1$s, %2$d minute late.</item>
+        <item quantity="other">It arrived at %1$s, %2$d minutes late.</item>
+    </plurals>
 </resources>

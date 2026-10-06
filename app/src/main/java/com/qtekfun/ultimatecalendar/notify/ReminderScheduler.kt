@@ -47,6 +47,13 @@ class ReminderScheduler @Inject constructor(
         heartbeat.update(reminders)
     }
 
+    /**
+     * Sets one alarm outside the plan, so a later [schedule] does not cancel it: the test
+     * reminder of the wizard (RF-01). It takes the same path as real ones on purpose, since it
+     * checks the real delivery.
+     */
+    fun scheduleOne(reminder: PlannedReminder, alarmClock: Boolean) = set(reminder, alarmClock)
+
     private fun set(reminder: PlannedReminder, alarmClock: Boolean) {
         val intent = pendingIntent(reminder.id, reminder)
         val at = reminder.at.toEpochMilli()

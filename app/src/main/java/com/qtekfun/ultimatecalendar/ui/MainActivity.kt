@@ -20,6 +20,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.qtekfun.ultimatecalendar.R
 import com.qtekfun.ultimatecalendar.data.settings.SettingsRepository
+import com.qtekfun.ultimatecalendar.domain.firstrun.FirstRunFlag
+import com.qtekfun.ultimatecalendar.ui.firstrun.FirstRunHost
 import com.qtekfun.ultimatecalendar.ui.theme.UltimateCalendarTheme
 import com.qtekfun.ultimatecalendar.ui.theme.toThemeOptions
 import dagger.hilt.android.AndroidEntryPoint
@@ -28,7 +30,11 @@ import kotlinx.coroutines.flow.map
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    @Inject lateinit var settings: SettingsRepository
+    @Inject
+    lateinit var firstRun: FirstRunFlag
+
+    @Inject
+    lateinit var settings: SettingsRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,8 +47,10 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Text(stringResource(R.string.app_name))
+                    FirstRunHost(firstRun) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Text(stringResource(R.string.app_name))
+                        }
                     }
                 }
             }

@@ -118,4 +118,47 @@
     <string name="backup_wrong_passphrase">Frase incorrecta, o el archivo se ha modificado</string>
     <string name="backup_invalid">Esto no es una copia de UltimateCalendar</string>
     <string name="backup_newer_version">Esta copia viene de una versión más nueva de la app. Actualízala primero.</string>
+
+    <string name="wizard_title">Configura UltimateCalendar</string>
+    <string name="wizard_intro">Tus eventos vienen de los calendarios de este teléfono, y sus avisos deben llegar a su hora aunque el teléfono ahorre batería. Son unos pasos de un minuto y puedes volver a ellos más tarde.</string>
+    <string name="wizard_allowed">Permitido</string>
+    <string name="wizard_allow">Permitir</string>
+    <string name="wizard_calendar_title">Acceso al calendario</string>
+    <string name="wizard_calendar_why">UltimateCalendar muestra y edita los calendarios de las cuentas de este teléfono. La app no envía nada a ningún sitio.</string>
+    <string name="wizard_calendar_blocked">El sistema ya no muestra su diálogo. Abre los ajustes de la app › Permisos › Calendario y permítelo.</string>
+    <string name="wizard_account_title">Añade una cuenta con calendarios</string>
+    <string name="wizard_account_why">No se ha encontrado ningún calendario en este teléfono. Para Google Calendar, añade tu cuenta de Google en Ajustes › Cuentas del teléfono y comprueba que la sincronización de Calendar está activada. Para Nextcloud, Radicale o cualquier servidor CalDAV, instala DAVx5 y añade allí la cuenta. Vuelve cuando termines: este paso desaparece en cuanto aparezca un calendario.</string>
+    <string name="wizard_open_accounts">Abrir cuentas</string>
+    <string name="wizard_notifications_title">Notificaciones</string>
+    <string name="wizard_notifications_why">Sin ellas no se puede mostrar ningún aviso ni invitación.</string>
+    <string name="wizard_notifications_blocked">El sistema ya no muestra su diálogo. Abre los ajustes de notificaciones y permítelas.</string>
+    <string name="wizard_open_notification_settings">Abrir ajustes de notificaciones</string>
+    <string name="wizard_exact_title">Alarmas exactas</string>
+    <string name="wizard_exact_why">Para que los avisos suenen en su minuto, y no cuando al sistema le parezca.</string>
+    <string name="wizard_battery_title">Sin restricciones de batería</string>
+    <string name="wizard_battery_why">Los ahorradores de batería retrasan las alarmas con la pantalla apagada. UltimateCalendar solo se despierta para tus avisos.</string>
+    <string name="wizard_maker">Los ajustes propios de tu teléfono</string>
+    <string name="wizard_maker_coloros">ColorOS (OPPO, OnePlus, realme): abre los ajustes de la app › Uso de batería y activa «Permitir actividad en segundo plano», «Permitir inicio automático» y «Permitir inicio por otras apps». Después, en Recientes, fija UltimateCalendar (candado) para que la limpieza no la cierre.</string>
+    <string name="wizard_maker_xiaomi">MIUI / HyperOS: en los ajustes de la app, activa Inicio automático y pon el Ahorro de batería en «Sin restricciones».</string>
+    <string name="wizard_maker_huawei">EMUI / HarmonyOS (Huawei, Honor): en Batería › Inicio de apps, pon UltimateCalendar en «Administrar manualmente» y activa las tres opciones.</string>
+    <string name="wizard_maker_samsung">One UI: en Batería, elige «Sin restricciones» y comprueba que la app no está en «Apps en suspensión».</string>
+    <string name="wizard_maker_vivo">Funtouch OS / OriginOS: en i Manager › Administrador de apps › Inicio automático, activa UltimateCalendar; en Batería › Consumo en segundo plano, permítela. Después, en Recientes, fija la app para que la limpieza no la cierre.</string>
+    <string name="wizard_maker_other">Si los avisos siguen llegando tarde, revisa los ajustes de batería de la app y permítele funcionar en segundo plano.</string>
+    <string name="wizard_open_maker_settings">Abrir ajustes del teléfono</string>
+    <string name="wizard_other_title">Otras apps de calendario</string>
+    <string name="wizard_other_why">Estas apps de tu teléfono pueden avisarte de los mismos eventos, y cada aviso sonaría dos veces. Abre los ajustes de notificaciones de cada una y desactiva sus avisos de eventos; UltimateCalendar te avisará en su lugar.</string>
+    <string name="wizard_other_open">Abrir notificaciones de %1$s</string>
+    <string name="wizard_test_title">Aviso de prueba</string>
+    <string name="wizard_test_why">Un aviso real, programado como cualquier otro, llega en un minuto. Si llega tarde o no llega, revisa los pasos anteriores.</string>
+    <string name="wizard_test_button">Enviar un aviso de prueba</string>
+    <string name="wizard_test_notification">Aviso de prueba</string>
+    <string name="wizard_done">Hecho</string>
+    <string name="test_waiting">Programado para las %1$s. Puedes salir de la app y esperarlo…</string>
+    <string name="test_on_time">Llegó a las %1$s, a su hora.</string>
+    <string name="test_missing">No llegó (era para las %1$s). Revisa los pasos anteriores.</string>
+    <plurals name="test_late">
+        <item quantity="one">Llegó a las %1$s, con %2$d minuto de retraso.</item>
+        <item quantity="many">Llegó a las %1$s, con %2$d de minutos de retraso.</item>
+        <item quantity="other">Llegó a las %1$s, con %2$d minutos de retraso.</item>
+    </plurals>
 </resources>

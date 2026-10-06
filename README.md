@@ -5,6 +5,11 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 # UltimateCalendar
 
+[![CI](https://github.com/qtekfun/UltimateCalendar/actions/workflows/ci.yml/badge.svg)](https://github.com/qtekfun/UltimateCalendar/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/qtekfun/UltimateCalendar?include_prereleases)](https://github.com/qtekfun/UltimateCalendar/releases)
+[![License: GPL-3.0-or-later](https://img.shields.io/badge/license-GPL--3.0--or--later-blue.svg)](LICENSE)
+<!-- F-Droid badge: add after the app is accepted into fdroiddata (PLAN T32). -->
+
 A beautiful, free calendar for Android: the look of Google Calendar, the invitations inbox of Apple Calendar, and reminders that arrive even on phones that kill apps.
 
 - Works with every calendar on your phone: Google, [DAVx⁵](https://www.davx5.com/) (Nextcloud and any CalDAV server) and more — no Google Play Services needed. A built-in CalDAV connection comes later.
