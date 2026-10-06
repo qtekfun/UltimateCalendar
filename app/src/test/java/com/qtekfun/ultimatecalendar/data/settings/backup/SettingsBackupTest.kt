@@ -249,4 +249,51 @@ class SettingsBackupTest {
         SettingsBackup(fresh).restore(fileWith("{\"version\":2,\"settings\":{}}"), passphrase)
         assertEquals(ReRemindOption.OFF, fresh.current().reRemind)
     }
+
+    private val feeds = listOf(
+        BackupSubscription("Work", "https://cal.example.com/private/s3cr3t/basic.ics", 5, true, 6),
+        BackupSubscription("Holidays", "https://holidays.example.org/es.ics")
+    )
+
+    @Test
+    fun `subscriptions travel inside the sealed content, addresses included, and nowhere else`() {
+        val backup = SettingsBackup(oldPhone).export(passphrase, subscriptions = feeds)
+
+        assertFalse("s3cr3t" in backup)
+        assertFalse("cal.example.com" in backup)
+        assertFalse("holidays" in backup.lowercase())
+        assertEquals(
+            RestoreResult.Restored(subscriptions = feeds),
+            restorer().restore(backup, passphrase)
+        )
+    }
+
+    @Test
+    fun `a backup from before subscriptions restores with none`() {
+        val older = fileWith("{\"version\":2,\"settings\":{\"theme\":\"LIGHT\"}}")
+
+        assertEquals(RestoreResult.Restored(), restorer().restore(older, passphrase))
+    }
+
+    @Test
+    fun `subscriptions with only a name and an address are read, unknown fields are ignored`() {
+        val content = "{\"version\":3,\"settings\":{},\"subscriptions\":" +
+            "[{\"name\":\"Plain\",\"url\":\"https://a.example.com/x.ics\",\"future\":1}]}"
+
+        assertEquals(
+            RestoreResult.Restored(
+                subscriptions = listOf(BackupSubscription("Plain", "https://a.example.com/x.ics"))
+            ),
+            restorer().restore(fileWith(content), passphrase)
+        )
+    }
+
+    @Test
+    fun `a subscription without an address makes the content unreadable, not half applied`() {
+        val content = "{\"version\":3,\"settings\":{\"theme\":\"DARK\"}," +
+            "\"subscriptions\":[{\"name\":\"x\"}]}"
+
+        assertEquals(RestoreResult.Invalid, restorer().restore(fileWith(content), passphrase))
+        assertEquals(AppSettings(), newPhone.current())
+    }
 }

@@ -13,6 +13,7 @@ import com.qtekfun.ultimatecalendar.domain.subscriptions.RefreshInterval
 import com.qtekfun.ultimatecalendar.domain.subscriptions.Subscription
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -64,43 +65,35 @@ class SubscriptionsViewModel @Inject constructor(
         if (it is AddResult.Added) refresh(it.id)
     }
 
-    fun refresh(id: Long) {
-        viewModelScope.launch {
-            when (val result = refresher.refresh(id)) {
-                is RefreshResult.Updated ->
-                    mutableNotes.tryEmit(SubscriptionNote.Refreshed(result.events, result.skipped))
+    fun refresh(id: Long): Job = viewModelScope.launch { refreshAndTell(id) }
 
-                RefreshResult.Unchanged -> mutableNotes.tryEmit(SubscriptionNote.Unchanged)
+    fun refreshAll(): Job = viewModelScope.launch { refresher.refreshAll() }
 
-                is RefreshResult.Failed -> mutableNotes.tryEmit(SubscriptionNote.Failed(result))
-
-                RefreshResult.Gone -> Unit
-            }
-        }
-    }
-
-    fun refreshAll() {
-        viewModelScope.launch { refresher.refreshAll() }
-    }
-
-    fun edit(id: Long, name: String, color: Int) {
+    fun edit(id: Long, name: String, color: Int): Job =
         viewModelScope.launch { repository.rename(id, name, color) }
-    }
 
     /** Turning one on refreshes it at once (an unchanged feed costs one small request). */
-    fun setEnabled(id: Long, enabled: Boolean) {
-        viewModelScope.launch {
-            repository.setEnabled(id, enabled)
-            if (enabled) refresh(id)
-        }
+    fun setEnabled(id: Long, enabled: Boolean): Job = viewModelScope.launch {
+        repository.setEnabled(id, enabled)
+        if (enabled) refreshAndTell(id)
     }
 
-    fun setInterval(id: Long, interval: RefreshInterval) {
+    fun setInterval(id: Long, interval: RefreshInterval): Job =
         viewModelScope.launch { repository.setInterval(id, interval) }
-    }
 
-    fun remove(id: Long) {
-        viewModelScope.launch { repository.remove(id) }
+    fun remove(id: Long): Job = viewModelScope.launch { repository.remove(id) }
+
+    private suspend fun refreshAndTell(id: Long) {
+        when (val result = refresher.refresh(id)) {
+            is RefreshResult.Updated ->
+                mutableNotes.tryEmit(SubscriptionNote.Refreshed(result.events, result.skipped))
+
+            RefreshResult.Unchanged -> mutableNotes.tryEmit(SubscriptionNote.Unchanged)
+
+            is RefreshResult.Failed -> mutableNotes.tryEmit(SubscriptionNote.Failed(result))
+
+            RefreshResult.Gone -> Unit
+        }
     }
 
     private companion object {
