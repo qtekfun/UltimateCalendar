@@ -46,13 +46,16 @@ object ReminderPlanner {
     ): List<PlannedReminder> = events.flatMap { event ->
         val (instance, reminders) = event
         val start = instance.time.startIn(zone)
+        // An all-day occurrence is a date, not an instant: its reminder keeps its id when the
+        // phone changes zone, so one that already showed is not shown again (RF-08).
+        val occurrence = (instance.time as? EventTime.AllDay)?.startDate?.toEpochDay()
+            ?: start.toEpochMilli()
         reminders.filter { it.method == ReminderMethod.ALERT }
             .map { it.minutesBefore }
             .distinct()
             .map { minutes ->
                 PlannedReminder(
-                    id = Objects.hash(instance.eventId.value, start.toEpochMilli(), minutes)
-                        .toLong(),
+                    id = Objects.hash(instance.eventId.value, occurrence, minutes).toLong(),
                     eventId = instance.eventId,
                     calendarId = instance.calendarId,
                     title = instance.title,
