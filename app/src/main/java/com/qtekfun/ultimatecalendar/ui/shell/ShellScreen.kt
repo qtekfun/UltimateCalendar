@@ -164,6 +164,7 @@ fun ShellContent(
 private val PAGED_VIEWS = setOf(
     CalendarView.DAY,
     CalendarView.THREE_DAYS,
+    CalendarView.WEEK,
     CalendarView.AGENDA,
     CalendarView.MONTH
 )
