@@ -100,6 +100,14 @@ android {
         unitTests.all { it.useJUnitPlatform() }
     }
 
+    // FakeCalendarSource and the CalendarSourceContract suite run in the unit tests (against the
+    // fake) and in the instrumented tests (against the real provider): one copy, two source sets.
+    sourceSets {
+        listOf("test", "androidTest").forEach { name ->
+            getByName(name).kotlin.directories.add("src/sharedTest/java")
+        }
+    }
+
     lint {
         warningsAsErrors = true
         abortOnError = true
@@ -126,7 +134,12 @@ detekt {
     buildUponDefaultConfig = true
     allRules = false
     config.setFrom(rootProject.file("config/detekt/detekt.yml"))
-    source.setFrom("src/main/java", "src/test/java", "src/androidTest/java")
+    source.setFrom(
+        "src/main/java",
+        "src/test/java",
+        "src/sharedTest/java",
+        "src/androidTest/java"
+    )
 }
 
 tasks.withType<Detekt>().configureEach {
