@@ -26,6 +26,9 @@ sealed interface NotificationRoute {
 
     /** The editor on a new event: the "+" of the Agenda widget. */
     data object NewEvent : NotificationRoute
+
+    /** The CalDAV connection screen: the first-run wizard's "Connect a CalDAV server" (T37). */
+    data object ConnectCalDav : NotificationRoute
 }
 
 /**
@@ -52,8 +55,10 @@ object InvitationIntents {
 
                     is NotificationRoute.Event -> intent.putExtra(EXTRA_REF, route.ref.encode())
 
-                    // Only the widgets ask for these, with intents of their own (WidgetIntents).
-                    is NotificationRoute.Day, NotificationRoute.NewEvent -> Unit
+                    // Only the widgets and the wizard ask for these, never through an intent.
+                    is NotificationRoute.Day,
+                    NotificationRoute.NewEvent,
+                    NotificationRoute.ConnectCalDav -> Unit
                 }
             }
 

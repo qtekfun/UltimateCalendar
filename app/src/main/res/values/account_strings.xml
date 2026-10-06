@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 UltimateCalendar contributors
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<resources>
+    <!-- Settings: accounts section -->
+    <string name="settings_accounts">Accounts</string>
+    <string name="account_connect_title">Connect a CalDAV server (Nextcloud)</string>
+    <string name="account_connect_hint">Sync calendars directly with your Nextcloud server. The app only talks to the server you enter, always over HTTPS.</string>
+    <string name="account_signed_in_title">CalDAV account</string>
+    <string name="account_signed_in_hint">%1$s on %2$s</string>
+
+    <!-- Login -->
+    <string name="caldav_login_title">Connect a CalDAV server</string>
+    <string name="caldav_login_intro">Enter the address of your Nextcloud server. You will log in using your browser; the app never sees your main password, only a revocable app password that it keeps encrypted.</string>
+    <string name="caldav_login_server_label">Server address</string>
+    <string name="caldav_login_server_hint">cloud.example.com</string>
+    <string name="caldav_login_target">Will connect to %1$s</string>
+    <string name="caldav_login_button">Connect</string>
+    <string name="caldav_login_checking">Checking the server…</string>
+    <string name="caldav_login_waiting">Waiting for you to log in using the browser. Come back here when you are done.</string>
+    <string name="caldav_login_open_browser">Open the browser</string>
+    <string name="caldav_login_cancel">Cancel</string>
+    <string name="caldav_login_signing_in">Signing in…</string>
+    <string name="caldav_login_error_invalid_url">That does not look like a server address. Use something like cloud.example.com.</string>
+    <string name="caldav_login_error_insecure">Plain http:// is not allowed. Use an https:// address: your password would otherwise travel unprotected.</string>
+    <string name="caldav_login_error_not_nextcloud">This address does not answer like a Nextcloud server. Check it and try again.</string>
+    <string name="caldav_login_error_unreachable">Could not reach the server. Check the address and your connection.</string>
+    <string name="caldav_login_error_tls">The server\'s security certificate is not trusted, so the connection was refused. Fix the certificate on the server, or install its authority on this phone.</string>
+    <string name="caldav_login_error_expired">The sign-in took too long and expired. Try again.</string>
+    <string name="caldav_login_error_unknown">Something went wrong. Try again.</string>
+
+    <!-- Account screen -->
+    <string name="caldav_account_title">CalDAV account</string>
+    <string name="caldav_account_server">Server</string>
+    <string name="caldav_account_user">Account</string>
+    <string name="caldav_account_sync_section">Sync</string>
+    <string name="caldav_sync_syncing">Syncing…</string>
+    <string name="caldav_sync_never">Not synced yet</string>
+    <string name="caldav_sync_ok">Up to date</string>
+    <string name="caldav_sync_last">Last synced %1$s</string>
+    <string name="caldav_sync_offline">Could not reach the server. It will try again when there is a connection.</string>
+    <string name="caldav_sync_refused">The server no longer accepts this sign-in. Sign out and connect again.</string>
+    <string name="caldav_sync_failed">The last sync failed. Try again in a moment.</string>
+    <string name="caldav_sync_now">Sync now</string>
+    <string name="caldav_sync_retry">Try again</string>
+    <plurals name="caldav_pending_changes">
+        <item quantity="one">%d change is waiting to be sent</item>
+        <item quantity="other">%d changes are waiting to be sent</item>
+    </plurals>
+    <plurals name="caldav_failed_changes">
+        <item quantity="one">%d change was refused by the server</item>
+        <item quantity="other">%d changes were refused by the server</item>
+    </plurals>
+    <string name="caldav_calendars_section">Calendars on the server</string>
+    <string name="caldav_calendars_hint">Turn a calendar off to stop syncing it and hide it here. Nothing changes on the server.</string>
+    <string name="caldav_calendars_none">No calendars yet. They appear after the first sync.</string>
+    <string name="caldav_calendar_read_only">Read only</string>
+    <string name="caldav_calendar_switch">%1$s, synced</string>
+    <string name="caldav_sign_out">Sign out</string>
+    <string name="caldav_sign_out_title">Sign out of this account?</string>
+    <string name="caldav_sign_out_text">The app password is revoked on the server, and this account\'s calendars and events are removed from this phone. Changes that were not synced yet are lost. Your data on the server is not touched.</string>
+    <string name="caldav_sign_out_confirm">Sign out and remove</string>
+    <string name="caldav_signing_out">Signing out…</string>
+
+    <!-- First-run wizard -->
+    <string name="wizard_connect_caldav">Connect a CalDAV server</string>
+
+    <!-- Backup: the CalDAV sign-in -->
+    <string name="backup_include_session">Include my CalDAV sign-in</string>
+    <string name="backup_include_session_hint">Adds the app password of your CalDAV account to the encrypted file, so restoring it signs you in again. Whoever has the file and the passphrase could use it: keep both safe.</string>
+    <string name="backup_session_restored">Signed in to your CalDAV server again.</string>
+    <string name="backup_session_rejected">The server no longer accepts the saved sign-in. Settings were restored; connect to the server again.</string>
+    <string name="backup_session_unreachable">Could not reach the server to check the saved sign-in. Settings were restored; connect again from Settings › Accounts.</string>
+    <string name="backup_session_invalid">The saved CalDAV address is not valid, so it was not used. Settings were restored.</string>
+    <string name="backup_session_already">This phone is already signed in to a CalDAV account, so the one in the backup was not used.</string>
+</resources>

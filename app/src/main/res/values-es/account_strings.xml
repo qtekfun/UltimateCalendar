@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 UltimateCalendar contributors
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<resources>
+    <!-- Ajustes: sección de cuentas -->
+    <string name="settings_accounts">Cuentas</string>
+    <string name="account_connect_title">Conectar un servidor CalDAV (Nextcloud)</string>
+    <string name="account_connect_hint">Sincroniza calendarios directamente con tu servidor Nextcloud. La aplicación solo habla con el servidor que indiques, siempre por HTTPS.</string>
+    <string name="account_signed_in_title">Cuenta CalDAV</string>
+    <string name="account_signed_in_hint">%1$s en %2$s</string>
+
+    <!-- Inicio de sesión -->
+    <string name="caldav_login_title">Conectar un servidor CalDAV</string>
+    <string name="caldav_login_intro">Escribe la dirección de tu servidor Nextcloud. Iniciarás sesión en el navegador; la aplicación nunca ve tu contraseña principal, solo una contraseña de aplicación revocable que guarda cifrada.</string>
+    <string name="caldav_login_server_label">Dirección del servidor</string>
+    <string name="caldav_login_server_hint">nube.ejemplo.com</string>
+    <string name="caldav_login_target">Se conectará a %1$s</string>
+    <string name="caldav_login_button">Conectar</string>
+    <string name="caldav_login_checking">Comprobando el servidor…</string>
+    <string name="caldav_login_waiting">Esperando a que inicies sesión en el navegador. Vuelve aquí cuando termines.</string>
+    <string name="caldav_login_open_browser">Abrir el navegador</string>
+    <string name="caldav_login_cancel">Cancelar</string>
+    <string name="caldav_login_signing_in">Iniciando sesión…</string>
+    <string name="caldav_login_error_invalid_url">Eso no parece una dirección de servidor. Usa algo como nube.ejemplo.com.</string>
+    <string name="caldav_login_error_insecure">No se permite http:// sin cifrar. Usa una dirección https://: de lo contrario tu contraseña viajaría sin protección.</string>
+    <string name="caldav_login_error_not_nextcloud">Esta dirección no responde como un servidor Nextcloud. Compruébala e inténtalo de nuevo.</string>
+    <string name="caldav_login_error_unreachable">No se pudo conectar con el servidor. Comprueba la dirección y tu conexión.</string>
+    <string name="caldav_login_error_tls">El certificado de seguridad del servidor no es de confianza, así que se rechazó la conexión. Arregla el certificado en el servidor o instala su autoridad en este teléfono.</string>
+    <string name="caldav_login_error_expired">El inicio de sesión tardó demasiado y caducó. Inténtalo de nuevo.</string>
+    <string name="caldav_login_error_unknown">Algo salió mal. Inténtalo de nuevo.</string>
+
+    <!-- Pantalla de la cuenta -->
+    <string name="caldav_account_title">Cuenta CalDAV</string>
+    <string name="caldav_account_server">Servidor</string>
+    <string name="caldav_account_user">Cuenta</string>
+    <string name="caldav_account_sync_section">Sincronización</string>
+    <string name="caldav_sync_syncing">Sincronizando…</string>
+    <string name="caldav_sync_never">Aún sin sincronizar</string>
+    <string name="caldav_sync_ok">Al día</string>
+    <string name="caldav_sync_last">Última sincronización: %1$s</string>
+    <string name="caldav_sync_offline">No se pudo conectar con el servidor. Lo intentará de nuevo cuando haya conexión.</string>
+    <string name="caldav_sync_refused">El servidor ya no acepta este inicio de sesión. Cierra la sesión y vuelve a conectar.</string>
+    <string name="caldav_sync_failed">La última sincronización falló. Inténtalo de nuevo en un momento.</string>
+    <string name="caldav_sync_now">Sincronizar ahora</string>
+    <string name="caldav_sync_retry">Reintentar</string>
+    <plurals name="caldav_pending_changes">
+        <item quantity="one">%d cambio espera a enviarse</item>
+        <item quantity="many">%d de cambios esperan a enviarse</item>
+        <item quantity="other">%d cambios esperan a enviarse</item>
+    </plurals>
+    <plurals name="caldav_failed_changes">
+        <item quantity="one">El servidor rechazó %d cambio</item>
+        <item quantity="many">El servidor rechazó %d de cambios</item>
+        <item quantity="other">El servidor rechazó %d cambios</item>
+    </plurals>
+    <string name="caldav_calendars_section">Calendarios del servidor</string>
+    <string name="caldav_calendars_hint">Desactiva un calendario para dejar de sincronizarlo y ocultarlo aquí. En el servidor no cambia nada.</string>
+    <string name="caldav_calendars_none">Aún no hay calendarios. Aparecen tras la primera sincronización.</string>
+    <string name="caldav_calendar_read_only">Solo lectura</string>
+    <string name="caldav_calendar_switch">%1$s, sincronizado</string>
+    <string name="caldav_sign_out">Cerrar sesión</string>
+    <string name="caldav_sign_out_title">¿Cerrar la sesión de esta cuenta?</string>
+    <string name="caldav_sign_out_text">La contraseña de aplicación se revoca en el servidor y los calendarios y eventos de esta cuenta se eliminan de este teléfono. Los cambios que aún no se hayan sincronizado se pierden. Tus datos en el servidor no se tocan.</string>
+    <string name="caldav_sign_out_confirm">Cerrar sesión y eliminar</string>
+    <string name="caldav_signing_out">Cerrando sesión…</string>
+
+    <!-- Asistente del primer arranque -->
+    <string name="wizard_connect_caldav">Conectar un servidor CalDAV</string>
+
+    <!-- Copia de seguridad: la sesión CalDAV -->
+    <string name="backup_include_session">Incluir mi inicio de sesión CalDAV</string>
+    <string name="backup_include_session_hint">Añade al archivo cifrado la contraseña de aplicación de tu cuenta CalDAV, para que al restaurarlo vuelvas a iniciar sesión. Quien tenga el archivo y la frase de contraseña podría usarla: guarda ambos con cuidado.</string>
+    <string name="backup_session_restored">Has vuelto a iniciar sesión en tu servidor CalDAV.</string>
+    <string name="backup_session_rejected">El servidor ya no acepta el inicio de sesión guardado. Los ajustes se restauraron; vuelve a conectar con el servidor.</string>
+    <string name="backup_session_unreachable">No se pudo conectar con el servidor para comprobar el inicio de sesión guardado. Los ajustes se restauraron; vuelve a conectar desde Ajustes › Cuentas.</string>
+    <string name="backup_session_invalid">La dirección CalDAV guardada no es válida, así que no se usó. Los ajustes se restauraron.</string>
+    <string name="backup_session_already">Este teléfono ya tiene una cuenta CalDAV iniciada, así que no se usó la de la copia.</string>
+</resources>

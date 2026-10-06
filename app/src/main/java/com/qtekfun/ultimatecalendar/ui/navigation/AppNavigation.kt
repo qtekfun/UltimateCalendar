@@ -19,6 +19,7 @@ import com.qtekfun.ultimatecalendar.domain.editor.EditorRequest
 import com.qtekfun.ultimatecalendar.domain.layout.AdaptiveLayout
 import com.qtekfun.ultimatecalendar.domain.navigation.CalendarView
 import com.qtekfun.ultimatecalendar.notify.NotificationRoute
+import com.qtekfun.ultimatecalendar.ui.account.CalDavAccountRoute
 import com.qtekfun.ultimatecalendar.ui.adaptive.PaneDialog
 import com.qtekfun.ultimatecalendar.ui.adaptive.currentAdaptiveLayout
 import com.qtekfun.ultimatecalendar.ui.detail.EventDetailScreen
@@ -71,9 +72,17 @@ fun AppNavigation(routes: NotificationRoutes = remember { NotificationRoutes() }
             InvitationsScreen(onBack = { nav.invitations = false }, onOpen = { nav.open(it) })
         }
 
+        nav.account -> {
+            BackHandler { nav.account = false }
+            CalDavAccountRoute(onBack = { nav.account = false })
+        }
+
         nav.settings -> {
             BackHandler { nav.settings = false }
-            SettingsScreen(onBack = { nav.settings = false })
+            SettingsScreen(
+                onBack = { nav.settings = false },
+                onOpenAccount = { nav.account = true }
+            )
         }
 
         // Help: a later task fills this in.
@@ -169,6 +178,13 @@ private fun OpenRequestedRoute(routes: NotificationRoutes, nav: NavState, shell:
                 nav.closeAll()
                 shell.selectView(CalendarView.DAY)
                 shell.selectDate(route.date)
+            }
+
+            // The wizard's "Connect a CalDAV server": the login, with Settings behind it.
+            NotificationRoute.ConnectCalDav -> {
+                nav.closeAll()
+                nav.settings = true
+                nav.account = true
             }
 
             NotificationRoute.NewEvent -> {

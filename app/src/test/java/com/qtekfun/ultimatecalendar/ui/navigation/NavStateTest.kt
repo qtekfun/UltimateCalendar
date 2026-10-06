@@ -33,6 +33,41 @@ class NavStateTest {
     }
 
     @Test
+    fun `the open CalDAV account screen survives a rotation, with Settings behind it`() {
+        val restored = roundTrip(
+            NavState().apply {
+                settings = true
+                account = true
+            }
+        )
+
+        assertTrue(restored.account)
+        assertTrue(restored.settings)
+    }
+
+    @Test
+    fun `a state saved before the account screen existed opens without it`() {
+        val old = listOf(false, false, false, true, false, false, null, null)
+
+        val restored = requireNotNull(NavState.Saver.restore(old))
+
+        assertTrue(restored.settings)
+        assertTrue(!restored.account)
+    }
+
+    @Test
+    fun `going back to the shell closes the account screen too`() {
+        val state = NavState().apply {
+            settings = true
+            account = true
+        }
+
+        state.closeAll()
+
+        assertTrue(!state.account && !state.settings)
+    }
+
+    @Test
     fun `no event detail, no ref`() {
         val restored = roundTrip(NavState().apply { help = true })
         assertTrue(restored.help)

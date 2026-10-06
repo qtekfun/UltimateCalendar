@@ -8,10 +8,8 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.qtekfun.ultimatecalendar.R
-import com.qtekfun.ultimatecalendar.data.settings.backup.CalendarOverridesBackup
+import com.qtekfun.ultimatecalendar.data.settings.backup.BackupCoordinator
 import com.qtekfun.ultimatecalendar.data.settings.backup.RestoreResult
-import com.qtekfun.ultimatecalendar.data.settings.backup.SettingsBackup
-import com.qtekfun.ultimatecalendar.data.subscriptions.SubscriptionRepository
 import com.qtekfun.ultimatecalendar.di.IoDispatcher
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -31,12 +29,10 @@ import kotlinx.coroutines.withContext
 @HiltViewModel
 class BackupViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val backup: SettingsBackup,
-    private val calendarOverrides: CalendarOverridesBackup,
-    private val subscriptions: SubscriptionRepository,
+    private val backup: BackupCoordinator,
     @IoDispatcher private val io: CoroutineDispatcher
 ) : ViewModel() {
-    private val mutableMessages = MutableSharedFlow<Int>(extraBufferCapacity = 1)
+    private val mutableMessages = MutableSharedFlow<Int>(extraBufferCapacity = MESSAGES)
     private val pending = MutableStateFlow<String?>(null)
 
     /** Messages to show, as string resources. */
@@ -45,12 +41,11 @@ class BackupViewModel @Inject constructor(
     /** A backup read from a file, waiting for its passphrase. */
     val needsPassphrase: StateFlow<String?> = pending.asStateFlow()
 
-    fun export(target: Uri, passphrase: CharArray) {
+    /** [includeSession] puts the CalDAV sign-in in the file, inside the encrypted content. */
+    fun export(target: Uri, passphrase: CharArray, includeSession: Boolean) {
         viewModelScope.launch {
-            val overrides = calendarOverrides.collect()
-            val feeds = subscriptions.forBackup()
+            val text = backup.export(passphrase, includeSession)
             val written = withContext(io) {
-                val text = backup.export(passphrase, overrides, feeds)
                 runCatchingIo {
                     context.contentResolver.openOutputStream(target)?.use {
                         it.write(text.toByteArray())
@@ -72,9 +67,7 @@ class BackupViewModel @Inject constructor(
                     }
                 }
             }
-            if (text ==
-                null
-            ) {
+            if (text == null) {
                 mutableMessages.tryEmit(R.string.backup_invalid)
             } else {
                 pending.value = text
@@ -85,32 +78,10 @@ class BackupViewModel @Inject constructor(
     fun finishRestore(passphrase: CharArray) {
         val text = pending.value ?: return
         viewModelScope.launch {
-            val result = withContext(io) { backup.restore(text, passphrase) }
-            // Subscriptions come first: their calendars may be named by the overrides. Calendars
-            // are matched by account and name; the ones this phone lacks are reported.
-            val restored = result as? RestoreResult.Restored
-            val refused = restored?.let { subscriptions.restore(it.subscriptions).refused } ?: 0
-            val missing = restored?.let { calendarOverrides.apply(it.calendars) } ?: 0
+            val outcome = backup.restore(text, passphrase)
             // A wrong passphrase leaves the dialog open to try again; anything else ends it.
-            if (result != RestoreResult.WrongPassphrase) pending.value = null
-            mutableMessages.tryEmit(
-                when (result) {
-                    is RestoreResult.Restored ->
-                        if (missing + refused >
-                            0
-                        ) {
-                            R.string.backup_restored_some_calendars
-                        } else {
-                            R.string.backup_restored
-                        }
-
-                    RestoreResult.WrongPassphrase -> R.string.backup_wrong_passphrase
-
-                    RestoreResult.Invalid -> R.string.backup_invalid
-
-                    RestoreResult.NewerVersion -> R.string.backup_newer_version
-                }
-            )
+            if (outcome.result != RestoreResult.WrongPassphrase) pending.value = null
+            restoreMessages(outcome).forEach { mutableMessages.tryEmit(it) }
         }
     }
 
@@ -124,5 +95,9 @@ class BackupViewModel @Inject constructor(
         null
     } catch (_: SecurityException) {
         null
+    }
+
+    private companion object {
+        const val MESSAGES = 4
     }
 }

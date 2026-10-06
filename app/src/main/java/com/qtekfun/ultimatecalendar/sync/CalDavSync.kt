@@ -30,6 +30,9 @@ class CalDavSync @Inject constructor(
     /** How the latest sync of this process ended; null until one finishes. */
     val lastOutcome: StateFlow<SyncOutcome?> get() = engine.lastOutcome
 
+    /** Whether a sync is running now. */
+    val syncing: StateFlow<Boolean> get() = engine.syncing
+
     /** Follows the signed-in account until [scope] ends. */
     fun start(scope: CoroutineScope) {
         scope.launch {

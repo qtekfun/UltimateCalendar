@@ -4,6 +4,7 @@
 package com.qtekfun.ultimatecalendar.data.remote.caldav
 
 import com.qtekfun.ultimatecalendar.data.auth.SignedInAccount
+import com.qtekfun.ultimatecalendar.data.remote.Credentials as AppCredentials
 import com.qtekfun.ultimatecalendar.data.remote.CredentialsProvider
 import com.qtekfun.ultimatecalendar.data.remote.ServerUrl
 import com.qtekfun.ultimatecalendar.di.IoDispatcher
@@ -24,13 +25,33 @@ class CalDavProvider @Inject constructor(
     fun connect(account: SignedInAccount): CalDav? = connect(account, allowInsecure = false)
 
     /** [allowInsecure] exists only so tests can use a local plain-http server. */
-    internal fun connect(account: SignedInAccount, allowInsecure: Boolean): CalDav? {
+    internal fun connect(account: SignedInAccount, allowInsecure: Boolean): CalDav? =
+        connect(account, allowInsecure) { credentials.credentials() }
+
+    /**
+     * A client with the given credentials instead of the session's: to check a login that is not
+     * stored yet (a restored backup). Nothing is kept.
+     */
+    fun connectWith(account: SignedInAccount, login: AppCredentials): CalDav? =
+        connectWith(account, login, allowInsecure = false)
+
+    internal fun connectWith(
+        account: SignedInAccount,
+        login: AppCredentials,
+        allowInsecure: Boolean
+    ): CalDav? = connect(account, allowInsecure) { login }
+
+    private fun connect(
+        account: SignedInAccount,
+        allowInsecure: Boolean,
+        credentialsOf: () -> AppCredentials?
+    ): CalDav? {
         val server =
             ServerUrl.parse(account.serverUrl, allowInsecure) as? ServerUrl.ParseResult.Valid
                 ?: return null
         val client = http.newBuilder().addInterceptor { chain ->
             val request = chain.request().newBuilder()
-            credentials.credentials()?.let {
+            credentialsOf()?.let {
                 request.header(
                     "Authorization",
                     Credentials.basic(it.loginName, it.appPassword, Charsets.UTF_8)
