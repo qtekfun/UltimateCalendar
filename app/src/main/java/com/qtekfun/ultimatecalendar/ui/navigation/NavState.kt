@@ -15,18 +15,22 @@ class NavState {
     var newEvent by mutableStateOf(false)
     var invitations by mutableStateOf(false)
     var settings by mutableStateOf(false)
+    var eventDetail by mutableStateOf(false)
     var help by mutableStateOf(false)
 
     companion object {
         val Saver: Saver<NavState, Any> = listSaver(
-            save = { listOf(it.search, it.newEvent, it.invitations, it.settings, it.help) },
+            save = {
+                listOf(it.search, it.newEvent, it.invitations, it.settings, it.eventDetail, it.help)
+            },
             restore = { values ->
                 NavState().apply {
                     search = values[0]
                     newEvent = values[1]
                     invitations = values[2]
                     settings = values[3]
-                    help = values.getOrElse(4) { false }
+                    eventDetail = values.getOrElse(4) { false }
+                    help = values.getOrElse(5) { false }
                 }
             }
         )

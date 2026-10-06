@@ -8,6 +8,8 @@ import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.rememberSaveable
 import com.qtekfun.ultimatecalendar.R
+import com.qtekfun.ultimatecalendar.ui.settings.SettingsScreen
+import com.qtekfun.ultimatecalendar.ui.shell.ShellActions
 import com.qtekfun.ultimatecalendar.ui.shell.ShellScreen
 
 /**
@@ -28,18 +30,28 @@ fun AppNavigation() {
         // T21: the invitations tray replaces this placeholder.
         nav.invitations -> Placeholder(R.string.shell_invitations) { nav.invitations = false }
 
-        // T23: the Settings screen replaces this placeholder.
-        nav.settings -> Placeholder(R.string.shell_settings) { nav.settings = false }
+        nav.settings -> {
+            BackHandler { nav.settings = false }
+            SettingsScreen(onBack = { nav.settings = false })
+        }
 
-        // Help: a later task (T23, with Settings) fills this in.
+        // T19: the event detail replaces this placeholder.
+        nav.eventDetail -> Placeholder(R.string.timegrid_event_detail) { nav.eventDetail = false }
+
+        // Help: a later task fills this in.
         nav.help -> Placeholder(R.string.shell_help) { nav.help = false }
 
         else -> ShellScreen(
-            onSearch = { nav.search = true },
-            onNewEvent = { nav.newEvent = true },
-            onInvitations = { nav.invitations = true },
-            onSettings = { nav.settings = true },
-            onHelp = { nav.help = true }
+            ShellActions(
+                onSearch = { nav.search = true },
+                onNewEvent = { nav.newEvent = true },
+                onInvitations = { nav.invitations = true },
+                onSettings = { nav.settings = true },
+                onHelp = { nav.help = true },
+                onOpenEvent = { nav.eventDetail = true },
+                // T20: the editor will take the tapped time; for now it opens the same placeholder.
+                onCreateAt = { nav.newEvent = true }
+            )
         )
     }
 }

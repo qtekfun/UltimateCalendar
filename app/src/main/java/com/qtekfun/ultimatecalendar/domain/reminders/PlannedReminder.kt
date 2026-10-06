@@ -11,7 +11,7 @@ import java.util.Objects
 /**
  * A notification to show at [at] (RF-07). [id] tells the alarms apart: an occurrence has one per
  * reminder of its event. [start] is when the occurrence starts (midnight of the phone's zone for
- * an [allDay] one).
+ * an [allDay] one). [joinUrl] is the event's video call, if any.
  */
 data class PlannedReminder(
     val id: Long,
@@ -21,7 +21,8 @@ data class PlannedReminder(
     val location: String?,
     val start: Instant,
     val allDay: Boolean,
-    val at: Instant
+    val at: Instant,
+    val joinUrl: String? = null
 ) {
     /** One notification per occurrence, whichever of its reminders showed it. */
     val notificationKey: Int get() = Objects.hash(eventId.value, start.toEpochMilli())

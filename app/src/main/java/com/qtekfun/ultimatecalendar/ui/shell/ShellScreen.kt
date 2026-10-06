@@ -35,6 +35,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.qtekfun.ultimatecalendar.R
+import com.qtekfun.ultimatecalendar.domain.navigation.CalendarView
 import com.qtekfun.ultimatecalendar.domain.navigation.ViewPeriods
 import com.qtekfun.ultimatecalendar.ui.components.AnimatedPeriod
 import com.qtekfun.ultimatecalendar.ui.components.CalendarSnackbarHost
@@ -45,36 +46,30 @@ import com.qtekfun.ultimatecalendar.ui.components.currentWindowWidth
 import com.qtekfun.ultimatecalendar.ui.components.rememberFabScrollState
 import com.qtekfun.ultimatecalendar.ui.theme.Dimens
 import com.qtekfun.ultimatecalendar.ui.theme.Spacing
+import com.qtekfun.ultimatecalendar.ui.timegrid.TimeGridScreen
 import java.time.DayOfWeek
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import kotlinx.coroutines.launch
 
-/** The app shell in Google Calendar's style: header, drawer, current view and Create button. */
+/**
+ * The app shell in Google Calendar's style: header, drawer, current view and Create button.
+ * [navigation] carries the actions that leave the shell (search, editor, detail...); the shell
+ * fills in the ones that change what it shows.
+ */
 @Composable
-fun ShellScreen(
-    onSearch: () -> Unit,
-    onNewEvent: () -> Unit,
-    onInvitations: () -> Unit,
-    onSettings: () -> Unit,
-    onHelp: () -> Unit,
-    viewModel: ShellViewModel = viewModel()
-) {
+fun ShellScreen(navigation: ShellActions, viewModel: ShellViewModel = viewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     ShellContent(
         state,
-        ShellActions(
+        navigation.copy(
             onSelectView = viewModel::selectView,
             onSelectDate = viewModel::selectDate,
             onToday = viewModel::goToToday,
             onPrevious = viewModel::previous,
             onNext = viewModel::next,
-            onSetCalendarVisible = viewModel::setCalendarVisible,
-            onSearch = onSearch,
-            onInvitations = onInvitations,
-            onNewEvent = onNewEvent,
-            onSettings = onSettings,
-            onHelp = onHelp
+            onSetCalendarVisible = viewModel::setCalendarVisible
         )
     )
 }
@@ -94,7 +89,13 @@ fun ShellContent(
     snackbarHost: SnackbarHostState = remember { SnackbarHostState() },
     startWithDrawerOpen: Boolean = false,
     content: @Composable (PeriodKey, PaddingValues) -> Unit = { period, padding ->
-        ViewPlaceholder(period, state.firstDayOfWeek, actions, Modifier.padding(padding))
+        val modifier = Modifier.fillMaxSize().padding(padding)
+        when (period.view) {
+            CalendarView.DAY, CalendarView.THREE_DAYS -> TimeGridScreen(state, actions, modifier)
+
+            // T14, T16 and T17 replace this with the Agenda, Week and Month views.
+            else -> ViewPlaceholder(period, state.firstDayOfWeek, actions, modifier)
+        }
     }
 ) {
     val drawer =
@@ -138,13 +139,25 @@ fun ShellContent(
         ) { padding ->
             Box(Modifier.fillMaxSize().nestedScroll(fab.connection), Alignment.TopCenter) {
                 AnimatedPeriod(
-                    PeriodKey(state.view, state.date),
+                    PeriodKey(
+                        state.view,
+                        if (state.view in
+                            PAGED_VIEWS
+                        ) {
+                            LocalDate.ofEpochDay(0)
+                        } else {
+                            state.date
+                        }
+                    ),
                     Modifier.widthIn(max = Dimens.contentMaxWidth).fillMaxSize()
                 ) { period -> content(period, padding) }
             }
         }
     }
 }
+
+/** Views that swipe between their own days: the shell only fades when they are chosen. */
+private val PAGED_VIEWS = setOf(CalendarView.DAY, CalendarView.THREE_DAYS)
 
 private const val BACK_SLIDE_PX = 48f
 private const val BACK_FADE = 0.3f
