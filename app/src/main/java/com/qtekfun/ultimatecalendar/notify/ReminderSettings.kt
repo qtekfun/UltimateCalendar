@@ -1,0 +1,23 @@
+// SPDX-FileCopyrightText: 2026 UltimateCalendar contributors
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+package com.qtekfun.ultimatecalendar.notify
+
+import java.time.LocalTime
+
+/**
+ * What the reminders read from the settings (RF-08, RF-10). [allDayTime] is when all-day events
+ * remind, [missedWindowHours] how far back a missed reminder is brought back (0 = never),
+ * [alarmClock] sets reminders like an alarm clock and [robustMode] keeps a service running.
+ */
+data class ReminderSettings(
+    val allDayTime: LocalTime = LocalTime.of(DEFAULT_ALL_DAY_HOUR, 0),
+    val missedWindowHours: Int = DEFAULT_MISSED_WINDOW_HOURS,
+    val alarmClock: Boolean = false,
+    val robustMode: Boolean = false
+) {
+    private companion object {
+        const val DEFAULT_ALL_DAY_HOUR = 9
+        const val DEFAULT_MISSED_WINDOW_HOURS = 24
+    }
+}

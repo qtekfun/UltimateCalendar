@@ -5,6 +5,17 @@
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- Reminders (RF-07, RF-08): exact alarms, granted at install on Android 13+. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission
+        android:name="android.permission.SCHEDULE_EXACT_ALARM"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- Robust mode (RF-08): an optional foreground service that keeps the process alive. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+
     <application
         android:name=".UltimateCalendarApp"
         android:allowBackup="false"
@@ -24,6 +35,35 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <receiver
+            android:name=".notify.ReminderReceiver"
+            android:exported="false" />
+        <receiver
+            android:name=".notify.HeartbeatReceiver"
+            android:exported="false" />
+        <receiver
+            android:name=".notify.BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+            </intent-filter>
+        </receiver>
+        <!--
+          Robust mode (RF-08), off by default: keeps the process alive so reminders scheduled
+          on the device are delivered on phones that kill apps in the background. No network.
+        -->
+        <service
+            android:name=".notify.KeepAliveService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Keeps the app alive, at the user's request, so that event reminders scheduled locally with AlarmManager are delivered on phones whose system kills background apps and drops their alarms. It does no network or other work." />
+        </service>
     </application>
 
 </manifest>

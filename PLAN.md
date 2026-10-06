@@ -18,6 +18,7 @@ Reglas: una tarea cada vez, en su rama `feat/<tarea>`, con `./gradlew check` en 
   - *Verificación:* informe con resultados por cuenta en `SPEC.md` §9; fixtures en `app/src/test/resources/provider-fixtures/{google,davx5}/`.
 - [ ] **T02b Fiabilidad de avisos**: copiar la solución de UltimateTasks (planificador, receptor, `BootReceiver`, latido, modo robusto, recuperación) como esqueleto y medir en ColorOS con la app cerrada y el móvil en reposo.
   - *Verificación:* informe con retrasos medidos; decisión en `SPEC.md` §9.
+  - *Resultado:* esqueleto de código hecho (planificador, recuperación, latido, receptores, `BootReceiver`, modo robusto; `domain.reminders` al 100 % de líneas y ramas). Pendiente para el autor: las mediciones en ColorOS y la decisión en `SPEC.md` §9.
 
 ## Fase 1 — Datos y arnés
 - [x] **T03 Modelo de dominio**: cuenta, calendario (color, acceso, visible, propietario), evento, instancia, asistente (rol, estado), aviso, repetición. Tipos sellados para errores (`CalendarResult`). `Clock` inyectable.
