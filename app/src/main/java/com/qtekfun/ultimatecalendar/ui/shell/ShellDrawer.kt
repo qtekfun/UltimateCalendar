@@ -24,6 +24,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.PermanentDrawerSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -62,48 +63,57 @@ fun ShellDrawer(
     state: ShellUiState,
     actions: ShellActions,
     onClose: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    permanent: Boolean = false
 ) {
-    ModalDrawerSheet(modifier.widthIn(max = Dimens.drawerMaxWidth)) {
-        LazyColumn {
-            item {
-                Text(
-                    stringResource(R.string.app_name),
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier
-                        .padding(horizontal = Spacing.xl, vertical = Spacing.l)
-                        .semantics { heading() }
-                )
-            }
-            items(CalendarView.entries) { view ->
-                NavigationDrawerItem(
-                    icon = { Icon(CalendarIcons.of(view), contentDescription = null) },
-                    label = { Text(stringResource(view.label())) },
-                    selected = view == state.view,
-                    onClick = {
-                        actions.onSelectView(view)
-                        onClose()
-                    },
-                    modifier = Modifier.padding(horizontal = ItemPadding)
-                )
-            }
-            item { Divider() }
-            item { SectionHeader(stringResource(R.string.shell_calendars)) }
-            when {
-                state.calendarsFailed ->
-                    item { Message(stringResource(R.string.shell_calendars_failed)) }
+    val sheet = modifier.widthIn(max = Dimens.drawerMaxWidth)
+    if (permanent) {
+        PermanentDrawerSheet(sheet) { DrawerItems(state, actions, onClose) }
+    } else {
+        ModalDrawerSheet(sheet) { DrawerItems(state, actions, onClose) }
+    }
+}
 
-                state.accounts.isEmpty() ->
-                    item { Message(stringResource(R.string.shell_calendars_none)) }
-
-                else -> items(
-                    state.accounts,
-                    key = { "account:${it.account.type}:${it.account.name}" }
-                ) { group -> AccountSection(group, actions) }
-            }
-            item { Divider() }
-            item { Footer(actions, onClose) }
+@Composable
+private fun DrawerItems(state: ShellUiState, actions: ShellActions, onClose: () -> Unit) {
+    LazyColumn {
+        item {
+            Text(
+                stringResource(R.string.app_name),
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier
+                    .padding(horizontal = Spacing.xl, vertical = Spacing.l)
+                    .semantics { heading() }
+            )
         }
+        items(CalendarView.entries) { view ->
+            NavigationDrawerItem(
+                icon = { Icon(CalendarIcons.of(view), contentDescription = null) },
+                label = { Text(stringResource(view.label())) },
+                selected = view == state.view,
+                onClick = {
+                    actions.onSelectView(view)
+                    onClose()
+                },
+                modifier = Modifier.padding(horizontal = ItemPadding)
+            )
+        }
+        item { Divider() }
+        item { SectionHeader(stringResource(R.string.shell_calendars)) }
+        when {
+            state.calendarsFailed ->
+                item { Message(stringResource(R.string.shell_calendars_failed)) }
+
+            state.accounts.isEmpty() ->
+                item { Message(stringResource(R.string.shell_calendars_none)) }
+
+            else -> items(
+                state.accounts,
+                key = { "account:${it.account.type}:${it.account.name}" }
+            ) { group -> AccountSection(group, actions) }
+        }
+        item { Divider() }
+        item { Footer(actions, onClose) }
     }
 }
 

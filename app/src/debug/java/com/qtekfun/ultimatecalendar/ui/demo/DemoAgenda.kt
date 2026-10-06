@@ -68,7 +68,8 @@ internal fun DemoAgenda(
     colors: Map<CalendarId, Int>,
     zone: ZoneId,
     padding: PaddingValues,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onOpen: (EventInstance) -> Unit = {}
 ) {
     if (days.all { it.events.isEmpty() }) {
         EmptyState(
@@ -86,7 +87,7 @@ internal fun DemoAgenda(
         )
     ) {
         items(days.filter { it.events.isNotEmpty() }, key = { it.date.toEpochDay() }) { day ->
-            DayRow(day, today, colors, zone)
+            DayRow(day, today, colors, zone, onOpen)
         }
     }
 }
@@ -94,7 +95,13 @@ internal fun DemoAgenda(
 private val FAB_CLEARANCE = 88.dp
 
 @Composable
-private fun DayRow(day: DemoDay, today: LocalDate, colors: Map<CalendarId, Int>, zone: ZoneId) {
+private fun DayRow(
+    day: DemoDay,
+    today: LocalDate,
+    colors: Map<CalendarId, Int>,
+    zone: ZoneId,
+    onOpen: (EventInstance) -> Unit
+) {
     val locale = Locale.current.platformLocale
     val weekday = day.date.dayOfWeek.getDisplayName(TextStyle.SHORT, locale).uppercase(locale)
     Row(
@@ -127,7 +134,7 @@ private fun DayRow(day: DemoDay, today: LocalDate, colors: Map<CalendarId, Int>,
                         color,
                         detail = timeRange(time, zone, event.location),
                         display = display,
-                        onClick = {}
+                        onClick = { onOpen(event) }
                     )
                 }
             }

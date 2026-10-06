@@ -3,6 +3,9 @@
 
 package com.qtekfun.ultimatecalendar.ui.demo
 
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -10,6 +13,8 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import com.qtekfun.ultimatecalendar.domain.detail.EventRef
 import com.qtekfun.ultimatecalendar.domain.model.AttendeeStatus
 import com.qtekfun.ultimatecalendar.domain.model.CalendarId
 import com.qtekfun.ultimatecalendar.domain.model.EventInstance
@@ -18,9 +23,12 @@ import com.qtekfun.ultimatecalendar.domain.navigation.AccountCalendars
 import com.qtekfun.ultimatecalendar.domain.navigation.CalendarView
 import com.qtekfun.ultimatecalendar.domain.navigation.ViewPeriods
 import com.qtekfun.ultimatecalendar.domain.result.CalendarResult
+import com.qtekfun.ultimatecalendar.ui.adaptive.currentAdaptiveLayout
+import com.qtekfun.ultimatecalendar.ui.agenda.AgendaMasterDetail
 import com.qtekfun.ultimatecalendar.ui.shell.ShellActions
 import com.qtekfun.ultimatecalendar.ui.shell.ShellContent
 import com.qtekfun.ultimatecalendar.ui.shell.ShellUiState
+import com.qtekfun.ultimatecalendar.ui.theme.Spacing
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.ZoneId
@@ -75,11 +83,52 @@ internal fun DemoShell(options: DemoOptions) {
             hidden = if (visible) hidden - id.value else hidden + id.value
         }
     )
+    var picked by rememberSaveable { mutableStateOf<Long?>(null) }
     ShellContent(state, actions, startWithDrawerOpen = options.drawer) { period, padding ->
         val range = ViewPeriods.range(period.view, period.date, DayOfWeek.MONDAY)
         val days = generateSequence(range.start) { it.plusDays(1) }
             .takeWhile { it < range.endExclusive }
             .toList()
-        DemoAgenda(demoDays(days, shown, zone), today, colors, zone, padding)
+        val agenda = demoDays(days, shown, zone)
+        val pick = DemoPick(shown.firstOrNull { it.eventId.value == picked }) {
+            picked = it.eventId.value
+        }
+        DemoAgendaView(period.view, agenda, DemoLook(today, colors, zone), padding, pick)
+    }
+}
+
+/** What the tablet agenda shows beside the list: the event [picked] and how to pick one. */
+private class DemoPick(val event: EventInstance?, val onPick: (EventInstance) -> Unit)
+
+private class DemoLook(val today: LocalDate, val colors: Map<CalendarId, Int>, val zone: ZoneId)
+
+@Composable
+private fun DemoAgendaView(
+    view: CalendarView,
+    agenda: List<DemoDay>,
+    look: DemoLook,
+    padding: PaddingValues,
+    pick: DemoPick
+) {
+    if (view == CalendarView.AGENDA && currentAdaptiveLayout().agendaTwoPane) {
+        // The wide Agenda: the list and, beside it, the event picked (a stand-in for T19).
+        AgendaMasterDetail(
+            selected = pick.event?.let { EventRef.of(it) },
+            list = { list ->
+                DemoAgenda(
+                    agenda,
+                    look.today,
+                    look.colors,
+                    look.zone,
+                    padding,
+                    list,
+                    onOpen = pick.onPick
+                )
+            },
+            detail = { Text(pick.event?.title.orEmpty(), Modifier.padding(Spacing.xl)) },
+            modifier = Modifier.padding(padding)
+        )
+    } else {
+        DemoAgenda(agenda, look.today, look.colors, look.zone, padding)
     }
 }

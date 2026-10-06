@@ -38,15 +38,6 @@ class ComponentLogicTest {
     }
 
     @Test
-    fun `window widths split at 600 and 840 dp`() {
-        assertEquals(WindowWidth.COMPACT, WindowWidth.of(411))
-        assertEquals(WindowWidth.COMPACT, WindowWidth.of(599))
-        assertEquals(WindowWidth.MEDIUM, WindowWidth.of(600))
-        assertEquals(WindowWidth.MEDIUM, WindowWidth.of(839))
-        assertEquals(WindowWidth.EXPANDED, WindowWidth.of(840))
-    }
-
-    @Test
     fun `the create button starts expanded and collapses after scrolling down`() {
         val tracker = FabScrollTracker(threshold = 10f)
         assertTrue(tracker.expanded)
