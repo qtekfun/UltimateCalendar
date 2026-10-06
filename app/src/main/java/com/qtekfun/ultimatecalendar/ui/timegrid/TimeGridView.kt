@@ -21,9 +21,11 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.qtekfun.ultimatecalendar.domain.navigation.CalendarView
 import com.qtekfun.ultimatecalendar.domain.navigation.DateRange
 import com.qtekfun.ultimatecalendar.domain.navigation.PeriodPages
 import com.qtekfun.ultimatecalendar.domain.navigation.ViewPeriods
+import com.qtekfun.ultimatecalendar.domain.navigation.WeekNumbers
 import com.qtekfun.ultimatecalendar.domain.timegrid.TimeScale
 import com.qtekfun.ultimatecalendar.ui.shell.ShellActions
 import com.qtekfun.ultimatecalendar.ui.shell.ShellUiState
@@ -32,6 +34,9 @@ import kotlinx.coroutines.flow.Flow
 
 private const val FIRST_HOUR_SHOWN = 7
 
+/** Rows of all-day events the Week header shows before the rest hide behind "+N". */
+private const val WEEK_ALL_DAY_ROWS = 3
+
 /** Where the pages of a grid get their events: the ViewModel, or fixed data in previews. */
 internal interface TimeGridPages {
     fun initial(range: DateRange): TimeGridState
@@ -39,7 +44,7 @@ internal interface TimeGridPages {
     fun page(range: DateRange): Flow<TimeGridState>
 }
 
-/** Day and 3 days inside the shell, fed by [TimeGridViewModel] (RF-03). */
+/** Day, 3 days and Week inside the shell, fed by [TimeGridViewModel] (RF-03). */
 @Composable
 fun TimeGridScreen(
     state: ShellUiState,
@@ -66,9 +71,9 @@ fun TimeGridScreen(
 }
 
 /**
- * A swipeable run of day-grid pages. [date] is the shell's selected date: the pager follows it
- * (Today, the date picker) and reports the date it settles on after a swipe through
- * [onSelectDate]. The vertical scroll is shared, so every page shows the same hours.
+ * A swipeable run of day-grid pages (a day, three days or a week). [date] is the shell's selected
+ * date: the pager follows it (Today, the date picker) and reports the date it settles on after a
+ * swipe through [onSelectDate]. The vertical scroll is shared, so every page shows the same hours.
  */
 @Composable
 internal fun TimeGridView(
@@ -106,7 +111,24 @@ internal fun TimeGridView(
             val range = ViewPeriods.range(view, periods.dateAt(page), state.firstDayOfWeek)
             val content by remember(range) { pages.page(range) }
                 .collectAsStateWithLifecycle(remember(range) { pages.initial(range) })
-            TimeGridPageContent(content.page, content.failed, now, scroll, callbacks)
+            val options = if (view == CalendarView.WEEK) {
+                GridOptions(
+                    weekNumber = range.start
+                        .takeIf { state.showWeekNumbers }
+                        ?.let { WeekNumbers.of(it, state.firstDayOfWeek) },
+                    allDayRowLimit = WEEK_ALL_DAY_ROWS
+                )
+            } else {
+                GridOptions()
+            }
+            TimeGridPageContent(
+                content.page,
+                content.failed,
+                now,
+                scroll,
+                callbacks,
+                options = options
+            )
         }
     }
 }

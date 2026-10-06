@@ -92,11 +92,12 @@ fun ShellContent(
     content: @Composable (PeriodKey, PaddingValues) -> Unit = { period, padding ->
         val modifier = Modifier.fillMaxSize().padding(padding)
         when (period.view) {
-            CalendarView.DAY, CalendarView.THREE_DAYS -> TimeGridScreen(state, actions, modifier)
+            CalendarView.DAY, CalendarView.THREE_DAYS, CalendarView.WEEK ->
+                TimeGridScreen(state, actions, modifier)
 
             CalendarView.AGENDA -> AgendaScreen(state, actions, modifier)
 
-            // T16 and T17 replace this with the Week and Month views.
+            // T17 replaces this with the Month view.
             else -> ViewPlaceholder(period, state.firstDayOfWeek, actions, modifier)
         }
     }
