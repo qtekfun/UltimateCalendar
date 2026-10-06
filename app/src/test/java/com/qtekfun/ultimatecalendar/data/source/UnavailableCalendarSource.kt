@@ -19,10 +19,7 @@ import java.time.Instant
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 
-/**
- * Stands in while no real source is bound in Hilt (until T05): every call fails with
- * [CalendarError.SourceFailure] and nothing ever changes. See `InvitationCheckModule`.
- */
+/** A source whose every call fails with [CalendarError.SourceFailure]; nothing ever changes. */
 @Suppress("TooManyFunctions")
 object UnavailableCalendarSource : CalendarSource {
     override val changes: Flow<Unit> = emptyFlow()

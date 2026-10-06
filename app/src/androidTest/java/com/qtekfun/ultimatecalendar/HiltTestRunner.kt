@@ -9,17 +9,51 @@ import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import androidx.test.runner.AndroidJUnitRunner
+import androidx.work.Configuration
+import androidx.work.ListenableWorker
+import androidx.work.WorkerFactory
+import androidx.work.WorkerParameters
+import com.qtekfun.ultimatecalendar.sync.InvitationWorkerFactory
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.android.testing.CustomTestApplication
+import dagger.hilt.components.SingletonComponent
 
 /**
  * Base of the test app. Its screens show over the lock screen and wake it, so the tests also run
  * on a locked phone.
  */
-open class TestAppBase : Application() {
+open class TestAppBase :
+    Application(),
+    Configuration.Provider {
+    // WorkManager starts on demand, like in the real app (the manifest removes its initializer).
+    // The factory looks the app's own one up when a worker is made, in the graph of the test that
+    // is running, because WorkManager outlives the graph of the test that first used it.
+    override val workManagerConfiguration: Configuration
+        get() = Configuration.Builder().setWorkerFactory(TestWorkerFactory(this)).build()
+
     override fun onCreate() {
         super.onCreate()
         registerActivityLifecycleCallbacks(OverLockScreen)
     }
+}
+
+/** The app's worker factory, as the running test's graph has it. */
+@EntryPoint
+@InstallIn(SingletonComponent::class)
+interface TestWorkers {
+    fun factory(): InvitationWorkerFactory
+}
+
+private class TestWorkerFactory(private val app: Application) : WorkerFactory() {
+    override fun createWorker(
+        appContext: Context,
+        workerClassName: String,
+        workerParameters: WorkerParameters
+    ): ListenableWorker? = EntryPointAccessors.fromApplication(app, TestWorkers::class.java)
+        .factory()
+        .createWorker(appContext, workerClassName, workerParameters)
 }
 
 private object OverLockScreen : Application.ActivityLifecycleCallbacks {

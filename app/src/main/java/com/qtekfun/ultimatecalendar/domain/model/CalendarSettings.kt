@@ -21,4 +21,27 @@ data class CalendarSettings(
         color = color ?: calendar.color,
         visible = visible ?: calendar.visible
     )
+
+    /**
+     * The overrides after the user edited the look of a calendar in the drawer (RF-02). A name
+     * or color left as it was shown keeps what was stored (the source's own when nothing was);
+     * a blank name or a null [pickedColor] goes back to the source's.
+     */
+    fun withLook(
+        shownName: String,
+        typedName: String,
+        shownColor: Int,
+        pickedColor: Int?
+    ): CalendarSettings = copy(
+        displayName = when {
+            typedName.isBlank() -> null
+            typedName.trim() == shownName -> displayName
+            else -> typedName.trim()
+        },
+        color = when (pickedColor) {
+            null -> null
+            shownColor -> color
+            else -> pickedColor
+        }
+    )
 }

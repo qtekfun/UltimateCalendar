@@ -40,6 +40,7 @@ import com.qtekfun.ultimatecalendar.domain.firstrun.SetupItem
 import com.qtekfun.ultimatecalendar.domain.firstrun.SetupStatus
 import com.qtekfun.ultimatecalendar.domain.firstrun.SetupStep
 import com.qtekfun.ultimatecalendar.ui.adaptive.ReadingPane
+import com.qtekfun.ultimatecalendar.ui.settings.RestoreBackupButton
 
 /**
  * The first-run wizard and the reliability steps (RF-01, RF-08): each step says why it is asked
@@ -76,6 +77,12 @@ fun ReliabilityWizardScreen(
                         StepCard(item, current, viewModel, onConnectCalDav)
                     }
                 }
+                // A new phone: bring the settings of the old one (RF-11).
+                Text(
+                    stringResource(R.string.wizard_restore_hint),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                RestoreBackupButton()
                 Button(onClick = onDone, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(R.string.wizard_done))
                 }

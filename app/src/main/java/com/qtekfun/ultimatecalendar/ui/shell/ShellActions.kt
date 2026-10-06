@@ -4,6 +4,7 @@
 package com.qtekfun.ultimatecalendar.ui.shell
 
 import com.qtekfun.ultimatecalendar.domain.model.CalendarId
+import com.qtekfun.ultimatecalendar.domain.model.CalendarInfo
 import com.qtekfun.ultimatecalendar.domain.model.EventInstance
 import com.qtekfun.ultimatecalendar.domain.navigation.CalendarView
 import java.time.LocalDate
@@ -17,11 +18,14 @@ data class ShellActions(
     val onPrevious: () -> Unit = {},
     val onNext: () -> Unit = {},
     val onSetCalendarVisible: (CalendarId, Boolean) -> Unit = { _, _ -> },
+    /** Saves the name and color the user gave a calendar on this phone (RF-02). */
+    val onSaveCalendarLook: (CalendarInfo, String, Int?) -> Unit = { _, _, _ -> },
     val onSearch: () -> Unit = {},
     val onInvitations: () -> Unit = {},
     val onNewEvent: () -> Unit = {},
     val onSettings: () -> Unit = {},
-    val onHelp: () -> Unit = {},
+    /** Opens the setup assistant again (RF-01, RF-10). */
+    val onSetup: () -> Unit = {},
     /** A tap on an event: T19 opens its detail. */
     val onOpenEvent: (EventInstance) -> Unit = {},
     /** A tap on an empty slot: T20 starts a new event at that wall-clock time. */

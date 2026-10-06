@@ -5,13 +5,16 @@ package com.qtekfun.ultimatecalendar.ui.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.qtekfun.ultimatecalendar.data.calendar.CalendarRepository
 import com.qtekfun.ultimatecalendar.data.settings.AppSettings
 import com.qtekfun.ultimatecalendar.data.settings.SettingsRepository
+import com.qtekfun.ultimatecalendar.domain.model.CalendarInfo
 import com.qtekfun.ultimatecalendar.domain.settings.SettingsRules
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 /**
@@ -19,14 +22,22 @@ import kotlinx.coroutines.flow.stateIn
  * repository and [SettingsRules], so there is nothing to compute here.
  */
 @HiltViewModel
-class SettingsViewModel @Inject constructor(private val repository: SettingsRepository) :
-    ViewModel() {
+class SettingsViewModel @Inject constructor(
+    private val repository: SettingsRepository,
+    calendarRepository: CalendarRepository
+) : ViewModel() {
     val settings: StateFlow<AppSettings> =
         repository.settings.stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(STOP_MS),
             repository.current()
         )
+
+    /** The calendars a default for new events can be picked from (RF-10). */
+    val calendars: StateFlow<List<CalendarInfo>> =
+        calendarRepository.calendars()
+            .map { it.getOrNull().orEmpty() }
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_MS), emptyList())
 
     fun update(transform: (AppSettings) -> AppSettings) = repository.update(transform)
 

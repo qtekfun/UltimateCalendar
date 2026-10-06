@@ -72,7 +72,8 @@ import kotlinx.coroutines.launch
 fun ShellScreen(
     navigation: ShellActions,
     viewModel: ShellViewModel = viewModel(),
-    detailPane: DetailPane? = null
+    detailPane: DetailPane? = null,
+    looks: CalendarLookViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     ShellContent(
@@ -86,7 +87,8 @@ fun ShellScreen(
             onToday = viewModel::goToToday,
             onPrevious = viewModel::previous,
             onNext = viewModel::next,
-            onSetCalendarVisible = viewModel::setCalendarVisible
+            onSetCalendarVisible = viewModel::setCalendarVisible,
+            onSaveCalendarLook = looks::save
         ),
         detailPane = detailPane
     )

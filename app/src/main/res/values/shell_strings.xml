@@ -16,7 +16,6 @@
     <string name="shell_back">Back</string>
     <string name="shell_ok">OK</string>
     <string name="shell_cancel">Cancel</string>
-    <string name="shell_coming_soon">Coming soon</string>
     <string name="shell_view_agenda">Agenda</string>
     <string name="shell_view_day">Day</string>
     <string name="shell_view_three_days">3 days</string>
@@ -26,4 +25,10 @@
     <string name="shell_calendars_none">No calendars yet</string>
     <string name="shell_calendars_failed">Calendars could not be read</string>
     <string name="shell_settings">Settings</string>
+    <string name="cal_look_edit">Customize %1$s</string>
+    <string name="cal_look_title">Name and color on this phone</string>
+    <string name="cal_look_hint">Only changes how the calendar looks here: the account is not touched.</string>
+    <string name="cal_look_name">Name</string>
+    <string name="cal_look_color_default">Original color</string>
+    <string name="cal_look_save">Save</string>
 </resources>

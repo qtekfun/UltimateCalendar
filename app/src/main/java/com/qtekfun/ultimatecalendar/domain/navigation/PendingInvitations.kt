@@ -6,8 +6,8 @@ package com.qtekfun.ultimatecalendar.domain.navigation
 import kotlinx.coroutines.flow.Flow
 
 /**
- * How many invitations wait for an answer, for the badge on the tray icon (RF-06). Bound to an
- * empty source until T21 connects the `InvitationDetector`.
+ * How many invitations wait for an answer, for the badge on the tray icon (RF-06): what the
+ * invitation tray lists.
  */
 fun interface PendingInvitations {
     fun count(): Flow<Int>

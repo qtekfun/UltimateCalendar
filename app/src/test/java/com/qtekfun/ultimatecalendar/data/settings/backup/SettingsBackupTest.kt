@@ -205,7 +205,7 @@ class SettingsBackupTest {
         assertEquals(ThemeMode.DARK, settings.theme)
         assertEquals(FirstDayOfWeek.LOCALE, settings.firstDayOfWeek)
         assertEquals(InitialView.MONTH, settings.initialView)
-        assertEquals(InviteCheckInterval.EVERY_30, settings.inviteCheck)
+        assertEquals(InviteCheckInterval.EVERY_15, settings.inviteCheck)
         assertTrue(settings.amoled)
     }
 

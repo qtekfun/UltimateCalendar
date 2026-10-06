@@ -17,6 +17,7 @@ import com.qtekfun.ultimatecalendar.domain.model.CalendarId
 import com.qtekfun.ultimatecalendar.domain.model.CalendarInfo
 import com.qtekfun.ultimatecalendar.domain.navigation.CalendarView
 import com.qtekfun.ultimatecalendar.domain.navigation.DateRange
+import com.qtekfun.ultimatecalendar.domain.navigation.NavigationSettings
 import com.qtekfun.ultimatecalendar.domain.navigation.PendingInvitations
 import com.qtekfun.ultimatecalendar.domain.result.CalendarError
 import com.qtekfun.ultimatecalendar.domain.result.CalendarResult
@@ -61,6 +62,7 @@ class ShellViewModelTest {
     private lateinit var repository: CalendarRepository
     private val invitations = MutableStateFlow(0)
     private var firstDay = DayOfWeek.MONDAY
+    private var initial = CalendarView.WEEK
     private val main = UnconfinedTestDispatcher()
 
     @BeforeEach
@@ -91,7 +93,11 @@ class ShellViewModelTest {
         PendingInvitations { invitations },
         clock,
         SystemZone { madrid },
-        { firstDay }
+        object : NavigationSettings {
+            override fun current() = firstDay
+
+            override fun initial() = initial
+        }
     )
 
     /** The first state from here on that [matches]: the calendars load on another thread. */
@@ -123,6 +129,21 @@ class ShellViewModelTest {
                 state.range
             )
             assertEquals(DayOfWeek.MONDAY, state.firstDayOfWeek)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `it opens on the view chosen in Settings, unless one was already selected`() = runTest {
+        initial = CalendarView.MONTH
+
+        viewModel().state.test {
+            assertEquals(CalendarView.MONTH, awaitItem().view)
+            cancelAndIgnoreRemainingEvents()
+        }
+        val saved = SavedStateHandle(mapOf("view" to "DAY"))
+        viewModel(saved).state.test {
+            assertEquals(CalendarView.DAY, awaitItem().view)
             cancelAndIgnoreRemainingEvents()
         }
     }

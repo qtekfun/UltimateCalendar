@@ -177,4 +177,8 @@
         <item quantity="many">Llegó a las %1$s, con %2$d de minutos de retraso.</item>
         <item quantity="other">Llegó a las %1$s, con %2$d minutos de retraso.</item>
     </plurals>
+    <string name="settings_setup">Configuración inicial</string>
+    <string name="settings_setup_open">Asistente de configuración</string>
+    <string name="settings_setup_hint">Revisa los permisos, las restricciones de batería y los ajustes del teléfono para que los avisos lleguen a su hora.</string>
+    <string name="wizard_restore_hint">¿Vienes de otro teléfono? Restaura la copia de seguridad que hiciste allí y te ahorras los ajustes.</string>
 </resources>

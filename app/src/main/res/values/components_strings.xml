@@ -17,7 +17,7 @@
     <string name="cal_account_collapse">Hide calendars of %1$s</string>
     <string name="cal_account_expand">Show calendars of %1$s</string>
     <string name="shell_create">Create</string>
-    <string name="shell_help">Help</string>
+    <string name="shell_setup">Setup assistant</string>
     <string name="shell_switch_view">Change view, now %1$s</string>
     <string name="shell_week_number">Week %1$d</string>
     <string name="cal_speech_calendar">calendar %1$s</string>

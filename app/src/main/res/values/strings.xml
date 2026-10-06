@@ -178,4 +178,8 @@
         <item quantity="one">It arrived at %1$s, %2$d minute late.</item>
         <item quantity="other">It arrived at %1$s, %2$d minutes late.</item>
     </plurals>
+    <string name="settings_setup">Setup</string>
+    <string name="settings_setup_open">Setup assistant</string>
+    <string name="settings_setup_hint">Check permissions, battery restrictions and your phone\u2019s own settings so reminders arrive on time.</string>
+    <string name="wizard_restore_hint">Coming from another phone? Restore the backup you made there and skip the settings.</string>
 </resources>

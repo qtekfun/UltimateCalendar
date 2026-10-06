@@ -11,7 +11,6 @@ import com.qtekfun.ultimatecalendar.data.invitations.SourceInvitationResponses
 import com.qtekfun.ultimatecalendar.data.settings.RepositoryInvitationCheckSettings
 import com.qtekfun.ultimatecalendar.data.settings.SettingsRepository
 import com.qtekfun.ultimatecalendar.data.source.CalendarSource
-import com.qtekfun.ultimatecalendar.data.source.UnavailableCalendarSource
 import com.qtekfun.ultimatecalendar.data.sync.AccountSyncTrigger
 import com.qtekfun.ultimatecalendar.data.sync.AndroidSyncEnvironment
 import com.qtekfun.ultimatecalendar.data.sync.CompositeSyncRequester
@@ -32,14 +31,12 @@ import com.qtekfun.ultimatecalendar.sync.InvitationCheckSettings
 import com.qtekfun.ultimatecalendar.sync.InvitationChecker
 import com.qtekfun.ultimatecalendar.sync.WorkManagerInvitationScheduler
 import dagger.Binds
-import dagger.BindsOptionalOf
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import java.time.Clock
-import java.util.Optional
 import javax.inject.Named
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
@@ -76,14 +73,6 @@ interface InvitationCheckBindingsModule {
 
     @Binds
     fun scheduler(scheduler: WorkManagerInvitationScheduler): InvitationCheckScheduler
-
-    /**
-     * Present once T05 binds a [CalendarSource]; until then the graph still compiles, and the
-     * check finds [UnavailableCalendarSource]. T05 may then inject the source straight into
-     * `InvitationChecker` and drop this.
-     */
-    @BindsOptionalOf
-    fun calendarSource(): CalendarSource
 }
 
 @Module
@@ -105,7 +94,7 @@ object InvitationCheckModule {
     @Singleton
     @Suppress("LongParameterList")
     fun checker(
-        source: Optional<CalendarSource>,
+        source: CalendarSource,
         syncRequester: SourceSyncRequester,
         notified: NotifiedInvitations,
         notifier: InvitationNotifier,
@@ -114,7 +103,7 @@ object InvitationCheckModule {
         @IoDispatcher io: CoroutineDispatcher,
         reReminders: InvitationReReminders
     ): InvitationChecker = InvitationChecker(
-        source.orElse(UnavailableCalendarSource),
+        source,
         syncRequester,
         notified,
         notifier,
