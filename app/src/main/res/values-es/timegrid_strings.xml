@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 UltimateCalendar contributors
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<resources>
+    <string name="timegrid_untitled">(Sin título)</string>
+    <string name="timegrid_all_day">Todo el día</string>
+    <string name="timegrid_time_range">de %1$s a %2$s</string>
+    <string name="timegrid_pending">Invitación sin responder</string>
+    <string name="timegrid_other_zone">En la zona horaria del evento: %1$s</string>
+    <string name="timegrid_now">Hora actual, %1$s</string>
+    <string name="timegrid_failed">No se pudieron leer los eventos</string>
+    <string name="timegrid_event_detail">Evento</string>
+    <string name="timegrid_day_today">%1$s, hoy</string>
+</resources>

@@ -5,6 +5,8 @@ package com.qtekfun.ultimatecalendar.domain.recurrence
 
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 /** Reads and writes RRULE values. */
@@ -22,6 +24,7 @@ object RecurrenceRules {
     private const val PARTS = "FREQ INTERVAL BYDAY BYMONTHDAY BYMONTH BYSETPOS COUNT UNTIL WKST"
     private val KNOWN = PARTS.split(' ').toSet()
     private val WEEKDAY = Regex("([+-]?\\d{1,2})?(MO|TU|WE|TH|FR|SA|SU)")
+    private val BASIC_MOMENT = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss'Z'")
     private const val DATE_LENGTH = 8
 
     /** The rule, or null when it uses parts the app does not handle. */
@@ -41,7 +44,7 @@ object RecurrenceRules {
             byMonth = numbers(parts["BYMONTH"]),
             bySetPos = numbers(parts["BYSETPOS"]),
             count = parts["COUNT"]?.toInt()?.also { require(it > 0) },
-            until = parts["UNTIL"]?.let { LocalDate.parse(it.take(DATE_LENGTH), BASIC_DATE) },
+            until = parts["UNTIL"]?.let(::parseUntil),
             weekStart = weekStart(parts["WKST"])
         )
     }.getOrNull()
@@ -59,9 +62,21 @@ object RecurrenceRules {
         if (rule.byMonth.isNotEmpty()) add("BYMONTH=" + rule.byMonth.joinToString(","))
         if (rule.bySetPos.isNotEmpty()) add("BYSETPOS=" + rule.bySetPos.joinToString(","))
         rule.count?.let { add("COUNT=$it") }
-        rule.until?.let { add("UNTIL=" + BASIC_DATE.format(it)) }
+        rule.until?.let { add("UNTIL=" + formatUntil(it)) }
         if (rule.weekStart != DayOfWeek.MONDAY) add("WKST=" + code(rule.weekStart))
     }.joinToString(";")
+
+    /** `20270131` is a day; `20270131T225959Z` a UTC moment; a floating time counts as its day. */
+    private fun parseUntil(text: String): Until = if (text.endsWith('Z')) {
+        Until.Moment(LocalDateTime.parse(text, BASIC_MOMENT).toInstant(ZoneOffset.UTC))
+    } else {
+        Until.Day(LocalDate.parse(text.take(DATE_LENGTH), BASIC_DATE))
+    }
+
+    private fun formatUntil(until: Until): String = when (until) {
+        is Until.Day -> BASIC_DATE.format(until.date)
+        is Until.Moment -> BASIC_MOMENT.format(until.at.atOffset(ZoneOffset.UTC))
+    }
 
     private fun weekStart(code: String?): DayOfWeek = if (code ==
         null

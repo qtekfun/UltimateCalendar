@@ -6,6 +6,15 @@
 <resources>
     <string name="app_name" translatable="false">UltimateCalendar</string>
     <string name="reminder_channel">Event reminders</string>
+    <string name="invitations_channel">New invitations</string>
+    <string name="changes_channel">Event changes</string>
+    <string name="reminder_action_join">Join</string>
+    <string name="reminder_action_map">Map</string>
+    <string name="reminder_action_snooze">Snooze</string>
+    <string name="reminder_action_dismiss">Dismiss</string>
+    <string name="reminder_snooze_5">5 min</string>
+    <string name="reminder_snooze_15">15 min</string>
+    <string name="reminder_snooze_60">1 hour</string>
     <string name="reminder_text_timed">Starts %1$s</string>
     <string name="reminder_text_all_day">All day</string>
     <string name="reminder_missed_text">%1$s · missed at %2$s</string>
@@ -13,4 +22,153 @@
     <string name="keep_alive_title">Reminders protected</string>
     <string name="keep_alive_text">UltimateCalendar stays running so your reminders arrive on time. It does not use the network.</string>
     <string name="keep_alive_turn_off">Turn off</string>
+    <!-- Settings (RF-10) and encrypted backup (RF-11) -->
+    <string name="settings">Settings</string>
+    <string name="back">Back</string>
+    <string name="cancel">Cancel</string>
+    <string name="settings_version">Version %1$s</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_theme">Theme</string>
+    <string name="theme_system">System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="settings_amoled">Pure black</string>
+    <string name="settings_amoled_hint">Black backgrounds in dark mode, for OLED screens.</string>
+    <string name="settings_dynamic_color">Wallpaper colors</string>
+    <string name="settings_calendar">Calendar</string>
+    <string name="settings_first_day">First day of the week</string>
+    <string name="first_day_locale">Language default</string>
+    <string name="first_day_saturday">Saturday</string>
+    <string name="first_day_sunday">Sunday</string>
+    <string name="first_day_monday">Monday</string>
+    <string name="settings_initial_view">Opening view</string>
+    <string name="view_agenda">Agenda</string>
+    <string name="view_day">Day</string>
+    <string name="view_week">Week</string>
+    <string name="view_month">Month</string>
+    <string name="settings_default_calendar">Default calendar</string>
+    <string name="settings_default_calendar_auto">First writable</string>
+    <string name="settings_default_duration">Default duration</string>
+    <plurals name="duration_minutes">
+        <item quantity="one">%d minute</item>
+        <item quantity="many">%d de minutes</item>
+        <item quantity="other">%d minutes</item>
+    </plurals>
+    <string name="settings_reminders">Reminders</string>
+    <string name="settings_default_reminders">Default reminders</string>
+    <string name="settings_default_all_day_reminders">Default reminders for all-day events</string>
+    <string name="settings_add_reminder">Add reminder</string>
+    <string name="settings_remove_reminder">Remove reminder: %1$s</string>
+    <string name="reminder_offset_at_start">At the start</string>
+    <plurals name="reminder_offset_minutes">
+        <item quantity="one">%d minute before</item>
+        <item quantity="many">%d de minutes before</item>
+        <item quantity="other">%d minutes before</item>
+    </plurals>
+    <plurals name="reminder_offset_hours">
+        <item quantity="one">%d hour before</item>
+        <item quantity="many">%d de hours before</item>
+        <item quantity="other">%d hours before</item>
+    </plurals>
+    <plurals name="reminder_offset_days">
+        <item quantity="one">%d day before</item>
+        <item quantity="many">%d de days before</item>
+        <item quantity="other">%d days before</item>
+    </plurals>
+    <plurals name="reminder_offset_weeks">
+        <item quantity="one">%d week before</item>
+        <item quantity="many">%d de weeks before</item>
+        <item quantity="other">%d weeks before</item>
+    </plurals>
+    <string name="settings_all_day_time">All-day reminder time</string>
+    <string name="settings_alarm_mode">Alarm mode</string>
+    <string name="settings_alarm_mode_hint">Sets reminders like an alarm clock, which battery savers do not delay.</string>
+    <string name="settings_robust_mode">Robust mode</string>
+    <string name="settings_robust_mode_hint">Keeps the app running with a fixed notification, for phones that stop apps in the background.</string>
+    <string name="settings_missed_window">Missed reminders</string>
+    <string name="settings_missed_window_hint">How far back reminders the system did not show are brought back.</string>
+    <string name="settings_missed_window_off">Never</string>
+    <plurals name="settings_missed_window_hours">
+        <item quantity="one">%d hour</item>
+        <item quantity="many">%d de hours</item>
+        <item quantity="other">%d hours</item>
+    </plurals>
+    <string name="settings_invitations">Invitations</string>
+    <string name="settings_invite_check">Look for invitations</string>
+    <plurals name="invite_check_every">
+        <item quantity="one">Every %d minute</item>
+        <item quantity="many">Every %d de minutes</item>
+        <item quantity="other">Every %d minutes</item>
+    </plurals>
+    <string name="invite_check_manual">Only when I ask</string>
+    <string name="settings_own_emails">My other email addresses</string>
+    <string name="settings_own_emails_hint">Invitations sent to these addresses count as sent to you.</string>
+    <string name="settings_own_email_label">Email address</string>
+    <string name="settings_own_email_invalid">Not a valid email address</string>
+    <string name="settings_add_email">Add address</string>
+    <string name="settings_remove_email">Remove address: %1$s</string>
+    <string name="settings_notify_changes">Notify of changes</string>
+    <string name="settings_notify_cancellations">Notify of cancellations</string>
+    <string name="settings_backup">Backup</string>
+    <string name="settings_backup_hint">Settings are saved to a file encrypted with a passphrase, to bring the same setup to another phone.</string>
+    <string name="backup_export">Export settings</string>
+    <string name="backup_restore">Restore settings</string>
+    <string name="backup_file_name" translatable="false">ultimatecalendar-settings.ucbackup</string>
+    <string name="backup_passphrase">Passphrase</string>
+    <string name="backup_passphrase_repeat">Repeat the passphrase</string>
+    <plurals name="backup_passphrase_hint">
+        <item quantity="one">At least %d character. Without it the file cannot be opened, and it cannot be recovered.</item>
+        <item quantity="many">At least %d de characters. Without it the file cannot be opened, and it cannot be recovered.</item>
+        <item quantity="other">At least %d characters. Without it the file cannot be opened, and it cannot be recovered.</item>
+    </plurals>
+    <string name="backup_restore_title">Passphrase of the backup</string>
+    <string name="backup_restore_text">Enter the passphrase chosen when the settings were exported.</string>
+    <string name="backup_exported">Settings exported</string>
+    <string name="backup_failed">The file could not be saved</string>
+    <string name="backup_restored">Settings restored</string>
+    <string name="backup_wrong_passphrase">Wrong passphrase, or the file was altered</string>
+    <string name="backup_invalid">This is not a backup of UltimateCalendar</string>
+    <string name="backup_newer_version">This backup comes from a newer version of the app. Update it first.</string>
+
+    <string name="wizard_title">Set up UltimateCalendar</string>
+    <string name="wizard_intro">Your events come from the calendars on this phone, and their reminders must arrive on time even when the phone saves battery. These steps take a minute, and you can come back to them later.</string>
+    <string name="wizard_allowed">Allowed</string>
+    <string name="wizard_allow">Allow</string>
+    <string name="wizard_calendar_title">Calendar access</string>
+    <string name="wizard_calendar_why">UltimateCalendar shows and edits the calendars of the accounts on this phone. Nothing is sent anywhere by the app.</string>
+    <string name="wizard_calendar_blocked">The system no longer shows its dialog. Open the app settings › Permissions › Calendar and allow it.</string>
+    <string name="wizard_account_title">Add an account with calendars</string>
+    <string name="wizard_account_why">No calendars were found on this phone. For Google Calendar, add your Google account in the phone’s Settings › Accounts and make sure Calendar sync is on. For Nextcloud, Radicale or any CalDAV server, install DAVx5 and add the account there. Come back when done: this step disappears as soon as a calendar shows up.</string>
+    <string name="wizard_open_accounts">Open accounts</string>
+    <string name="wizard_notifications_title">Notifications</string>
+    <string name="wizard_notifications_why">Without them no reminder or invitation can be shown.</string>
+    <string name="wizard_notifications_blocked">The system no longer shows its dialog. Open the notification settings and allow them.</string>
+    <string name="wizard_open_notification_settings">Open notification settings</string>
+    <string name="wizard_exact_title">Exact alarms</string>
+    <string name="wizard_exact_why">So reminders ring at their minute, not when the system feels like it.</string>
+    <string name="wizard_battery_title">No battery restrictions</string>
+    <string name="wizard_battery_why">Battery savers delay alarms with the screen off. UltimateCalendar only wakes up for your reminders.</string>
+    <string name="wizard_maker">Your phone’s own settings</string>
+    <string name="wizard_maker_coloros">ColorOS (OPPO, OnePlus, realme): open the app settings › Battery usage and turn on “Allow background activity”, “Allow auto launch” and “Allow launch by other apps”. Then, in Recents, lock UltimateCalendar (padlock) so cleaning does not close it.</string>
+    <string name="wizard_maker_xiaomi">MIUI / HyperOS: in the app settings, turn on Autostart and set Battery saver to “No restrictions”.</string>
+    <string name="wizard_maker_huawei">EMUI / HarmonyOS (Huawei, Honor): in Battery › App launch, set UltimateCalendar to “Manage manually” and turn on the three options.</string>
+    <string name="wizard_maker_samsung">One UI: in Battery, choose “Unrestricted”, and make sure the app is not in “Sleeping apps”.</string>
+    <string name="wizard_maker_vivo">Funtouch OS / OriginOS: in i Manager › App manager › Autostart, turn on UltimateCalendar; in Battery › Background power consumption, allow it. Then, in Recents, lock the app so cleaning does not close it.</string>
+    <string name="wizard_maker_other">If reminders still arrive late, check the app’s battery settings and allow it to run in the background.</string>
+    <string name="wizard_open_maker_settings">Open phone settings</string>
+    <string name="wizard_other_title">Other calendar apps</string>
+    <string name="wizard_other_why">These apps on your phone can remind you of the same events, so each reminder would ring twice. Open each one’s notification settings and turn off its event reminders; UltimateCalendar reminds you instead.</string>
+    <string name="wizard_other_open">Open notifications of %1$s</string>
+    <string name="wizard_test_title">Test reminder</string>
+    <string name="wizard_test_why">A real reminder, set like any other, arrives in one minute. If it is late or does not come, review the steps above.</string>
+    <string name="wizard_test_button">Send a test reminder</string>
+    <string name="wizard_test_notification">Test reminder</string>
+    <string name="wizard_done">Done</string>
+    <string name="test_waiting">Set for %1$s. Leave the app if you like and wait for it…</string>
+    <string name="test_on_time">It arrived at %1$s, on time.</string>
+    <string name="test_missing">It did not arrive (it was due at %1$s). Check the steps above.</string>
+    <plurals name="test_late">
+        <item quantity="one">It arrived at %1$s, %2$d minute late.</item>
+        <item quantity="other">It arrived at %1$s, %2$d minutes late.</item>
+    </plurals>
 </resources>

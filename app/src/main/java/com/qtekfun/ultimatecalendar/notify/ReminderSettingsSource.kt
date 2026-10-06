@@ -6,8 +6,8 @@ package com.qtekfun.ultimatecalendar.notify
 import kotlinx.coroutines.flow.Flow
 
 /**
- * Where the reminders find their settings. The settings screen (RF-10) will implement it; until
- * then [PreferencesReminderSettings] keeps the defaults and the robust mode switch.
+ * Where the reminders find their settings: the settings repository (RF-10), through
+ * [com.qtekfun.ultimatecalendar.data.settings.RepositoryReminderSettings].
  */
 interface ReminderSettingsSource {
     val settings: Flow<ReminderSettings>

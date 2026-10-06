@@ -5,7 +5,7 @@ package com.qtekfun.ultimatecalendar.notify
 
 import com.qtekfun.ultimatecalendar.domain.reminders.ReminderEventSource
 import com.qtekfun.ultimatecalendar.domain.reminders.ReminderPlanner
-import java.time.Clock
+import com.qtekfun.ultimatecalendar.domain.reminders.Snoozes
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
@@ -29,8 +29,8 @@ class ReminderCoordinator @Inject constructor(
     private val settings: ReminderSettingsSource,
     private val scheduler: ReminderScheduler,
     private val recovery: MissedReminderRecovery,
-    private val zone: SystemZone,
-    private val clock: Clock
+    private val snoozed: SnoozedReminders,
+    private val time: ReminderTime
 ) {
     private val ticks = MutableStateFlow(0)
 
@@ -44,14 +44,23 @@ class ReminderCoordinator @Inject constructor(
         scope.launch {
             combine(settings.settings, ticks) { current, _ -> current }
                 .flatMapLatest { current ->
-                    val now = clock.instant()
+                    val now = time.now()
                     events.observe(now, now.plus(ReminderPlanner.HORIZON)).map { occurrences ->
-                        ReminderPlanner.plan(
+                        val at = time.now()
+                        val planned = ReminderPlanner.plan(
                             occurrences,
                             current.allDayTime,
-                            clock.instant(),
-                            zone.current()
-                        ) to current.alarmClock
+                            at,
+                            time.zone()
+                        )
+                        // Postponed reminders ring from the same plan, so they survive a reboot.
+                        val postponed = Snoozes.resolve(
+                            snoozed.all(),
+                            occurrences,
+                            time.zone(),
+                            at
+                        )
+                        Snoozes.merge(planned, postponed.alarms) to current.alarmClock
                     }
                 }
                 .collect { (reminders, alarmClock) ->

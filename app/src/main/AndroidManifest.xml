@@ -3,11 +3,32 @@
   SPDX-FileCopyrightText: 2026 UltimateCalendar contributors
   SPDX-License-Identifier: GPL-3.0-or-later
 -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Calendar provider (T05): read and write events as a normal client. -->
+    <!-- The calendars live in the system calendar provider (RF-01). -->
     <uses-permission android:name="android.permission.READ_CALENDAR" />
     <uses-permission android:name="android.permission.WRITE_CALENDAR" />
+
+    <!--
+      Other calendar apps that raise their own reminders (RF-07): the wizard tells the user how
+      to turn those off. Only these packages are visible to the app; it never lists the rest.
+      Keep in step with OtherCalendarApps.KNOWN (a unit test checks it).
+    -->
+    <queries>
+        <package android:name="com.google.android.calendar" />
+        <package android:name="com.samsung.android.calendar" />
+        <package android:name="com.android.calendar" />
+        <package android:name="com.coloros.calendar" />
+        <package android:name="com.huawei.calendar" />
+        <package android:name="com.microsoft.office.outlook" />
+        <package android:name="ws.xsoh.etar" />
+        <package android:name="org.fossify.calendar" />
+        <package android:name="com.simplemobiletools.calendar.pro" />
+        <package android:name="me.proton.android.calendar" />
+        <package android:name="com.appgenix.bizcal" />
+        <package android:name="org.withouthat.acalendar" />
+    </queries>
 
     <!-- Reminders (RF-07, RF-08): exact alarms, granted at install on Android 13+. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
@@ -40,8 +61,26 @@
             </intent-filter>
         </activity>
 
+        <!--
+          WorkManager starts on demand with the Hilt worker factory (UltimateCalendarApp), so its
+          automatic initializer is removed.
+        -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
+        </provider>
+
         <receiver
             android:name=".notify.ReminderReceiver"
+            android:exported="false" />
+        <receiver
+            android:name=".notify.ReminderActionReceiver"
             android:exported="false" />
         <receiver
             android:name=".notify.HeartbeatReceiver"

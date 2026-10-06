@@ -7,6 +7,7 @@ import java.time.DayOfWeek.FRIDAY
 import java.time.DayOfWeek.SATURDAY
 import java.time.DayOfWeek.SUNDAY
 import java.time.DayOfWeek.TUESDAY
+import java.time.Instant
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
@@ -28,7 +29,7 @@ class RecurrenceRulesTest {
                 byMonth = listOf(3, 12),
                 bySetPos = listOf(-1),
                 count = 5,
-                until = LocalDate.parse("2027-01-31"),
+                until = Until.Moment(Instant.parse("2027-01-31T22:59:59Z")),
                 weekStart = SUNDAY
             ),
             RecurrenceRules.parse(
@@ -42,8 +43,12 @@ class RecurrenceRulesTest {
     fun `defaults`() {
         assertEquals(RecurrenceRule(Frequency.DAILY), RecurrenceRules.parse("FREQ=DAILY"))
         assertEquals(
-            LocalDate.parse("2027-01-31"),
+            Until.Day(LocalDate.parse("2027-01-31")),
             RecurrenceRules.parse("FREQ=DAILY;UNTIL=20270131")!!.until
+        )
+        assertEquals(
+            Until.Day(LocalDate.parse("2027-01-31")),
+            RecurrenceRules.parse("FREQ=DAILY;UNTIL=20270131T120000")!!.until
         )
     }
 
@@ -62,7 +67,8 @@ class RecurrenceRulesTest {
             "FREQ=DAILY",
             "FREQ=WEEKLY;BYDAY=TU,TH",
             "FREQ=MONTHLY;BYDAY=SA;BYSETPOS=-1",
-            "FREQ=MONTHLY;INTERVAL=3;BYDAY=2TU,-1FR;BYMONTHDAY=13;BYMONTH=1,7;COUNT=4;UNTIL=20270131;WKST=SU"
+            "FREQ=MONTHLY;INTERVAL=3;BYDAY=2TU,-1FR;BYMONTHDAY=13;BYMONTH=1,7;COUNT=4;UNTIL=20270131;WKST=SU",
+            "FREQ=DAILY;UNTIL=20271030T215959Z"
         ).forEach { assertEquals(it, RecurrenceRules.format(RecurrenceRules.parse(it)!!)) }
     }
 }

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 UltimateCalendar contributors
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<resources>
+    <string name="shell_open_drawer">Open menu</string>
+    <string name="shell_pick_date">Choose date, %1$s</string>
+    <string name="shell_today">Today</string>
+    <string name="shell_search">Search</string>
+    <string name="shell_invitations">Invitations</string>
+    <plurals name="shell_invitations_pending">
+        <item quantity="one">Invitations, %1$d pending</item>
+        <item quantity="other">Invitations, %1$d pending</item>
+    </plurals>
+    <string name="shell_new_event">New event</string>
+    <string name="shell_back">Back</string>
+    <string name="shell_ok">OK</string>
+    <string name="shell_cancel">Cancel</string>
+    <string name="shell_previous">Previous</string>
+    <string name="shell_next">Next</string>
+    <string name="shell_coming_soon">Coming soon</string>
+    <string name="shell_view_agenda">Agenda</string>
+    <string name="shell_view_day">Day</string>
+    <string name="shell_view_three_days">3 days</string>
+    <string name="shell_view_week">Week</string>
+    <string name="shell_view_month">Month</string>
+    <string name="shell_calendars">Calendars</string>
+    <string name="shell_calendars_none">No calendars yet</string>
+    <string name="shell_calendars_failed">Calendars could not be read</string>
+    <string name="shell_settings">Settings</string>
+</resources>
