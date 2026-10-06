@@ -27,6 +27,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -41,6 +43,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Density
 import com.qtekfun.ultimatecalendar.R
 import com.qtekfun.ultimatecalendar.domain.navigation.CalendarView
 import com.qtekfun.ultimatecalendar.ui.shell.label
@@ -184,6 +187,8 @@ internal fun CalendarTopBarPreview() {
     }
 }
 
+private const val TITLE_MAX_FONT_SCALE = 1.3f
+
 @Composable
 private fun TitleButton(
     title: String,
@@ -199,21 +204,29 @@ private fun TitleButton(
             .semantics(mergeDescendants = true) { contentDescription = description },
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column(Modifier.weight(1f, fill = false)) {
-            Text(
-                title,
-                style = MaterialTheme.calendarType.monthTitle,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.semantics { heading() }
-            )
-            if (subtitle != null) {
+        // The bar is one 64 dp row shared with up to five 48 dp buttons, so the title stops growing
+        // at 130 %; the screen reader still says all of it and the period is repeated in the view.
+        val density = LocalDensity.current
+        val capped = remember(density) {
+            Density(density.density, minOf(density.fontScale, TITLE_MAX_FONT_SCALE))
+        }
+        CompositionLocalProvider(LocalDensity provides capped) {
+            Column(Modifier.weight(1f, fill = false)) {
                 Text(
-                    subtitle,
-                    style = MaterialTheme.calendarType.caption,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1
+                    title,
+                    style = MaterialTheme.calendarType.monthTitle,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.semantics { heading() }
                 )
+                if (subtitle != null) {
+                    Text(
+                        subtitle,
+                        style = MaterialTheme.calendarType.caption,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1
+                    )
+                }
             }
         }
         Icon(Icons.Filled.ArrowDropDown, contentDescription = null, Modifier.rotate(arrowDegrees))

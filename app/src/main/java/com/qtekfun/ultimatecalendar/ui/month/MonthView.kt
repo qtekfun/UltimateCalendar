@@ -21,6 +21,7 @@ import com.qtekfun.ultimatecalendar.domain.month.MonthPages
 import com.qtekfun.ultimatecalendar.domain.navigation.CalendarView
 import com.qtekfun.ultimatecalendar.ui.shell.ShellActions
 import com.qtekfun.ultimatecalendar.ui.shell.ShellUiState
+import com.qtekfun.ultimatecalendar.ui.theme.rememberReduceMotion
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
@@ -81,6 +82,7 @@ internal fun MonthView(
     val context = remember(state.today, firstDay, state.showWeekNumbers, zone) {
         MonthContext(state.today, firstDay, state.showWeekNumbers, zone)
     }
+    val reduceMotion = rememberReduceMotion()
     key(pages) {
         val pager = rememberPagerState(pages.pageOf(date) ?: MonthPages.CENTER) {
             MonthPages.COUNT
@@ -89,7 +91,15 @@ internal fun MonthView(
             val target = pages.pageOf(date)
             when {
                 target == null -> anchor = date
-                target != pager.currentPage -> pager.animateScrollToPage(target)
+
+                target != pager.currentPage ->
+                    if (reduceMotion) {
+                        pager.scrollToPage(
+                            target
+                        )
+                    } else {
+                        pager.animateScrollToPage(target)
+                    }
             }
         }
         LaunchedEffect(pager) {

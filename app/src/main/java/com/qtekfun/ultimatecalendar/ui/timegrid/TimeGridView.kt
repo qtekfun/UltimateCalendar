@@ -114,7 +114,15 @@ internal fun TimeGridView(
                 val target = periods.pageOf(date)
                 when {
                     target == null -> anchor = date
-                    target != pager.currentPage -> pager.animateScrollToPage(target)
+
+                    target != pager.currentPage ->
+                        if (reduceMotion) {
+                            pager.scrollToPage(
+                                target
+                            )
+                        } else {
+                            pager.animateScrollToPage(target)
+                        }
                 }
             }
             LaunchedEffect(pager) {

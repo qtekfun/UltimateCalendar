@@ -21,4 +21,8 @@
     <string name="shell_switch_view">Cambiar vista, ahora %1$s</string>
     <string name="shell_week_number">Semana %1$d</string>
     <string name="cal_speech_calendar">calendario %1$s</string>
+    <string name="cal_state_visible">Visible</string>
+    <string name="cal_state_hidden">Oculto</string>
+    <string name="cal_state_expanded">Desplegado</string>
+    <string name="cal_state_collapsed">Plegado</string>
 </resources>
