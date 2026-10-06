@@ -29,4 +29,13 @@ object SettingsModule {
             SettingsRepository.LEGACY_REMINDER_PREFERENCES,
             Context.MODE_PRIVATE
         )
+
+    /** Where the first-run flag was kept before the settings repository; read once to migrate it. */
+    @Provides
+    @Named(SettingsRepository.LEGACY_FIRST_RUN_PREFERENCES)
+    fun legacyFirstRunPreferences(@ApplicationContext context: Context): SharedPreferences =
+        context.getSharedPreferences(
+            SettingsRepository.LEGACY_FIRST_RUN_PREFERENCES,
+            Context.MODE_PRIVATE
+        )
 }

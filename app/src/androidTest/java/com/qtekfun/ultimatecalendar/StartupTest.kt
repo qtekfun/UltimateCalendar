@@ -26,8 +26,10 @@ class StartupTest {
     @get:Rule(order = 1)
     val firstRun = object : ExternalResource() {
         override fun before() {
-            InstrumentationRegistry.getInstrumentation().targetContext
-                .getSharedPreferences("first_run", Context.MODE_PRIVATE).edit().clear().commit()
+            val context = InstrumentationRegistry.getInstrumentation().targetContext
+            context.getSharedPreferences("settings", Context.MODE_PRIVATE).edit()
+                .remove("first_run_done").commit()
+            context.getSharedPreferences("first_run", Context.MODE_PRIVATE).edit().clear().commit()
         }
     }
 

@@ -20,6 +20,7 @@ import java.time.Clock
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZoneOffset
+import kotlinx.coroutines.flow.MutableStateFlow
 
 /** A clock the test moves by hand. */
 class MutableClock(var now: Instant) : Clock() {
@@ -52,10 +53,16 @@ class RecordingSyncRequester : SourceSyncRequester {
 }
 
 class FixedCheckSettings(
-    var interval: CheckInterval = CheckInterval.QUARTER_HOUR,
+    interval: CheckInterval = CheckInterval.QUARTER_HOUR,
     var aliases: Set<String> = emptySet()
 ) : InvitationCheckSettings {
-    override suspend fun interval(): CheckInterval = interval
+    override val intervals = MutableStateFlow(interval)
+
+    var interval: CheckInterval
+        get() = intervals.value
+        set(value) {
+            intervals.value = value
+        }
 
     override suspend fun aliases(): Set<String> = aliases
 }

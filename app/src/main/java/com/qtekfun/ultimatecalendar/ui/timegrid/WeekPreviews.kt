@@ -38,7 +38,7 @@ private fun weekPreviewPage(): TimeGridPage {
 }
 
 @Composable
-private fun WeekPreview(weekNumber: Int? = 11) {
+internal fun WeekPreview(weekNumber: Int? = 11) {
     UltimateCalendarTheme {
         TimeGridPageContent(
             page = weekPreviewPage(),

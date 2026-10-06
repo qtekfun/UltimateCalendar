@@ -10,6 +10,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -19,6 +20,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Share
@@ -29,9 +31,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -64,6 +68,8 @@ import kotlinx.coroutines.launch
 /**
  * The event detail (RF-04) of the occurrence [ref]: what the event says, the answer buttons for
  * an invitation, and edit, delete and share in the top bar. [onEdit] opens the editor (T20).
+ * With [inPane] it sits beside the Agenda on a wide window: the bar closes it instead of going
+ * back, and it leaves the system bars to the shell around it.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -71,7 +77,8 @@ fun EventDetailScreen(
     ref: EventRef,
     onBack: () -> Unit,
     onEdit: (EventRef) -> Unit,
-    viewModel: EventDetailViewModel = viewModel()
+    viewModel: EventDetailViewModel = viewModel(),
+    inPane: Boolean = false
 ) {
     BackHandler(onBack = onBack)
     LaunchedEffect(ref) { viewModel.open(ref) }
@@ -94,7 +101,8 @@ fun EventDetailScreen(
         topBar = {
             TopAppBar(
                 title = {},
-                navigationIcon = { BackButton(onBack) },
+                windowInsets = if (inPane) WindowInsets(0) else TopAppBarDefaults.windowInsets,
+                navigationIcon = { BackButton(onBack, inPane) },
                 actions = {
                     if (loaded != null) {
                         DetailMenu(
@@ -107,6 +115,7 @@ fun EventDetailScreen(
                 }
             )
         },
+        contentWindowInsets = if (inPane) WindowInsets(0) else ScaffoldDefaults.contentWindowInsets,
         snackbarHost = { CalendarSnackbarHost(snackbar) }
     ) { padding ->
         Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.TopCenter) {
@@ -142,7 +151,7 @@ private fun Loaded(
     val words = remember(configuration, resources) {
         DetailWords(ResourceWords(resources), configuration.locales[0])
     }
-    Column(Modifier.widthIn(max = Dimens.contentMaxWidth).fillMaxWidth()) {
+    Column(Modifier.widthIn(max = Dimens.readingMaxWidth).fillMaxWidth()) {
         if (state.deleting) LinearProgressIndicator(Modifier.fillMaxWidth())
         DetailBody(
             state.detail,
@@ -155,12 +164,16 @@ private fun Loaded(
 }
 
 @Composable
-private fun BackButton(onBack: () -> Unit) {
+private fun BackButton(onBack: () -> Unit, inPane: Boolean) {
     IconButton(onClick = onBack) {
-        Icon(
-            Icons.AutoMirrored.Filled.ArrowBack,
-            contentDescription = stringResource(R.string.shell_back)
-        )
+        if (inPane) {
+            Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.detail_close))
+        } else {
+            Icon(
+                Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = stringResource(R.string.shell_back)
+            )
+        }
     }
 }
 

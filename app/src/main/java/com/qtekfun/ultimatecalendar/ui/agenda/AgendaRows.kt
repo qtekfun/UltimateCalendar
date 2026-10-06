@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
@@ -26,6 +27,8 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextOverflow
@@ -104,7 +107,8 @@ internal fun AgendaEventRow(
     entry: AgendaEntry,
     zone: ZoneId,
     onOpen: (EventInstance) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    selected: Boolean = false
 ) {
     val event = entry.instance
     val title = event.title.ifBlank { stringResource(R.string.timegrid_untitled) }
@@ -129,11 +133,15 @@ internal fun AgendaEventRow(
     Box(
         modifier
             .fillMaxWidth()
+            .background(
+                if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent
+            )
             .heightIn(min = Dimens.minTouch)
             .clickable(
                 onClickLabel = stringResource(R.string.agenda_open_event),
                 role = Role.Button
             ) { onOpen(event) }
+            .semantics { this.selected = selected }
             .padding(horizontal = Spacing.l, vertical = Spacing.xxs),
         contentAlignment = Alignment.CenterStart
     ) {
