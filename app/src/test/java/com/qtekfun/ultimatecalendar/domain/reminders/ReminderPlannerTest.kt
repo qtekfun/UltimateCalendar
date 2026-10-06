@@ -15,6 +15,7 @@ import java.time.LocalTime
 import java.time.ZoneId
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 
 class ReminderPlannerTest {
@@ -247,5 +248,35 @@ class ReminderPlannerTest {
         assertNotEquals(first.id, next.id)
         assertNotEquals(first.id, other.id)
         assertEquals(first.id, plan(timed(1, "2026-10-04T12:00:00Z", 10)).single().id)
+    }
+
+    @Test
+    fun `the video call of an event, in its place or description, goes with its reminders`() {
+        val event = timed(1, "2026-10-04T12:00:00Z", 10)
+        val inDescription = event.copy(description = "Join: https://meet.google.com/abc.")
+        assertEquals("https://meet.google.com/abc", plan(inDescription).single().joinUrl)
+        val inPlace = event.copy(instance = event.instance.copy(location = "https://zoom.us/j/1"))
+        assertEquals("https://zoom.us/j/1", plan(inPlace).single().joinUrl)
+        assertNull(plan(event).single().joinUrl)
+    }
+
+    @Test
+    fun `a cancelled occurrence of a repetition plans nothing, the others keep reminders`() {
+        val week1 = timed(1, "2026-10-04T12:00:00Z", 10)
+        val week3 = timed(1, "2026-10-18T12:00:00Z", 10)
+        assertEquals(
+            listOf(Instant.parse("2026-10-04T11:50:00Z"), Instant.parse("2026-10-18T11:50:00Z")),
+            plan(week1, week3).map { it.at }
+        )
+        assertEquals(listOf(Instant.parse("2026-10-18T11:50:00Z")), plan(week3).map { it.at })
+    }
+
+    @Test
+    fun `a repeating all-day event reminds on each of its days`() {
+        val days = listOf("2026-10-05", "2026-10-12").map { allDay(1, it, 900) }
+        assertEquals(
+            listOf("2026-10-04T07:00:00Z", "2026-10-11T07:00:00Z").map(Instant::parse),
+            plan(*days.toTypedArray()).map { it.at }
+        )
     }
 }

@@ -5,6 +5,15 @@
 -->
 <resources>
     <string name="reminder_channel">Avisos de eventos</string>
+    <string name="invitations_channel">Invitaciones nuevas</string>
+    <string name="changes_channel">Cambios en eventos</string>
+    <string name="reminder_action_join">Unirse</string>
+    <string name="reminder_action_map">Mapa</string>
+    <string name="reminder_action_snooze">Posponer</string>
+    <string name="reminder_action_dismiss">Descartar</string>
+    <string name="reminder_snooze_5">5 min</string>
+    <string name="reminder_snooze_15">15 min</string>
+    <string name="reminder_snooze_60">1 hora</string>
     <string name="reminder_text_timed">Empieza %1$s</string>
     <string name="reminder_text_all_day">Todo el día</string>
     <string name="reminder_missed_text">%1$s · no llegó a su hora (%2$s)</string>

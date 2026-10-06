@@ -9,6 +9,7 @@ import android.content.Intent
 import com.qtekfun.ultimatecalendar.domain.model.CalendarId
 import com.qtekfun.ultimatecalendar.domain.model.EventId
 import com.qtekfun.ultimatecalendar.domain.reminders.PlannedReminder
+import com.qtekfun.ultimatecalendar.domain.reminders.Snoozes
 import dagger.hilt.android.AndroidEntryPoint
 import java.time.Instant
 import javax.inject.Inject
@@ -34,6 +35,10 @@ class ReminderReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         val reminder = read(intent) ?: return
+        if (Snoozes.isSnooze(reminder.id)) {
+            fireSnoozed(reminder)
+            return
+        }
         notifier.show(reminder, missed = false)
         val pending = goAsync()
         scope.launch {
@@ -51,6 +56,19 @@ class ReminderReceiver : BroadcastReceiver() {
         }
     }
 
+    /** A postponed reminder rings: unless the recovery showed it already, it shows now. */
+    private fun fireSnoozed(reminder: PlannedReminder) {
+        val pending = goAsync()
+        scope.launch {
+            try {
+                recovery.fireSnoozed(reminder)
+                recovery.recover()
+            } finally {
+                pending.finish()
+            }
+        }
+    }
+
     companion object {
         private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
         private const val EXTRA_ID = "id"
@@ -61,6 +79,7 @@ class ReminderReceiver : BroadcastReceiver() {
         private const val EXTRA_START = "start"
         private const val EXTRA_ALL_DAY = "all_day"
         private const val EXTRA_AT = "at"
+        private const val EXTRA_JOIN = "join"
 
         /** What the notification needs, carried by the alarm. */
         fun describe(intent: Intent, reminder: PlannedReminder) {
@@ -72,9 +91,11 @@ class ReminderReceiver : BroadcastReceiver() {
                 .putExtra(EXTRA_START, reminder.start.toEpochMilli())
                 .putExtra(EXTRA_ALL_DAY, reminder.allDay)
                 .putExtra(EXTRA_AT, reminder.at.toEpochMilli())
+                .putExtra(EXTRA_JOIN, reminder.joinUrl)
         }
 
-        private fun read(intent: Intent): PlannedReminder? {
+        /** The reminder [describe] put in [intent], or null when it carries none. */
+        fun read(intent: Intent): PlannedReminder? {
             if (!intent.hasExtra(EXTRA_ID) || !intent.hasExtra(EXTRA_EVENT)) return null
             return PlannedReminder(
                 id = intent.getLongExtra(EXTRA_ID, 0),
@@ -84,7 +105,8 @@ class ReminderReceiver : BroadcastReceiver() {
                 location = intent.getStringExtra(EXTRA_LOCATION),
                 start = Instant.ofEpochMilli(intent.getLongExtra(EXTRA_START, 0)),
                 allDay = intent.getBooleanExtra(EXTRA_ALL_DAY, false),
-                at = Instant.ofEpochMilli(intent.getLongExtra(EXTRA_AT, 0))
+                at = Instant.ofEpochMilli(intent.getLongExtra(EXTRA_AT, 0)),
+                joinUrl = intent.getStringExtra(EXTRA_JOIN)
             )
         }
     }
