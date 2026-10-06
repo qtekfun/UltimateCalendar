@@ -98,6 +98,8 @@ android {
     }
 
     testOptions {
+        // The key-flow UI tests wait on idling, not on timers: no animation may be running.
+        animationsDisabled = true
         unitTests.all { it.useJUnitPlatform() }
     }
 
