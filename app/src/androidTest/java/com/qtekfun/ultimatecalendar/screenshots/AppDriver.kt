@@ -51,11 +51,14 @@ class AppDriver(private val compose: ComposeTestRule, base: Context, locale: Loc
         compose.waitForIdle()
     }
 
-    /** Switches the view with the switcher of the top bar; [label] is the view's string. */
+    /**
+     * Switches the view with the drawer (the switcher of the top bar opens a popup the test
+     * cannot click reliably); [label] is the view's string.
+     */
     fun switchTo(label: Int) {
-        val current = l10n.getString(R.string.shell_switch_view, "").trim().trimEnd(',')
-        compose.onNode(hasContentDescription(current, substring = true) and hasClickAction())
+        compose.onNodeWithContentDescription(l10n.getString(R.string.shell_open_drawer))
             .performClick()
+        compose.waitForIdle()
         compose.onAllNodes(hasText(l10n.getString(label)) and hasClickAction()).onFirst()
             .performClick()
         compose.waitForIdle()

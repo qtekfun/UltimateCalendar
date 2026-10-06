@@ -7,6 +7,7 @@ import android.Manifest
 import android.app.LocaleManager
 import android.app.NotificationManager
 import android.content.Context
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.Build
 import android.os.LocaleList
@@ -120,14 +121,17 @@ class Screenshots {
         files.reset(locale.store, PHONE)
         val week = prepare(locale)
         val driver = AppDriver(compose, context, locale.locale)
-        invitationNotification(locale)
-        provider.add(week.secondInvitation)
-        driver.launch()
+        DeviceTools.enterDemoMode(DEMO_CLOCK)
         try {
+            invitationNotification(locale)
+            provider.add(week.secondInvitation)
+            driver.launch()
             lightViews(locale, week, driver)
             darkDay(locale, driver)
         } finally {
             driver.close()
+            DeviceTools.shell("cmd uimode night auto")
+            DeviceTools.exitDemoMode()
         }
     }
 
@@ -154,6 +158,8 @@ class Screenshots {
 
     private fun darkDay(locale: StoreLocale, driver: AppDriver) {
         settings.update { it.copy(theme = ThemeMode.DARK) }
+        // The system bar icons follow the system theme, so the device goes dark too.
+        DeviceTools.shell("cmd uimode night yes")
         driver.switchTo(R.string.shell_view_day)
         driver.waitForText(driver.string(R.string.shell_view_day))
         snap(locale, "7_day_dark", driver.capture())
@@ -167,16 +173,24 @@ class Screenshots {
     private fun invitationNotification(locale: StoreLocale) {
         runBlocking {
             notified.replaceAll(emptyList())
-            check(checker.check(requestSync = false) is InvitationCheckOutcome.Done) { "no check" }
+            val outcome = checker.check(requestSync = false)
+            check(outcome is InvitationCheckOutcome.Done && outcome.pending == 1) {
+                "check: $outcome"
+            }
         }
-        DeviceTools.enterDemoMode(DEMO_CLOCK)
+        val shown = context.getSystemService(NotificationManager::class.java).activeNotifications
+        check(shown.isNotEmpty()) {
+            "no notification was posted: " + DeviceTools.shell("dumpsys notification --noredact")
+                .lineSequence().filter {
+                    context.packageName in it
+                }.take(DUMP_LINES).joinToString("\n")
+        }
         try {
             DeviceTools.openShade()
             Thread.sleep(SHADE_MS)
             snap(locale, "6_invitation_notification", DeviceTools.screen())
         } finally {
             DeviceTools.closeShade()
-            DeviceTools.exitDemoMode()
             context.getSystemService(NotificationManager::class.java).cancelAll()
             runBlocking { notified.replaceAll(emptyList()) }
         }
@@ -215,7 +229,10 @@ class Screenshots {
     private fun isTablet() = context.resources.configuration.smallestScreenWidthDp >= TABLET_DP
 
     private fun grant(permission: String) {
-        DeviceTools.shell("pm grant ${context.packageName} $permission")
+        val output = DeviceTools.shell("pm grant ${context.packageName} $permission")
+        check(context.checkSelfPermission(permission) == PackageManager.PERMISSION_GRANTED) {
+            "could not grant $permission: $output"
+        }
     }
 
     /** A language of the store listing and the tag the app is switched to. */
@@ -232,6 +249,7 @@ class Screenshots {
         const val SHADE_MS = 2_500L
         const val LOCALE_TIMEOUT_MS = 10_000L
         const val POLL_MS = 100L
+        const val DUMP_LINES = 20
         const val TABLET_DP = 600
     }
 }
