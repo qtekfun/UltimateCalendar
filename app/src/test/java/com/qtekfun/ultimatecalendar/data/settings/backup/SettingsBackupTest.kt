@@ -7,6 +7,7 @@ import com.qtekfun.ultimatecalendar.data.settings.AppSettings
 import com.qtekfun.ultimatecalendar.data.settings.FakePreferences
 import com.qtekfun.ultimatecalendar.data.settings.SettingsRepository
 import com.qtekfun.ultimatecalendar.data.settings.ThemeMode
+import com.qtekfun.ultimatecalendar.domain.invitations.ReRemindOption
 import com.qtekfun.ultimatecalendar.domain.model.CalendarId
 import com.qtekfun.ultimatecalendar.domain.settings.FirstDayOfWeek
 import com.qtekfun.ultimatecalendar.domain.settings.InitialView
@@ -43,6 +44,7 @@ class SettingsBackupTest {
         ownEmails = listOf("ana@example.com"),
         notifyChanges = true,
         notifyCancellations = true,
+        reRemind = ReRemindOption.HOUR_BEFORE,
         missedWindowHours = 6,
         alarmClock = true,
         robustMode = true,
@@ -231,5 +233,20 @@ class SettingsBackupTest {
         assertTrue(newPhone.current().robustMode && newPhone.current().alarmClock)
         restorer().restore(fileWith("{\"version\":1,\"settings\":{}}"), passphrase)
         assertTrue(newPhone.current().robustMode)
+    }
+
+    @Test
+    fun `the re-remind option travels, an unknown or missing one leaves the default off`() {
+        oldPhone.update { it.copy(reRemind = ReRemindOption.BOTH) }
+        val exported = SettingsBackup(oldPhone).export(passphrase)
+        assertEquals(RestoreResult.Restored(), restorer().restore(exported, passphrase))
+        assertEquals(ReRemindOption.BOTH, newPhone.current().reRemind)
+
+        val fresh = SettingsRepository(FakePreferences(), FakePreferences(), FakePreferences())
+        val unknown = fileWith("{\"version\":2,\"settings\":{\"reRemind\":\"EVERY_WEEK\"}}")
+        SettingsBackup(fresh).restore(unknown, passphrase)
+        assertEquals(ReRemindOption.OFF, fresh.current().reRemind)
+        SettingsBackup(fresh).restore(fileWith("{\"version\":2,\"settings\":{}}"), passphrase)
+        assertEquals(ReRemindOption.OFF, fresh.current().reRemind)
     }
 }

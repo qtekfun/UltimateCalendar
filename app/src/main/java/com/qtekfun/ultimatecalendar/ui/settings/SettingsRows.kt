@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
@@ -101,6 +102,7 @@ internal fun <T> ChoiceRow(
             .fillMaxWidth()
             .heightIn(min = RowMinHeight)
             .clickable(role = Role.DropdownList) { open = true }
+            .semantics { stateDescription = current }
             .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

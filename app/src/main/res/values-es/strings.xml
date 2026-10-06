@@ -108,6 +108,12 @@
     <string name="settings_remove_email">Quitar dirección: %1$s</string>
     <string name="settings_notify_changes">Avisar de cambios</string>
     <string name="settings_notify_cancellations">Avisar de cancelaciones</string>
+    <string name="settings_re_remind">Recordarme de nuevo las invitaciones sin responder</string>
+    <string name="settings_re_remind_hint">Una notificación con Aceptar, Quizá y Rechazar, mientras el evento siga por llegar.</string>
+    <string name="re_remind_off">Nunca</string>
+    <string name="re_remind_day_before">Un día antes</string>
+    <string name="re_remind_hour_before">Una hora antes</string>
+    <string name="re_remind_both">Un día y una hora antes</string>
     <string name="settings_backup">Copia de seguridad</string>
     <string name="settings_backup_hint">Los ajustes se guardan en un archivo cifrado con una frase de contraseña, para llevar la misma configuración a otro móvil.</string>
     <string name="backup_export">Exportar ajustes</string>

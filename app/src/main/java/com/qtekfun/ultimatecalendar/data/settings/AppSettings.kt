@@ -3,6 +3,7 @@
 
 package com.qtekfun.ultimatecalendar.data.settings
 
+import com.qtekfun.ultimatecalendar.domain.invitations.ReRemindOption
 import com.qtekfun.ultimatecalendar.domain.model.CalendarId
 import com.qtekfun.ultimatecalendar.domain.settings.FirstDayOfWeek
 import com.qtekfun.ultimatecalendar.domain.settings.InitialView
@@ -32,6 +33,8 @@ data class AppSettings(
     val notifyChanges: Boolean = false,
     /** Tell when the organizer cancels an invitation (RF-07); off by default. */
     val notifyCancellations: Boolean = false,
+    /** Remind again about invitations not answered yet (T40); off by default. */
+    val reRemind: ReRemindOption = ReRemindOption.OFF,
     /** How far back reminders the system kept from showing are brought back; 0: never. */
     val missedWindowHours: Int = SettingsRules.DEFAULT_MISSED_WINDOW_HOURS,
     /** Aggressive mode: reminders are set like an alarm clock, which no battery saver delays. */
