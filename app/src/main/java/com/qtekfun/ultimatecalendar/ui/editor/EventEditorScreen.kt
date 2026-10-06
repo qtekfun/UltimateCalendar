@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -40,6 +41,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.qtekfun.ultimatecalendar.R
@@ -177,13 +180,14 @@ private fun TitleField(title: String, onChange: (String) -> Unit) {
     TextField(
         value = title,
         onValueChange = onChange,
-        placeholder = {
-            Text(
-                stringResource(R.string.editor_title_hint),
-                style = MaterialTheme.typography.headlineSmall
-            )
-        },
+        // A label, not a placeholder: a screen reader says a label, and says nothing for a hint
+        // that disappears when the field is empty and focused.
+        label = { Text(stringResource(R.string.editor_title_hint)) },
         textStyle = MaterialTheme.typography.headlineSmall,
+        keyboardOptions = KeyboardOptions(
+            capitalization = KeyboardCapitalization.Sentences,
+            imeAction = ImeAction.Next
+        ),
         colors = TextFieldDefaults.colors(
             focusedContainerColor = Color.Transparent,
             unfocusedContainerColor = Color.Transparent

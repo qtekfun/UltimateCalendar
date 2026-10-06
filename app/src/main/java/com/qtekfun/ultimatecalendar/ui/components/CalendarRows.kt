@@ -24,11 +24,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.Dp
+import com.qtekfun.ultimatecalendar.R
 import com.qtekfun.ultimatecalendar.ui.theme.ColorMath
 import com.qtekfun.ultimatecalendar.ui.theme.Dimens
 import com.qtekfun.ultimatecalendar.ui.theme.Spacing
@@ -53,11 +55,14 @@ fun CalendarCheckRow(
     modifier: Modifier = Modifier
 ) {
     val fill = Color(color)
+    val state =
+        stringResource(if (checked) R.string.cal_state_visible else R.string.cal_state_hidden)
     Row(
         modifier
             .fillMaxWidth()
             .heightIn(min = Dimens.minTouch)
             .toggleable(value = checked, role = Role.Checkbox, onValueChange = onCheckedChange)
+            .semantics { stateDescription = state }
             .padding(horizontal = Spacing.l),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -71,12 +76,7 @@ fun CalendarCheckRow(
             )
         )
         Spacer(Modifier.width(Spacing.l))
-        Text(
-            name,
-            style = MaterialTheme.typography.bodyLarge,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis
-        )
+        Text(name, style = MaterialTheme.typography.bodyLarge)
     }
 }
 

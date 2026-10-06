@@ -9,6 +9,11 @@ on:
   schedule:
     - cron: "17 2 * * *"
   workflow_dispatch:
+    inputs:
+      perf:
+        description: "Run the provider timing test (T25, seeds 20,000 events) instead of the UI tests"
+        type: boolean
+        default: false
   pull_request:
     types: [labeled, synchronize]
 
@@ -52,7 +57,21 @@ jobs:
           target: google_apis
           arch: x86_64
           disable-animations: true
-          script: ./gradlew connectedDebugAndroidTest
+          script: >-
+            ./gradlew connectedDebugAndroidTest
+            ${{ inputs.perf && '-Pandroid.testInstrumentationRunnerArguments.perf=true -Pandroid.testInstrumentationRunnerArguments.class=com.qtekfun.ultimatecalendar.data.source.ProviderPerformanceTest' || '' }}
+
+      - name: Print the timings
+        if: always() && inputs.perf
+        run: grep -rhE "T25 " app/build/outputs/androidTest-results/ | sort -u || true
+
+      - name: Upload timings
+        if: always() && inputs.perf
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: perf-timings-${{ matrix.api-level }}
+          path: app/build/outputs/androidTest-results/
+          retention-days: 30
 
       - name: Upload reports
         if: failure()
