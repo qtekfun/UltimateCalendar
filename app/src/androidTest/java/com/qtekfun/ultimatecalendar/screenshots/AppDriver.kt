@@ -55,9 +55,12 @@ class AppDriver(private val compose: ComposeTestRule, base: Context, locale: Loc
      * cannot click reliably); [label] is the view's string.
      */
     fun switchTo(label: Int) {
-        compose.onNodeWithContentDescription(l10n.getString(R.string.shell_open_drawer))
-            .performClick()
-        compose.waitForIdle()
+        // A wide window has the drawer open all the time and no menu button.
+        val menu = hasContentDescription(l10n.getString(R.string.shell_open_drawer))
+        if (has(menu)) {
+            compose.onNode(menu).performClick()
+            compose.waitForIdle()
+        }
         compose.onAllNodes(hasText(l10n.getString(label)) and hasClickAction()).onFirst()
             .performClick()
         compose.waitForIdle()

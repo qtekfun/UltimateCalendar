@@ -89,6 +89,7 @@ class Screenshots {
     private val files = ScreenshotFiles(context)
     private val provider = DemoProvider(context, zone)
     private var armed = false
+    private var kind = PHONE
 
     @Before
     fun setUp() {
@@ -117,11 +118,56 @@ class Screenshots {
     @Test
     fun phoneScreenshots() {
         assumeTrue("a phone", !isTablet())
+        kind = PHONE
         LOCALES.forEach { capturePhone(it) }
     }
 
+    /**
+     * The two-pane agenda of a wide window, with an event open beside the list, then the week, the
+     * month and the tray. Run it on a tablet emulator (`tools/take-screenshots.sh tablet`).
+     */
+    @Test
+    fun tenInchScreenshots() {
+        assumeTrue("a tablet", isTablet())
+        kind = TABLET
+        LOCALES.forEach { captureTablet(it) }
+    }
+
+    private fun captureTablet(locale: StoreLocale) {
+        files.reset(locale.store, kind)
+        val week = prepare(locale)
+        week.events.forEach(provider::add)
+        provider.add(week.secondInvitation)
+        val driver = AppDriver(compose, context, locale.locale)
+        DeviceTools.shell("cmd uimode night no")
+        DeviceTools.enterDemoMode(DEMO_CLOCK)
+        try {
+            driver.launch()
+            driver.switchTo(R.string.shell_view_agenda)
+            driver.waitForText(week.earlyTitle)
+            driver.openEvent(week.detailTitle)
+            driver.waitForText("Liam Novak")
+            snap(locale, "1_agenda_two_pane", driver.capture())
+            driver.switchTo(R.string.shell_view_week)
+            driver.waitForText(week.earlyTitle)
+            snap(locale, "2_week", driver.capture())
+            driver.switchTo(R.string.shell_view_month)
+            driver.waitForText(week.earlyTitle)
+            snap(locale, "3_month", driver.capture())
+            driver.openInvitations(pending = 2)
+            driver.waitForText(week.secondInvitationTitle)
+            snap(locale, "4_invitations", driver.capture())
+        } catch (failure: Throwable) {
+            snap(locale, "failure", DeviceTools.screen())
+            throw failure
+        } finally {
+            driver.close()
+            DeviceTools.exitDemoMode()
+        }
+    }
+
     private fun capturePhone(locale: StoreLocale) {
-        files.reset(locale.store, PHONE)
+        files.reset(locale.store, kind)
         val week = prepare(locale)
         val driver = AppDriver(compose, context, locale.locale)
         DeviceTools.shell("cmd uimode night no")
@@ -246,7 +292,7 @@ class Screenshots {
     }
 
     private fun snap(locale: StoreLocale, name: String, image: Bitmap) =
-        files.save(locale.store, PHONE, name, image)
+        files.save(locale.store, kind, name, image)
 
     private fun isTablet() = context.resources.configuration.smallestScreenWidthDp >= TABLET_DP
 
@@ -267,6 +313,7 @@ class Screenshots {
         val NOW: LocalDateTime = LocalDateTime.of(2026, 10, 12, 9, 5)
         val LOCALES = listOf(StoreLocale("en-US", "en-US"), StoreLocale("es-ES", "es-ES"))
         const val PHONE = "phoneScreenshots"
+        const val TABLET = "tenInchScreenshots"
         const val DEMO_CLOCK = "0905"
         const val SHADE_MS = 2_500L
         const val LOCALE_TIMEOUT_MS = 10_000L
