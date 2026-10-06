@@ -6,6 +6,7 @@ package com.qtekfun.ultimatecalendar.ui.agenda
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.qtekfun.ultimatecalendar.data.calendar.CalendarRepository
+import com.qtekfun.ultimatecalendar.di.IoDispatcher
 import com.qtekfun.ultimatecalendar.domain.agenda.AgendaDays
 import com.qtekfun.ultimatecalendar.domain.agenda.AgendaItem
 import com.qtekfun.ultimatecalendar.domain.agenda.AgendaItems
@@ -19,12 +20,14 @@ import java.time.Clock
 import java.time.LocalDate
 import java.time.ZoneId
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.flow.update
@@ -63,7 +66,8 @@ data class AgendaState(
 class AgendaViewModel @Inject constructor(
     private val repository: CalendarRepository,
     private val clock: Clock,
-    private val zone: SystemZone
+    private val zone: SystemZone,
+    @IoDispatcher private val layoutDispatcher: CoroutineDispatcher
 ) : ViewModel() {
     private data class Request(val generation: Int, val window: AgendaWindow)
 
@@ -129,7 +133,7 @@ class AgendaViewModel @Inject constructor(
                     status = AgendaStatus.READY
                 )
             }
-        }
+        }.flowOn(layoutDispatcher)
     }
 
     private fun loading(current: Request) = AgendaState(
