@@ -36,6 +36,7 @@ import com.qtekfun.ultimatecalendar.ui.components.EmptyState
 import com.qtekfun.ultimatecalendar.ui.components.EventListSkeleton
 import com.qtekfun.ultimatecalendar.ui.shell.ShellActions
 import com.qtekfun.ultimatecalendar.ui.shell.ShellUiState
+import com.qtekfun.ultimatecalendar.ui.theme.rememberReduceMotion
 import java.time.LocalDate
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
@@ -105,6 +106,7 @@ internal fun AgendaView(
     var reported by remember { mutableStateOf<LocalDate?>(null) }
     val ready = agenda.status != AgendaStatus.LOADING && positioned == agenda.generation
 
+    val reduceMotion = rememberReduceMotion()
     LaunchedEffect(date) {
         if (date == reported) return@LaunchedEffect
         reported = date
@@ -113,7 +115,8 @@ internal fun AgendaView(
             current.generation == positioned &&
             date in current.range
         ) {
-            list.animateScrollToItem(AgendaItems.scrollIndex(current.items, date))
+            val index = AgendaItems.scrollIndex(current.items, date)
+            if (reduceMotion) list.scrollToItem(index) else list.animateScrollToItem(index)
         } else {
             callbacks.onShow(date)
         }

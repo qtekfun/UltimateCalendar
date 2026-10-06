@@ -39,6 +39,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextOverflow
 import com.qtekfun.ultimatecalendar.R
 import com.qtekfun.ultimatecalendar.domain.navigation.AccountCalendars
@@ -146,21 +147,22 @@ private fun AccountSection(group: AccountCalendars, actions: ShellActions) {
         if (expanded) R.string.cal_account_collapse else R.string.cal_account_expand,
         name
     )
+    val state = stringResource(
+        if (expanded) R.string.cal_state_expanded else R.string.cal_state_collapsed
+    )
     Column(Modifier.animateContentSize(tween(Motion.MEDIUM_MS))) {
         Row(
             Modifier
                 .fillMaxWidth()
                 .heightIn(min = Dimens.minTouch)
-                .clickable(role = Role.Button) { expanded = !expanded }
+                .clickable(onClickLabel = action, role = Role.Button) { expanded = !expanded }
                 .padding(horizontal = Spacing.xl)
-                .semantics(mergeDescendants = true) { contentDescription = action },
+                .semantics(mergeDescendants = true) { stateDescription = state },
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 name,
                 style = MaterialTheme.typography.titleSmall,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f)
             )
             Icon(Icons.Filled.KeyboardArrowDown, contentDescription = null, Modifier.rotate(arrow))

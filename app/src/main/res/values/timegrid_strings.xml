@@ -5,9 +5,7 @@
 -->
 <resources>
     <string name="timegrid_untitled">(No title)</string>
-    <string name="timegrid_all_day">All day</string>
     <string name="timegrid_time_range">%1$s to %2$s</string>
-    <string name="timegrid_pending">Invitation not answered</string>
     <string name="timegrid_other_zone">In the event\'s time zone: %1$s</string>
     <string name="timegrid_now">Current time, %1$s</string>
     <string name="timegrid_failed">Events could not be read</string>

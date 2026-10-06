@@ -35,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import com.qtekfun.ultimatecalendar.R
 import com.qtekfun.ultimatecalendar.domain.editor.EventForm
@@ -144,7 +145,10 @@ private fun CustomReminderDialog(
                     label = { Text(stringResource(R.string.editor_reminder_amount)) },
                     isError = minutes == null,
                     singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Done
+                    ),
                     modifier = Modifier.fillMaxWidth()
                 )
                 Column(Modifier.selectableGroup().padding(top = Spacing.s)) {

@@ -36,6 +36,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.qtekfun.ultimatecalendar.R
@@ -136,7 +137,7 @@ private fun IntervalField(repeat: CustomRepeat, onChange: (CustomRepeat) -> Unit
             label = { Text(stringResource(R.string.editor_custom_interval)) },
             isError = text.toIntOrNull()?.let { it < 1 } != false,
             singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            keyboardOptions = numberKeyboard,
             modifier = Modifier.width(FieldWidth)
         )
         val unit = unitName(repeat.frequency, repeat.interval)
@@ -267,7 +268,7 @@ private fun CountField(repeat: CustomRepeat, onChange: (CustomRepeat) -> Unit) {
         label = { Text(stringResource(R.string.editor_end_count)) },
         isError = text.toIntOrNull()?.let { it < 1 } != false,
         singleLine = true,
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        keyboardOptions = numberKeyboard,
         modifier = Modifier.padding(top = Spacing.xs).width(FieldWidth * 2)
     )
 }
@@ -289,3 +290,6 @@ private fun ChoiceRadio(text: String, selected: Boolean, onClick: () -> Unit) {
         Text(text, style = MaterialTheme.typography.bodyLarge)
     }
 }
+
+private val numberKeyboard =
+    KeyboardOptions(keyboardType = KeyboardType.Number, imeAction = ImeAction.Done)
