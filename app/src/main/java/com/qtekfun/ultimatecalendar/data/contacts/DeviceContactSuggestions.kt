@@ -40,7 +40,12 @@ class DeviceContactSuggestions @Inject constructor(
         } else {
             withContext(io) { gateway.search(text, FETCH) }.mapNotNull { row ->
                 SettingsRules.alias(row.email.orEmpty())?.let { address ->
-                    ContactSuggestion(row.name?.trim()?.ifEmpty { null }, Attendee.normalize(address))
+                    ContactSuggestion(
+                        row.name?.trim()?.ifEmpty {
+                            null
+                        },
+                        Attendee.normalize(address)
+                    )
                 }
             }.distinctBy { it.email }.take(MAX)
         }

@@ -8,18 +8,19 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -79,6 +80,7 @@ internal fun <T> ChoiceMenuRow(
  * The calendar the event is in: its color, name and account. A new event can be moved to any
  * calendar that accepts events, grouped by account; an existing one stays where it is.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun CalendarRow(state: EditorUiState.Ready, onPick: (CalendarInfo) -> Unit) {
     var open by remember { mutableStateOf(false) }
@@ -114,7 +116,11 @@ internal fun CalendarRow(state: EditorUiState.Ready, onPick: (CalendarInfo) -> U
 }
 
 @Composable
-private fun CalendarChoices(calendars: List<CalendarInfo>, selected: Long?, onPick: (CalendarInfo) -> Unit) {
+private fun CalendarChoices(
+    calendars: List<CalendarInfo>,
+    selected: Long?,
+    onPick: (CalendarInfo) -> Unit
+) {
     Column(Modifier.fillMaxWidth()) {
         AccountCalendars.group(calendars).forEach { group ->
             SectionHeader(group.account.name)
@@ -144,6 +150,7 @@ private fun CalendarChoiceRow(calendar: CalendarInfo, selected: Boolean, onClick
 }
 
 /** The event color: the calendar's own, or one of the palette in a sheet. */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun ColorRow(form: EventForm, onPick: (Int?) -> Unit) {
     var open by remember { mutableStateOf(false) }

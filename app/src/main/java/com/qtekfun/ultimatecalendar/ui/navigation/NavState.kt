@@ -9,6 +9,7 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.setValue
 import com.qtekfun.ultimatecalendar.domain.detail.EventRef
+import com.qtekfun.ultimatecalendar.domain.editor.EditorRequest
 
 /** Which full-screen destination covers the shell, saved as plain values to survive rotation. */
 class NavState {
@@ -22,7 +23,24 @@ class NavState {
     var detailRef by mutableStateOf<EventRef?>(null)
     var help by mutableStateOf(false)
 
+    /** What the event editor (open while [newEvent] is true) edits; null is a new event. */
+    var editorRequest by mutableStateOf<EditorRequest?>(null)
+
+    /** Opens the event editor: a new event, a new one at a tapped time, or an existing one. */
+    fun openEditor(request: EditorRequest = EditorRequest.New()) {
+        editorRequest = request
+        newEvent = true
+    }
+
+    fun closeEditor() {
+        newEvent = false
+        editorRequest = null
+    }
+
     companion object {
+        private const val DETAIL_INDEX = 6
+        private const val EDITOR_INDEX = 7
+
         val Saver: Saver<NavState, Any> = listSaver(
             save = {
                 listOf(
@@ -32,7 +50,8 @@ class NavState {
                     it.settings,
                     it.eventDetail,
                     it.help,
-                    it.detailRef?.encode()
+                    it.detailRef?.encode(),
+                    it.editorRequest?.encode()
                 )
             },
             restore = { values ->
@@ -43,7 +62,10 @@ class NavState {
                     settings = values[3] as Boolean
                     eventDetail = values.getOrNull(4) as? Boolean ?: false
                     help = values.getOrNull(5) as? Boolean ?: false
-                    detailRef = EventRef.decode(values.lastOrNull() as? String)
+                    detailRef = EventRef.decode(values.getOrNull(DETAIL_INDEX) as? String)
+                    editorRequest = EditorRequest.decode(
+                        (values.getOrNull(EDITOR_INDEX) as? List<*>)?.filterIsInstance<String>()
+                    )
                 }
             }
         )

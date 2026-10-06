@@ -7,10 +7,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -116,7 +116,11 @@ internal fun TimeSection(
 private fun AllDaySwitch(checked: Boolean, onChange: (Boolean) -> Unit) {
     EditorRow(
         Icons.Filled.DateRange,
-        modifier = Modifier.toggleable(value = checked, role = Role.Switch, onValueChange = onChange)
+        modifier = Modifier.toggleable(
+            value = checked,
+            role = Role.Switch,
+            onValueChange = onChange
+        )
     ) {
         RowText(stringResource(R.string.editor_all_day))
         Switch(checked = checked, onCheckedChange = null)

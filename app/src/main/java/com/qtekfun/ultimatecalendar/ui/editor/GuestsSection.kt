@@ -121,7 +121,9 @@ private fun GuestField(
             onValueChange = onTextChange,
             label = { Text(stringResource(R.string.editor_guest_add)) },
             isError = invalid != null,
-            supportingText = invalid?.let { { Text(stringResource(R.string.editor_guest_invalid, it)) } },
+            supportingText = invalid?.let {
+                { Text(stringResource(R.string.editor_guest_invalid, it)) }
+            },
             singleLine = true,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Email,

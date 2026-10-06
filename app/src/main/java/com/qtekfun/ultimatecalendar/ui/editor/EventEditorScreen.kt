@@ -31,6 +31,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -122,7 +123,13 @@ internal fun EventEditorScreen(
                 title = {
                     Text(
                         stringResource(
-                            if (ready?.isNew == false) R.string.editor_title_edit else R.string.editor_title_new
+                            if (ready?.isNew ==
+                                false
+                            ) {
+                                R.string.editor_title_edit
+                            } else {
+                                R.string.editor_title_new
+                            }
                         ),
                         modifier = Modifier.semantics { heading() }
                     )
@@ -208,7 +215,10 @@ private fun TitleField(title: String, onChange: (String) -> Unit) {
         value = title,
         onValueChange = onChange,
         placeholder = {
-            Text(stringResource(R.string.editor_title_hint), style = MaterialTheme.typography.headlineSmall)
+            Text(
+                stringResource(R.string.editor_title_hint),
+                style = MaterialTheme.typography.headlineSmall
+            )
         },
         textStyle = MaterialTheme.typography.headlineSmall,
         colors = TextFieldDefaults.colors(

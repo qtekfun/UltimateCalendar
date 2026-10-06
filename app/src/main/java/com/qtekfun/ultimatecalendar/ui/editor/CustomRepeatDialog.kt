@@ -78,9 +78,17 @@ internal fun CustomRepeatDialog(
             Column(Modifier.verticalScroll(rememberScrollState())) {
                 IntervalField(repeat) { repeat = it }
                 if (repeat.frequency == Frequency.WEEKLY) WeekdayChips(repeat) { repeat = it }
-                if (repeat.frequency == Frequency.MONTHLY) MonthlyChoices(repeat, anchor) { repeat = it }
+                if (repeat.frequency ==
+                    Frequency.MONTHLY
+                ) {
+                    MonthlyChoices(repeat, anchor) { repeat = it }
+                }
                 EndChoices(repeat, { repeat = it }, { showUntilPicker = true })
-                if (untilBeforeStart) ProblemText(stringResource(R.string.editor_issue_repeat_before_start))
+                if (untilBeforeStart) {
+                    ProblemText(
+                        stringResource(R.string.editor_issue_repeat_before_start)
+                    )
+                }
                 Text(
                     summaryText(RepeatSummary.of(repeat, anchor)),
                     modifier = Modifier.padding(top = Spacing.l),
@@ -115,7 +123,10 @@ internal fun CustomRepeatDialog(
 private fun IntervalField(repeat: CustomRepeat, onChange: (CustomRepeat) -> Unit) {
     var text by remember { mutableStateOf(repeat.interval.toString()) }
     Text(stringResource(R.string.editor_custom_every), style = MaterialTheme.typography.labelLarge)
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(Spacing.s)) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(Spacing.s)
+    ) {
         OutlinedTextField(
             value = text,
             onValueChange = { typed ->
@@ -181,14 +192,19 @@ private fun WeekdayChips(repeat: CustomRepeat, onChange: (CustomRepeat) -> Unit)
 
 /** A monthly rule falls on the day number, or on the n-th (or last) weekday of the event's date. */
 @Composable
-private fun MonthlyChoices(repeat: CustomRepeat, anchor: LocalDate, onChange: (CustomRepeat) -> Unit) {
+private fun MonthlyChoices(
+    repeat: CustomRepeat,
+    anchor: LocalDate,
+    onChange: (CustomRepeat) -> Unit
+) {
     Column(Modifier.selectableGroup().padding(top = Spacing.s)) {
         RepeatSummary.monthlyOptions(anchor).forEach { option ->
             val selected = when (option) {
                 is MonthlyDay.OfMonth -> repeat.monthlyMode == MonthlyMode.DAY_OF_MONTH
 
-                is MonthlyDay.Nth -> repeat.monthlyMode == MonthlyMode.WEEKDAY_OF_MONTH &&
-                    repeat.ordinal == option.ordinal
+                is MonthlyDay.Nth ->
+                    repeat.monthlyMode == MonthlyMode.WEEKDAY_OF_MONTH &&
+                        repeat.ordinal == option.ordinal
             }
             ChoiceRadio(monthlyDayText(option), selected) {
                 onChange(
@@ -265,7 +281,11 @@ private fun ChoiceRadio(text: String, selected: Boolean, onClick: () -> Unit) {
             .selectable(selected = selected, role = Role.RadioButton, onClick = onClick),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        RadioButton(selected = selected, onClick = null, modifier = Modifier.padding(end = Spacing.m))
+        RadioButton(
+            selected = selected,
+            onClick = null,
+            modifier = Modifier.padding(end = Spacing.m)
+        )
         Text(text, style = MaterialTheme.typography.bodyLarge)
     }
 }

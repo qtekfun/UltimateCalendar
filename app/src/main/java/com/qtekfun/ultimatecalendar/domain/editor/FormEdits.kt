@@ -42,8 +42,7 @@ private fun EventForm.moveStart(newStart: LocalDateTime): EventForm {
 fun EventForm.withStartDate(date: LocalDate): EventForm =
     moveStart(date.atTime(start.toLocalTime()))
 
-fun EventForm.withStartTime(time: LocalTime): EventForm =
-    moveStart(startDate.atTime(time))
+fun EventForm.withStartTime(time: LocalTime): EventForm = moveStart(startDate.atTime(time))
 
 /** The end is set as given; an end before the start is reported by [EventForm.issues]. */
 fun EventForm.withEndDate(date: LocalDate): EventForm =
@@ -68,7 +67,9 @@ fun EventForm.withAllDay(value: Boolean): EventForm {
     } else {
         val timed = copy(allDay = false, reminders = reminders)
         if (timed.length()?.isZero != false) {
-            timed.copy(end = timed.instantOf(start).plus(defaults.duration).atZone(zone).toLocalDateTime())
+            timed.copy(
+                end = timed.instantOf(start).plus(defaults.duration).atZone(zone).toLocalDateTime()
+            )
         } else {
             timed
         }

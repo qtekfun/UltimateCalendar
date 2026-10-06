@@ -54,7 +54,13 @@ class EditorLoader @Inject constructor(
         return if (calendar == null) {
             EditorUiState.Failed(LoadFailure.NO_CALENDAR)
         } else {
-            val form = EventForms.create(clock, zone.current(), defaultsOf(prefs), calendar, request.at)
+            val form = EventForms.create(
+                clock,
+                zone.current(),
+                defaultsOf(prefs),
+                calendar,
+                request.at
+            )
             ready(form, null, calendars, prefs)
         }
     }
@@ -63,7 +69,7 @@ class EditorLoader @Inject constructor(
         request: EditorRequest.Edit,
         calendars: List<CalendarInfo>,
         prefs: AppSettings
-    ): EditorUiState = when (val found = source.event(request.id)) {
+    ): EditorUiState = when (val found = source.event(request.ref.eventId)) {
         is CalendarResult.Failure -> EditorUiState.Failed(LoadFailure.of(found.error))
 
         is CalendarResult.Success -> {
@@ -73,7 +79,7 @@ class EditorLoader @Inject constructor(
             if (calendar?.access?.canEdit != true) {
                 EditorUiState.Failed(LoadFailure.READ_ONLY)
             } else {
-                val occurrence = request.occurrence ?: event.time
+                val occurrence = request.ref.timeOn(event)
                 val form = EventForms.edit(event, occurrence, zone.current(), defaultsOf(prefs))
                 ready(form, EditTarget(event, occurrence), calendars, prefs)
             }

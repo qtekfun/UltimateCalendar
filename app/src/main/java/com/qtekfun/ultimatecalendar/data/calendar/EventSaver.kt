@@ -42,8 +42,13 @@ class EventSaver @Inject constructor(private val source: CalendarSource) {
         } else {
             val chosen = scope ?: RecurrenceScope.ALL
             val before = occurrencesBefore(target, chosen)
-            RecurrenceSplitter.edit(master, target.occurrence, edited, chosen, before)
-                .flatMap { apply(target, it) }
+            when (
+                val decided =
+                    RecurrenceSplitter.edit(master, target.occurrence, edited, chosen, before)
+            ) {
+                is CalendarResult.Success -> apply(target, decided.value)
+                is CalendarResult.Failure -> decided
+            }
         }
     }
 
@@ -65,7 +70,10 @@ class EventSaver @Inject constructor(private val source: CalendarSource) {
         }
 
     /** The new series first, then the end of the old one; if that fails, the new one goes. */
-    private suspend fun split(target: EditTarget, change: SeriesChange.Split): CalendarResult<Unit> {
+    private suspend fun split(
+        target: EditTarget,
+        change: SeriesChange.Split
+    ): CalendarResult<Unit> {
         val created = change.newSeries?.let { source.create(it.toDraft()) }
         return when (created) {
             is CalendarResult.Failure -> created

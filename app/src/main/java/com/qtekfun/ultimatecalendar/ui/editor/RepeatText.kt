@@ -78,12 +78,15 @@ internal fun summaryText(summary: RepeatSummary): String {
     val base = when (summary.frequency) {
         Frequency.DAILY -> pluralStringResource(R.plurals.editor_sum_daily, n, n)
 
-        Frequency.WEEKLY -> pluralStringResource(
-            R.plurals.editor_sum_weekly,
-            n,
-            n,
-            summary.weekdays.joinToString(", ") { weekdayName(it) }
-        )
+        Frequency.WEEKLY -> {
+            val locale = currentLocale()
+            pluralStringResource(
+                R.plurals.editor_sum_weekly,
+                n,
+                n,
+                summary.weekdays.joinToString(", ") { it.getDisplayName(TextStyle.FULL, locale) }
+            )
+        }
 
         Frequency.MONTHLY -> monthlySentence(summary)
 

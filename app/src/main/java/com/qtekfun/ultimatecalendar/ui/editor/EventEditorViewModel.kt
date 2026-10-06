@@ -67,7 +67,8 @@ class EventEditorViewModel @Inject constructor(
         val current = state.value as? EditorUiState.Ready ?: return false
         return when (val input = GuestInput.add(current.form, text)) {
             is GuestInput.Added -> {
-                mutable.value = current.copy(form = input.form, invalidGuest = null, contacts = emptyList())
+                mutable.value =
+                    current.copy(form = input.form, invalidGuest = null, contacts = emptyList())
                 true
             }
 
@@ -138,6 +139,7 @@ class EventEditorViewModel @Inject constructor(
             }
             when (result) {
                 is CalendarResult.Success -> mutable.value = EditorUiState.Closed
+
                 is CalendarResult.Failure ->
                     updateReady { it.copy(saving = false, saveError = result.error) }
             }

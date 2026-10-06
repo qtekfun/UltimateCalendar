@@ -88,7 +88,10 @@ internal fun ReminderSection(
 private fun AddReminder(form: EventForm, hasIcon: Boolean, onAdd: (Reminder) -> Unit) {
     var menu by remember { mutableStateOf(false) }
     var custom by rememberSaveable { mutableStateOf(false) }
-    val free = ReminderInput.choices(form.allDay).map { Reminder(it) }.filterNot { it in form.reminders }
+    val free = ReminderInput.choices(form.allDay).map { Reminder(it) }.filterNot {
+        it in
+            form.reminders
+    }
     EditorRow(
         if (hasIcon) Icons.Filled.Notifications else null,
         onClick = { menu = true },
@@ -177,7 +180,11 @@ private fun UnitRow(unit: ReminderUnit, selected: Boolean, onClick: () -> Unit) 
             .selectable(selected = selected, role = Role.RadioButton, onClick = onClick),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        RadioButton(selected = selected, onClick = null, modifier = Modifier.padding(end = Spacing.m))
+        RadioButton(
+            selected = selected,
+            onClick = null,
+            modifier = Modifier.padding(end = Spacing.m)
+        )
         Text(
             stringResource(
                 when (unit) {

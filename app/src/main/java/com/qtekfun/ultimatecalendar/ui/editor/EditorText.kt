@@ -86,6 +86,7 @@ internal fun reminderText(reminder: Reminder, allDay: Boolean): String {
     val offset = ReminderOffset.of(reminder.minutesBefore)
     val base = when {
         allDay && reminder.minutesBefore == 0 -> stringResource(R.string.editor_reminder_on_day)
+
         offset.unit == OffsetUnit.AT_START -> stringResource(R.string.reminder_offset_at_start)
 
         else -> pluralStringResource(

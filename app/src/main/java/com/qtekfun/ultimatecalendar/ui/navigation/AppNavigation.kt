@@ -9,7 +9,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.rememberSaveable
 import com.qtekfun.ultimatecalendar.R
 import com.qtekfun.ultimatecalendar.domain.detail.EventRef
+import com.qtekfun.ultimatecalendar.domain.editor.EditorRequest
 import com.qtekfun.ultimatecalendar.ui.detail.EventDetailScreen
+import com.qtekfun.ultimatecalendar.ui.editor.EventEditorRoute
 import com.qtekfun.ultimatecalendar.ui.settings.SettingsScreen
 import com.qtekfun.ultimatecalendar.ui.shell.ShellActions
 import com.qtekfun.ultimatecalendar.ui.shell.ShellScreen
@@ -26,8 +28,10 @@ fun AppNavigation() {
         // T22: Search replaces this placeholder.
         nav.search -> Placeholder(R.string.shell_search) { nav.search = false }
 
-        // T20: the event editor replaces this placeholder.
-        nav.newEvent -> Placeholder(R.string.shell_new_event) { nav.newEvent = false }
+        nav.newEvent -> EventEditorRoute(
+            request = nav.editorRequest ?: EditorRequest.New(),
+            onClose = nav::closeEditor
+        )
 
         // T21: the invitations tray replaces this placeholder.
         nav.invitations -> Placeholder(R.string.shell_invitations) { nav.invitations = false }
@@ -42,13 +46,12 @@ fun AppNavigation() {
             if (ref == null) {
                 nav.eventDetail = false
             } else {
-                // T20: the editor replaces this placeholder; it will take the occurrence.
                 EventDetailScreen(
                     ref = ref,
                     onBack = { nav.eventDetail = false },
                     onEdit = {
                         nav.eventDetail = false
-                        nav.newEvent = true
+                        nav.openEditor(EditorRequest.Edit(ref))
                     }
                 )
             }
@@ -60,7 +63,7 @@ fun AppNavigation() {
         else -> ShellScreen(
             ShellActions(
                 onSearch = { nav.search = true },
-                onNewEvent = { nav.newEvent = true },
+                onNewEvent = { nav.openEditor() },
                 onInvitations = { nav.invitations = true },
                 onSettings = { nav.settings = true },
                 onHelp = { nav.help = true },
@@ -68,8 +71,7 @@ fun AppNavigation() {
                     nav.detailRef = EventRef.of(it)
                     nav.eventDetail = true
                 },
-                // T20: the editor will take the tapped time; for now it opens the same placeholder.
-                onCreateAt = { nav.newEvent = true }
+                onCreateAt = { nav.openEditor(EditorRequest.New(it)) }
             )
         )
     }
