@@ -12,4 +12,110 @@
     <string name="keep_alive_title">Avisos protegidos</string>
     <string name="keep_alive_text">UltimateCalendar sigue activa para que tus avisos lleguen a su hora. No usa la red.</string>
     <string name="keep_alive_turn_off">Desactivar</string>
+    <!-- Ajustes (RF-10) y copia de seguridad cifrada (RF-11) -->
+    <string name="settings">Ajustes</string>
+    <string name="back">Atrás</string>
+    <string name="cancel">Cancelar</string>
+    <string name="settings_version">Versión %1$s</string>
+    <string name="settings_appearance">Apariencia</string>
+    <string name="settings_theme">Tema</string>
+    <string name="theme_system">Sistema</string>
+    <string name="theme_light">Claro</string>
+    <string name="theme_dark">Oscuro</string>
+    <string name="settings_amoled">Negro puro</string>
+    <string name="settings_amoled_hint">Fondos negros en modo oscuro, para pantallas OLED.</string>
+    <string name="settings_dynamic_color">Colores del fondo de pantalla</string>
+    <string name="settings_calendar">Calendario</string>
+    <string name="settings_first_day">Primer día de la semana</string>
+    <string name="first_day_locale">Según el idioma</string>
+    <string name="first_day_saturday">Sábado</string>
+    <string name="first_day_sunday">Domingo</string>
+    <string name="first_day_monday">Lunes</string>
+    <string name="settings_initial_view">Vista al abrir</string>
+    <string name="view_agenda">Agenda</string>
+    <string name="view_day">Día</string>
+    <string name="view_week">Semana</string>
+    <string name="view_month">Mes</string>
+    <string name="settings_default_calendar">Calendario por defecto</string>
+    <string name="settings_default_calendar_auto">El primero editable</string>
+    <string name="settings_default_duration">Duración por defecto</string>
+    <plurals name="duration_minutes">
+        <item quantity="one">%d minuto</item>
+        <item quantity="many">%d de minutos</item>
+        <item quantity="other">%d minutos</item>
+    </plurals>
+    <string name="settings_reminders">Avisos</string>
+    <string name="settings_default_reminders">Avisos por defecto</string>
+    <string name="settings_default_all_day_reminders">Avisos por defecto de eventos de todo el día</string>
+    <string name="settings_add_reminder">Añadir aviso</string>
+    <string name="settings_remove_reminder">Quitar aviso: %1$s</string>
+    <string name="reminder_offset_at_start">Al empezar</string>
+    <plurals name="reminder_offset_minutes">
+        <item quantity="one">%d minuto antes</item>
+        <item quantity="many">%d de minutos antes</item>
+        <item quantity="other">%d minutos antes</item>
+    </plurals>
+    <plurals name="reminder_offset_hours">
+        <item quantity="one">%d hora antes</item>
+        <item quantity="many">%d de horas antes</item>
+        <item quantity="other">%d horas antes</item>
+    </plurals>
+    <plurals name="reminder_offset_days">
+        <item quantity="one">%d día antes</item>
+        <item quantity="many">%d de días antes</item>
+        <item quantity="other">%d días antes</item>
+    </plurals>
+    <plurals name="reminder_offset_weeks">
+        <item quantity="one">%d semana antes</item>
+        <item quantity="many">%d de semanas antes</item>
+        <item quantity="other">%d semanas antes</item>
+    </plurals>
+    <string name="settings_all_day_time">Hora del aviso de todo el día</string>
+    <string name="settings_alarm_mode">Modo alarma</string>
+    <string name="settings_alarm_mode_hint">Programa los avisos como una alarma de reloj, que el ahorro de batería no retrasa.</string>
+    <string name="settings_robust_mode">Modo robusto</string>
+    <string name="settings_robust_mode_hint">Mantiene la app en marcha con una notificación fija, para móviles que detienen las apps en segundo plano.</string>
+    <string name="settings_missed_window">Avisos perdidos</string>
+    <string name="settings_missed_window_hint">Cuánto tiempo atrás se recuperan los avisos que el sistema no mostró.</string>
+    <string name="settings_missed_window_off">Nunca</string>
+    <plurals name="settings_missed_window_hours">
+        <item quantity="one">%d hora</item>
+        <item quantity="many">%d de horas</item>
+        <item quantity="other">%d horas</item>
+    </plurals>
+    <string name="settings_invitations">Invitaciones</string>
+    <string name="settings_invite_check">Buscar invitaciones</string>
+    <plurals name="invite_check_every">
+        <item quantity="one">Cada %d minuto</item>
+        <item quantity="many">Cada %d de minutos</item>
+        <item quantity="other">Cada %d minutos</item>
+    </plurals>
+    <string name="invite_check_manual">Solo cuando lo pida</string>
+    <string name="settings_own_emails">Mis otras direcciones de correo</string>
+    <string name="settings_own_emails_hint">Las invitaciones enviadas a estas direcciones cuentan como enviadas a ti.</string>
+    <string name="settings_own_email_label">Dirección de correo</string>
+    <string name="settings_own_email_invalid">No es una dirección de correo válida</string>
+    <string name="settings_add_email">Añadir dirección</string>
+    <string name="settings_remove_email">Quitar dirección: %1$s</string>
+    <string name="settings_notify_changes">Avisar de cambios</string>
+    <string name="settings_notify_cancellations">Avisar de cancelaciones</string>
+    <string name="settings_backup">Copia de seguridad</string>
+    <string name="settings_backup_hint">Los ajustes se guardan en un archivo cifrado con una frase de contraseña, para llevar la misma configuración a otro móvil.</string>
+    <string name="backup_export">Exportar ajustes</string>
+    <string name="backup_restore">Restaurar ajustes</string>
+    <string name="backup_passphrase">Frase de contraseña</string>
+    <string name="backup_passphrase_repeat">Repite la frase de contraseña</string>
+    <plurals name="backup_passphrase_hint">
+        <item quantity="one">Al menos %d carácter. Sin ella no se puede abrir el archivo, y no se puede recuperar.</item>
+        <item quantity="many">Al menos %d de caracteres. Sin ella no se puede abrir el archivo, y no se puede recuperar.</item>
+        <item quantity="other">Al menos %d caracteres. Sin ella no se puede abrir el archivo, y no se puede recuperar.</item>
+    </plurals>
+    <string name="backup_restore_title">Frase de contraseña de la copia</string>
+    <string name="backup_restore_text">Escribe la frase elegida al exportar los ajustes.</string>
+    <string name="backup_exported">Ajustes exportados</string>
+    <string name="backup_failed">No se pudo guardar el archivo</string>
+    <string name="backup_restored">Ajustes restaurados</string>
+    <string name="backup_wrong_passphrase">Frase incorrecta, o el archivo se ha modificado</string>
+    <string name="backup_invalid">Esto no es una copia de UltimateCalendar</string>
+    <string name="backup_newer_version">Esta copia viene de una versión más nueva de la app. Actualízala primero.</string>
 </resources>
