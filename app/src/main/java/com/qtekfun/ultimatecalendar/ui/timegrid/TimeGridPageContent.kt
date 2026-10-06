@@ -5,12 +5,15 @@ package com.qtekfun.ultimatecalendar.ui.timegrid
 
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -24,6 +27,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -31,7 +38,10 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.intl.Locale
@@ -40,9 +50,12 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.qtekfun.ultimatecalendar.R
 import com.qtekfun.ultimatecalendar.domain.model.EventInstance
+import com.qtekfun.ultimatecalendar.domain.timegrid.AllDayLanes
 import com.qtekfun.ultimatecalendar.domain.timegrid.TimeGridLayout
 import com.qtekfun.ultimatecalendar.domain.timegrid.TimeGridPage
 import com.qtekfun.ultimatecalendar.domain.timegrid.TimeScale
+import com.qtekfun.ultimatecalendar.ui.components.DayBadge
+import com.qtekfun.ultimatecalendar.ui.components.DayBadgeState
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -56,9 +69,6 @@ private val NOW_LINE_HEIGHT = 2.dp
 private val NOW_DOT = 10.dp
 private val LABEL_LIFT = 8.dp
 private val BLOCK_GAP = 1.dp
-private val TODAY_CIRCLE = 32.dp
-private val ALL_DAY_ROW = 48.dp
-private const val MAX_ALL_DAY_ROWS = 3
 
 /** What a page of the grid tells its owner. */
 internal data class GridCallbacks(
@@ -66,7 +76,20 @@ internal data class GridCallbacks(
     val onCreateAt: (LocalDateTime) -> Unit = {}
 )
 
-/** One page of Day or 3 days: day headers, the all-day strip and the scrolling hour grid. */
+/** What differs between the views that share this page: the Week view sets both. */
+internal data class GridOptions(
+    /** The number to show in the corner of the day headers, or null for none. */
+    val weekNumber: Int? = null,
+    /** Rows of the all-day strip before the rest hide behind "+N", or null to scroll them. */
+    val allDayRowLimit: Int? = null
+)
+
+/**
+ * One page of Day, 3 days or Week: day headers, the all-day strip and the scrolling hour grid.
+ * The day columns share the page width; when they would be narrower than
+ * [GridMetrics.minDayWidth] they scroll sideways together, headers and strip included, while the
+ * hour labels stay put.
+ */
 @Composable
 internal fun TimeGridPageContent(
     page: TimeGridPage,
@@ -74,107 +97,98 @@ internal fun TimeGridPageContent(
     now: GridNow,
     scroll: ScrollState,
     callbacks: GridCallbacks,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    options: GridOptions = GridOptions()
 ) {
     val metrics = rememberGridMetrics()
-    Column(modifier) {
-        DayHeaders(page, now, metrics)
-        AllDayStrip(page, metrics, callbacks)
-        if (failed) {
-            Text(
-                stringResource(R.string.timegrid_failed),
-                Modifier.padding(8.dp),
-                color = MaterialTheme.colorScheme.error
-            )
+    BoxWithConstraints(modifier) {
+        val available = maxWidth - metrics.gutter
+        val daysWidth = maxOf(available, metrics.minDayWidth * page.days.size)
+        val sideways = rememberScrollState()
+        Column {
+            val days = DaysLayout(metrics, daysWidth, sideways)
+            DayHeaders(page, now, days, options.weekNumber)
+            AllDayStripContent(page, days, callbacks, options.allDayRowLimit)
+            if (failed) {
+                Text(
+                    stringResource(R.string.timegrid_failed),
+                    Modifier.padding(8.dp),
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+            TimeGridBody(page, now, days, scroll, callbacks)
         }
-        TimeGridBody(page, now, metrics, scroll, callbacks)
     }
 }
 
+/**
+ * Where the day columns sit: the [metrics] of the grid, the [width] all the columns take together
+ * (more than the screen when they scroll) and the [sideways] scroll the headers, the all-day
+ * strip and the grid share.
+ */
+internal class DaysLayout(val metrics: GridMetrics, val width: Dp, val sideways: ScrollState)
+
+/** The area of the day columns: its content is as wide as it needs, scrolling sideways. */
 @Composable
-private fun DayHeaders(page: TimeGridPage, now: GridNow, metrics: GridMetrics) {
+internal fun DaysArea(sideways: ScrollState, modifier: Modifier, content: @Composable () -> Unit) {
+    Box(modifier.horizontalScroll(sideways)) { content() }
+}
+
+@Composable
+private fun DayHeaders(page: TimeGridPage, now: GridNow, days: DaysLayout, weekNumber: Int?) {
     val locale = Locale.current.platformLocale
     val today = TimeGridLayout.dateOf(now.instant, now.zone)
     Row(Modifier.fillMaxWidth()) {
-        Spacer(Modifier.width(metrics.gutter))
-        page.days.forEach { day ->
-            val isToday = day == today
-            val full = day.format(
-                DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).withLocale(locale)
-            )
-            val description = if (isToday) {
-                stringResource(
-                    R.string.timegrid_day_today,
-                    full
-                )
-            } else {
-                full
-            }
-            Column(
-                Modifier
-                    .weight(1f)
-                    .semantics(mergeDescendants = true) { contentDescription = description },
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    day.dayOfWeek.getDisplayName(TextStyle.SHORT, locale),
-                    style = MaterialTheme.typography.labelMedium
-                )
-                DayNumber(day, isToday)
+        WeekNumberCell(weekNumber, Modifier.width(days.metrics.gutter))
+        DaysArea(days.sideways, Modifier.weight(1f)) {
+            Row(Modifier.width(days.width)) {
+                page.days.forEach { day ->
+                    val isToday = day == today
+                    val full = day.format(
+                        DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).withLocale(locale)
+                    )
+                    val description = if (isToday) {
+                        stringResource(R.string.timegrid_day_today, full)
+                    } else {
+                        full
+                    }
+                    Column(
+                        Modifier
+                            .weight(1f)
+                            .clearAndSetSemantics { contentDescription = description },
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            day.dayOfWeek.getDisplayName(TextStyle.SHORT, locale),
+                            style = MaterialTheme.typography.labelMedium,
+                            maxLines = 1
+                        )
+                        DayBadge(
+                            day,
+                            state = if (isToday) DayBadgeState.TODAY else DayBadgeState.NORMAL
+                        )
+                    }
+                }
             }
         }
     }
 }
 
+/** The week number in the corner above the hour labels, when the setting asks for it. */
 @Composable
-private fun DayNumber(day: LocalDate, isToday: Boolean) {
-    val background = if (isToday) {
-        Modifier.background(MaterialTheme.colorScheme.primary, CircleShape)
-    } else {
-        Modifier
+private fun WeekNumberCell(weekNumber: Int?, modifier: Modifier) {
+    if (weekNumber == null) {
+        Spacer(modifier)
+        return
     }
-    val color = if (isToday) {
-        MaterialTheme.colorScheme.onPrimary
-    } else {
-        MaterialTheme.colorScheme.onSurface
-    }
-    Text(
-        day.dayOfMonth.toString(),
-        Modifier
-            .heightIn(min = TODAY_CIRCLE)
-            .width(TODAY_CIRCLE)
-            .then(background)
-            .padding(top = 4.dp),
-        color = color,
-        style = MaterialTheme.typography.titleMedium,
-        textAlign = TextAlign.Center
-    )
-}
-
-@Composable
-private fun AllDayStrip(page: TimeGridPage, metrics: GridMetrics, callbacks: GridCallbacks) {
-    if (page.allDay.isEmpty()) return
-    val rows = page.allDayRows
-    val visibleHeight = ALL_DAY_ROW * minOf(rows, MAX_ALL_DAY_ROWS)
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .heightIn(max = visibleHeight)
-            .verticalScroll(rememberScrollState())
-    ) {
-        Spacer(Modifier.width(metrics.gutter))
-        BoxWithConstraints(Modifier.weight(1f).height(ALL_DAY_ROW * rows)) {
-            val dayWidth = maxWidth / page.days.size
-            page.allDay.forEach { bar ->
-                AllDayEventBar(
-                    bar,
-                    callbacks.onOpenEvent,
-                    Modifier
-                        .offset(dayWidth * bar.firstDay, ALL_DAY_ROW * bar.row)
-                        .size(dayWidth * (bar.lastDay - bar.firstDay + 1), ALL_DAY_ROW)
-                )
-            }
-        }
+    val description = stringResource(R.string.timegrid_week_number, weekNumber)
+    Box(modifier.clearAndSetSemantics { contentDescription = description }, Alignment.Center) {
+        Text(
+            stringResource(R.string.timegrid_week_number_short, weekNumber),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1
+        )
     }
 }
 
@@ -182,14 +196,17 @@ private fun AllDayStrip(page: TimeGridPage, metrics: GridMetrics, callbacks: Gri
 private fun TimeGridBody(
     page: TimeGridPage,
     now: GridNow,
-    metrics: GridMetrics,
+    days: DaysLayout,
     scroll: ScrollState,
     callbacks: GridCallbacks
 ) {
+    val metrics = days.metrics
     val height = metrics.scale.totalHeight.dp
     Row(Modifier.fillMaxWidth().verticalScroll(scroll)) {
         HourLabels(metrics, Modifier.width(metrics.gutter).height(height))
-        DayColumns(page, now, metrics, callbacks, Modifier.weight(1f).height(height))
+        DaysArea(days.sideways, Modifier.weight(1f).height(height)) {
+            DayColumns(page, now, metrics, callbacks, Modifier.width(days.width).height(height))
+        }
     }
 }
 
