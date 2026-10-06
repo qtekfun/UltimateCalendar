@@ -5,13 +5,13 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 # Privacy
 
-UltimateCalendar has no servers, no analytics, no ads and no telemetry. Your calendars stay on your phone and on the servers of the accounts you already use (Google, your CalDAV server through DAVx⁵…). The app talks to the network only when you sign in to its built-in CalDAV connection (Nextcloud), and then only to the one server you configured, always over HTTPS (plain HTTP is refused); it contacts no other host. Without that account the app makes no network request at all, and nothing is scheduled to. With it, events are kept on your phone and synced with that server: changes you make offline wait in a queue until there is a connection. The app never sends mail: invitations are sent, and answers passed on, by your server (CalDAV scheduling). The app password of your account is kept encrypted with a key that never leaves the Android Keystore, excluded from Android backups, and never written to logs; neither are event titles or addresses.
+UltimateCalendar has no servers, no analytics, no ads and no telemetry. Your calendars stay on your phone and on the servers of the accounts you already use (Google, your CalDAV server through DAVx⁵…). The app talks to the network in two cases only, always over HTTPS (plain HTTP is refused, also when a server redirects to it): when you sign in to its built-in CalDAV connection (Nextcloud), and then only to the one server you configured; and when you add a calendar subscription (an ICS or `webcal` address), and then only to the addresses you added, to download that calendar, read only, without cookies or credentials. It contacts no other host. Without that account and without subscriptions the app makes no network request at all, and nothing is scheduled to. With it, events are kept on your phone and synced with that server: changes you make offline wait in a queue until there is a connection. The app never sends mail: invitations are sent, and answers passed on, by your server (CalDAV scheduling). The address of a subscription may hold a secret token, so it is kept encrypted too (same Keystore key), is never shown, never written to logs and only ever leaves the phone inside the encrypted settings backup, and the app asks the server only for what changed (ETag) to save data and battery. Subscriptions never remind and never invite. The app password of your account is kept encrypted with a key that never leaves the Android Keystore, excluded from Android backups, and never written to logs; neither are event titles or addresses.
 
 ## Permissions
 
 | Permission | Why |
 |---|---|
-| Internet (`INTERNET`) | Reach the CalDAV server you sign in to, and only that one. Unused until you add that account. Syncs wait for a connection and for a battery that is not low (WorkManager, which also uses the system's network-state permission for this). |
+| Internet (`INTERNET`) | Reach the CalDAV server you sign in to and the subscription addresses you add, and nothing else. Unused until you add one of them. Syncs wait for a connection and for a battery that is not low (WorkManager, which also uses the system's network-state permission for this). |
 | Read / write calendar | Show your events, create and edit them, answer invitations. |
 | Notifications | Reminders, new invitations and (optional) changes or cancellations. |
 | Alarms & reminders (`USE_EXACT_ALARM` / `SCHEDULE_EXACT_ALARM`) | Deliver reminders exactly on time. |
@@ -25,4 +25,4 @@ UltimateCalendar has no servers, no analytics, no ads and no telemetry. Your cal
 
 Settings backups are encrypted with a password you choose and saved where you decide.
 
-*Reviewed against the manifest on 2026-10-06 (PLAN T30, T36). The optional contacts permission is added with the event editor (T20) and will be reviewed with it.*
+*Reviewed against the manifest on 2026-10-06 (PLAN T30, T36, T39). The optional contacts permission is added with the event editor (T20) and will be reviewed with it.*

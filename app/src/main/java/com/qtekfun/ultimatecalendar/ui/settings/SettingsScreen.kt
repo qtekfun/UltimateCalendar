@@ -79,6 +79,8 @@ fun SettingsScreen(
                 RemindersSection(settings, viewModel)
                 SectionTitle(stringResource(R.string.settings_invitations))
                 InvitationsSection(settings, viewModel)
+                SectionTitle(stringResource(R.string.settings_subscriptions))
+                SubscriptionsSection()
                 SectionTitle(stringResource(R.string.settings_backup))
                 BackupSection()
                 Text(

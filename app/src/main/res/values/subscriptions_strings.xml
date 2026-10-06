@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 UltimateCalendar contributors
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<resources>
+    <string name="settings_subscriptions">Calendar subscriptions</string>
+    <string name="cal_subscriptions_group">Subscriptions</string>
+    <string name="subscriptions_hint">Subscribe to an ICS or webcal calendar by its address to see it here, read only, with its own color. Only secure (https) addresses are accepted. The address is stored encrypted on this phone and never shown.</string>
+    <string name="subscriptions_none">You have no subscriptions yet.</string>
+    <string name="subscriptions_add">Add subscription</string>
+    <string name="subscriptions_add_confirm">Subscribe</string>
+    <string name="subscriptions_refresh_all">Refresh all</string>
+    <string name="subscriptions_refresh_now">Refresh now</string>
+    <string name="subscriptions_remove">Remove</string>
+    <string name="subscriptions_remove_title">Remove subscription?</string>
+    <string name="subscriptions_remove_text">%1$s and its events will be removed from this phone.</string>
+    <string name="subscriptions_save">Save</string>
+    <string name="subscriptions_url_label">Address (https:// or webcal://)</string>
+    <string name="subscriptions_name_label">Name (optional)</string>
+    <string name="subscriptions_color">Color</string>
+    <string name="subscriptions_interval">Refresh</string>
+    <string name="subscriptions_manual">Only when I ask</string>
+    <string name="subscriptions_enabled">Show in the calendar</string>
+    <string name="subscriptions_insecure">Plain http addresses are not accepted. Use an https:// or webcal:// address.</string>
+    <string name="subscriptions_invalid">That is not a valid calendar address.</string>
+    <string name="subscriptions_duplicate">You are already subscribed to that address.</string>
+    <string name="subscriptions_refreshing">Refreshing…</string>
+    <string name="subscriptions_disabled">Switched off</string>
+    <string name="subscriptions_never">Not downloaded yet</string>
+    <string name="subscriptions_updated">Updated %1$s · %2$s</string>
+    <string name="subscriptions_row_description">%1$s. %2$s</string>
+    <string name="subscriptions_error_with_update">%1$s Showing what was read %2$s.</string>
+    <string name="subscriptions_error_timeout">The server took too long to answer.</string>
+    <string name="subscriptions_error_unreachable">The server could not be reached.</string>
+    <string name="subscriptions_error_tls">The secure connection failed (certificate or TLS problem).</string>
+    <string name="subscriptions_error_http">The server answered with an error (%1$d).</string>
+    <string name="subscriptions_error_too_large">The calendar is larger than 10 MB.</string>
+    <string name="subscriptions_error_insecure">The server redirected to an address that is not https.</string>
+    <string name="subscriptions_error_redirects">Too many redirects.</string>
+    <string name="subscriptions_error_not_calendar">That address did not return a calendar.</string>
+    <string name="subscriptions_error_network">A network error occurred.</string>
+    <string name="subscriptions_error_unreadable">The stored address can no longer be read. Remove the subscription and add it again.</string>
+    <string name="subscriptions_note_unchanged">Already up to date.</string>
+    <string name="subscriptions_note_failed">The calendar could not be refreshed. See the subscription for the reason.</string>
+    <plurals name="subscriptions_every_hours">
+        <item quantity="one">Every hour</item>
+        <item quantity="other">Every %d hours</item>
+    </plurals>
+    <plurals name="subscriptions_events">
+        <item quantity="one">%d event</item>
+        <item quantity="other">%d events</item>
+    </plurals>
+    <plurals name="subscriptions_skipped">
+        <item quantity="one">%d entry could not be read.</item>
+        <item quantity="other">%d entries could not be read.</item>
+    </plurals>
+    <plurals name="subscriptions_note_read">
+        <item quantity="one">Updated: %d event.</item>
+        <item quantity="other">Updated: %d events.</item>
+    </plurals>
+</resources>

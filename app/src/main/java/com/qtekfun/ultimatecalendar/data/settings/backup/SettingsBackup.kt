@@ -20,7 +20,7 @@ import kotlinx.serialization.json.Json
 const val BACKUP_FORMAT = 1
 
 /** Version of what is inside; settings added later are optional, so older backups still open. */
-const val BACKUP_CONTENT_VERSION = 2
+const val BACKUP_CONTENT_VERSION = 3
 
 private const val APP_ID = "UltimateCalendar"
 
@@ -30,13 +30,15 @@ data class BackupFile(val app: String = APP_ID, val format: Int = BACKUP_FORMAT,
 
 /**
  * What is sealed: the settings, what only lives on this phone for each calendar (version 2; a
- * version 1 backup has none) and, in phase 6, the optional CalDAV session beside them.
+ * version 1 backup has none), the calendar subscriptions with their addresses (version 3; older
+ * backups have none) and, in phase 6, the optional CalDAV session beside them.
  */
 @Serializable
 data class BackupContent(
     val version: Int = BACKUP_CONTENT_VERSION,
     val settings: BackupSettings,
-    val calendars: List<BackupCalendar> = emptyList()
+    val calendars: List<BackupCalendar> = emptyList(),
+    val subscriptions: List<BackupSubscription> = emptyList()
 )
 
 /**
@@ -81,8 +83,15 @@ data class BackupSettings(
 
 /** How a restore went. */
 sealed interface RestoreResult {
-    /** The settings are back; [calendars] are the calendar overrides still to be applied. */
-    data class Restored(val calendars: List<BackupCalendar> = emptyList()) : RestoreResult
+    /**
+     * The settings are back; [subscriptions] are still to be subscribed to and [calendars] are the
+     * calendar overrides still to be applied (after the subscriptions, whose calendars they may
+     * name).
+     */
+    data class Restored(
+        val calendars: List<BackupCalendar> = emptyList(),
+        val subscriptions: List<BackupSubscription> = emptyList()
+    ) : RestoreResult
 
     /** The passphrase is wrong, or the file was altered: encryption cannot tell which. */
     data object WrongPassphrase : RestoreResult
@@ -107,12 +116,21 @@ class SettingsBackup @Inject constructor(private val settings: SettingsRepositor
     }
 
     /**
-     * The backup file as text, with the local overrides of [calendars] beside the settings. The
-     * passphrase must pass [SettingsRules.isPassphraseAcceptable].
+     * The backup file as text, with the local overrides of [calendars] and the [subscriptions]
+     * (their addresses can be secrets, which is why they are only ever inside the sealed content)
+     * beside the settings. The passphrase must pass [SettingsRules.isPassphraseAcceptable].
      */
-    fun export(passphrase: CharArray, calendars: List<BackupCalendar> = emptyList()): String {
+    fun export(
+        passphrase: CharArray,
+        calendars: List<BackupCalendar> = emptyList(),
+        subscriptions: List<BackupSubscription> = emptyList()
+    ): String {
         require(SettingsRules.isPassphraseAcceptable(passphrase)) { "Passphrase too short" }
-        val content = BackupContent(settings = settings.current().toBackup(), calendars = calendars)
+        val content = BackupContent(
+            settings = settings.current().toBackup(),
+            calendars = calendars,
+            subscriptions = subscriptions
+        )
         val sealed = BackupCrypto.seal(
             json.encodeToString(content).toByteArray(),
             passphrase,
@@ -146,7 +164,7 @@ class SettingsBackup @Inject constructor(private val settings: SettingsRepositor
 
             else -> {
                 settings.update { content.settings.applyTo(it) }
-                RestoreResult.Restored(content.calendars)
+                RestoreResult.Restored(content.calendars, content.subscriptions)
             }
         }
     }

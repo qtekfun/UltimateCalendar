@@ -11,6 +11,7 @@ import com.qtekfun.ultimatecalendar.R
 import com.qtekfun.ultimatecalendar.data.settings.backup.CalendarOverridesBackup
 import com.qtekfun.ultimatecalendar.data.settings.backup.RestoreResult
 import com.qtekfun.ultimatecalendar.data.settings.backup.SettingsBackup
+import com.qtekfun.ultimatecalendar.data.subscriptions.SubscriptionRepository
 import com.qtekfun.ultimatecalendar.di.IoDispatcher
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -32,6 +33,7 @@ class BackupViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val backup: SettingsBackup,
     private val calendarOverrides: CalendarOverridesBackup,
+    private val subscriptions: SubscriptionRepository,
     @IoDispatcher private val io: CoroutineDispatcher
 ) : ViewModel() {
     private val mutableMessages = MutableSharedFlow<Int>(extraBufferCapacity = 1)
@@ -46,8 +48,9 @@ class BackupViewModel @Inject constructor(
     fun export(target: Uri, passphrase: CharArray) {
         viewModelScope.launch {
             val overrides = calendarOverrides.collect()
+            val feeds = subscriptions.forBackup()
             val written = withContext(io) {
-                val text = backup.export(passphrase, overrides)
+                val text = backup.export(passphrase, overrides, feeds)
                 runCatchingIo {
                     context.contentResolver.openOutputStream(target)?.use {
                         it.write(text.toByteArray())
@@ -83,15 +86,17 @@ class BackupViewModel @Inject constructor(
         val text = pending.value ?: return
         viewModelScope.launch {
             val result = withContext(io) { backup.restore(text, passphrase) }
-            // Calendars are matched by account and name; the ones this phone lacks are reported.
-            val missing = (result as? RestoreResult.Restored)
-                ?.let { calendarOverrides.apply(it.calendars) } ?: 0
+            // Subscriptions come first: their calendars may be named by the overrides. Calendars
+            // are matched by account and name; the ones this phone lacks are reported.
+            val restored = result as? RestoreResult.Restored
+            val refused = restored?.let { subscriptions.restore(it.subscriptions).refused } ?: 0
+            val missing = restored?.let { calendarOverrides.apply(it.calendars) } ?: 0
             // A wrong passphrase leaves the dialog open to try again; anything else ends it.
             if (result != RestoreResult.WrongPassphrase) pending.value = null
             mutableMessages.tryEmit(
                 when (result) {
                     is RestoreResult.Restored ->
-                        if (missing >
+                        if (missing + refused >
                             0
                         ) {
                             R.string.backup_restored_some_calendars

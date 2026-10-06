@@ -25,6 +25,7 @@ import io.mockk.mockk
 import java.time.Instant
 import java.time.ZoneOffset
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -41,7 +42,16 @@ class CompositeCalendarSourceTest {
     private val range = TimeRange(start, start.plusSeconds(3600))
     private val provider = mockk<CalendarSource>()
     private val caldav = mockk<CalendarSource>()
-    private val source = CompositeCalendarSource(provider, caldav)
+    private val feeds = mockk<CalendarSource>()
+    private val source = CompositeCalendarSource(provider, caldav, feeds)
+
+    // No subscriptions, unless a test says otherwise.
+    init {
+        coEvery { feeds.calendars() } returns CalendarResult.Success(emptyList())
+        coEvery { feeds.instances(any(), any()) } returns CalendarResult.Success(emptyList())
+        coEvery { feeds.search(any(), any(), any()) } returns CalendarResult.Success(emptyList())
+        every { feeds.changes } returns emptyFlow()
+    }
 
     private fun instance(id: EventId, calendar: CalendarId, at: Instant) = EventInstance(
         id,
@@ -207,6 +217,90 @@ class CompositeCalendarSourceTest {
             fromProvider.emit(Unit)
             assertEquals(Unit, awaitItem())
             fromCalDav.emit(Unit)
+            assertEquals(Unit, awaitItem())
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    private val feed = SubscriptionIds.calendar(1)
+    private val feedEvent = SubscriptionIds.event(1)
+
+    @Test
+    fun `subscriptions join the calendars, the instances and the searches`() = runTest {
+        coEvery { provider.calendars() } returns CalendarResult.Success(listOf(calendar(phone)))
+        coEvery { caldav.calendars() } returns CalendarResult.Success(listOf(calendar(cloud)))
+        coEvery { feeds.calendars() } returns CalendarResult.Success(listOf(calendar(feed)))
+        assertEquals(listOf(phone, cloud, feed), source.calendars().getOrNull()!!.map { it.id })
+
+        val mine = instance(phoneEvent, phone, start)
+        val theirs = instance(feedEvent, feed, start.minusSeconds(60))
+        coEvery { provider.instances(range, null) } returns ok(mine)
+        coEvery { caldav.instances(range, null) } returns ok()
+        coEvery { feeds.instances(range, null) } returns ok(theirs)
+        assertEquals(listOf(theirs, mine), source.instances(range).getOrNull())
+
+        val found = SearchableEvent(feedEvent, feed, "a", mine.time)
+        coEvery { provider.search("a", null, null) } returns CalendarResult.Success(emptyList())
+        coEvery { caldav.search("a", null, null) } returns CalendarResult.Success(emptyList())
+        coEvery { feeds.search("a", null, null) } returns CalendarResult.Success(listOf(found))
+        assertEquals(listOf(found), source.search("a").getOrNull())
+    }
+
+    @Test
+    fun `each source only gets the calendars of its own kind`() = runTest {
+        coEvery { feeds.instances(range, setOf(feed)) } returns
+            ok(instance(feedEvent, feed, start))
+        coEvery { provider.instances(range, setOf(phone)) } returns
+            ok(instance(phoneEvent, phone, start))
+
+        assertEquals(2, source.instances(range, setOf(phone, feed)).getOrNull()!!.size)
+        coVerify(exactly = 0) { caldav.instances(any(), any()) }
+    }
+
+    @Test
+    fun `a subscription's events are read and refused in the source that owns them`() = runTest {
+        val event = mockk<Event> {
+            every { id } returns feedEvent
+            every { calendarId } returns feed
+        }
+        val draft = EventDraft(feed, "t", instance(feedEvent, feed, start).time)
+        val readOnly = CalendarResult.Failure(CalendarError.ReadOnly)
+        coEvery { feeds.event(feedEvent) } returns CalendarResult.Success(event)
+        coEvery { feeds.create(draft) } returns readOnly
+        coEvery { feeds.update(event) } returns readOnly
+        coEvery { feeds.delete(feedEvent) } returns readOnly
+        coEvery { feeds.respond(feedEvent, AttendeeStatus.ACCEPTED) } returns readOnly
+
+        assertEquals(CalendarResult.Success(event), source.event(feedEvent))
+        assertEquals(readOnly, source.create(draft))
+        assertEquals(readOnly, source.update(event))
+        assertEquals(readOnly, source.delete(feedEvent))
+        assertEquals(readOnly, source.respond(feedEvent, AttendeeStatus.ACCEPTED))
+        coVerify(exactly = 0) { provider.create(any()) }
+        coVerify(exactly = 0) { caldav.create(any()) }
+    }
+
+    @Test
+    fun `a failing subscription source never hides the other calendars`() = runTest {
+        val fine = CalendarResult.Success(listOf(calendar(phone)))
+        coEvery { provider.calendars() } returns fine
+        coEvery { caldav.calendars() } returns CalendarResult.Success(emptyList())
+        coEvery { feeds.calendars() } returns
+            CalendarResult.Failure(CalendarError.SourceFailure("db"))
+
+        assertEquals(fine, source.calendars())
+    }
+
+    @Test
+    fun `the changes of the subscriptions arrive too`() = runTest {
+        val fromFeeds = MutableSharedFlow<Unit>()
+        every { provider.changes } returns emptyFlow()
+        every { caldav.changes } returns emptyFlow()
+        every { feeds.changes } returns fromFeeds
+
+        source.changes.test {
+            fromFeeds.subscriptionCount.first { it == 1 }
+            fromFeeds.emit(Unit)
             assertEquals(Unit, awaitItem())
             cancelAndIgnoreRemainingEvents()
         }
