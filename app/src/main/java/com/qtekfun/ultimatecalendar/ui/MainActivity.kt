@@ -7,21 +7,17 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.qtekfun.ultimatecalendar.R
 import com.qtekfun.ultimatecalendar.data.settings.SettingsRepository
 import com.qtekfun.ultimatecalendar.domain.firstrun.FirstRunFlag
 import com.qtekfun.ultimatecalendar.ui.firstrun.FirstRunHost
+import com.qtekfun.ultimatecalendar.ui.navigation.AppNavigation
 import com.qtekfun.ultimatecalendar.ui.theme.UltimateCalendarTheme
 import com.qtekfun.ultimatecalendar.ui.theme.toThemeOptions
 import dagger.hilt.android.AndroidEntryPoint
@@ -47,11 +43,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    FirstRunHost(firstRun) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Text(stringResource(R.string.app_name))
-                        }
-                    }
+                    FirstRunHost(firstRun) { AppNavigation() }
                 }
             }
         }
