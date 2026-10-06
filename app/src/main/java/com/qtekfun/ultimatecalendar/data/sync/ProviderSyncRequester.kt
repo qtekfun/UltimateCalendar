@@ -20,22 +20,24 @@ class ProviderSyncRequester @Inject constructor(
     private val trigger: AccountSyncTrigger,
     @IoDispatcher private val io: CoroutineDispatcher
 ) : SourceSyncRequester {
-    override suspend fun requestSync(accounts: Set<CalendarAccount>): SyncRequests =
-        withContext(io) {
-            var requested = 0
-            var failed = 0
-            for (account in accounts.filter { it.type != LOCAL_ACCOUNT_TYPE }) {
-                try {
-                    trigger.request(account)
-                    requested++
-                } catch (_: SecurityException) {
-                    failed++
-                } catch (_: IllegalArgumentException) {
-                    failed++
-                }
+    override suspend fun requestSync(
+        accounts: Set<CalendarAccount>,
+        reason: SyncReason
+    ): SyncRequests = withContext(io) {
+        var requested = 0
+        var failed = 0
+        for (account in accounts.filter { it.type != LOCAL_ACCOUNT_TYPE }) {
+            try {
+                trigger.request(account, expedited = reason == SyncReason.MANUAL)
+                requested++
+            } catch (_: SecurityException) {
+                failed++
+            } catch (_: IllegalArgumentException) {
+                failed++
             }
-            SyncRequests(requested, failed)
         }
+        SyncRequests(requested, failed)
+    }
 
     private companion object {
         /** `CalendarContract.ACCOUNT_TYPE_LOCAL`. */
