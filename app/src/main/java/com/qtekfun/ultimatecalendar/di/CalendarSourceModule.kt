@@ -3,8 +3,10 @@
 
 package com.qtekfun.ultimatecalendar.di
 
+import com.qtekfun.ultimatecalendar.data.invitations.OwnEditMarks
 import com.qtekfun.ultimatecalendar.data.source.CalendarSource
 import com.qtekfun.ultimatecalendar.data.source.CompositeCalendarSource
+import com.qtekfun.ultimatecalendar.data.source.OwnEditMarkingSource
 import com.qtekfun.ultimatecalendar.data.source.ProviderCalendarSource
 import com.qtekfun.ultimatecalendar.data.source.caldav.CalDavCalendarSource
 import com.qtekfun.ultimatecalendar.data.source.caldav.CalDavSyncTrigger
@@ -53,7 +55,11 @@ interface CalendarSourceModule {
         fun source(
             provider: ProviderCalendarSource,
             caldav: CalDavCalendarSource,
-            subscriptions: SubscriptionCalendarSource
-        ): CalendarSource = CompositeCalendarSource(provider, caldav, subscriptions)
+            subscriptions: SubscriptionCalendarSource,
+            ownEdits: OwnEditMarks
+        ): CalendarSource = OwnEditMarkingSource(
+            CompositeCalendarSource(provider, caldav, subscriptions),
+            ownEdits
+        )
     }
 }

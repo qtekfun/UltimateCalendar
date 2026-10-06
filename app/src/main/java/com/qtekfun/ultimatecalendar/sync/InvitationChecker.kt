@@ -3,10 +3,14 @@
 
 package com.qtekfun.ultimatecalendar.sync
 
+import com.qtekfun.ultimatecalendar.data.invitations.AttendedEventRecord
+import com.qtekfun.ultimatecalendar.data.invitations.NoAttendedEvents
 import com.qtekfun.ultimatecalendar.data.invitations.NotifiedInvitations
 import com.qtekfun.ultimatecalendar.data.source.CalendarSource
 import com.qtekfun.ultimatecalendar.data.sync.SourceSyncRequester
 import com.qtekfun.ultimatecalendar.data.sync.SyncReason
+import com.qtekfun.ultimatecalendar.domain.invitations.AttendedEvent
+import com.qtekfun.ultimatecalendar.domain.invitations.AttendedEventDetector
 import com.qtekfun.ultimatecalendar.domain.invitations.Invitation
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationDetector
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationNotifier
@@ -38,6 +42,11 @@ import kotlinx.coroutines.withContext
  * from different triggers (the periodic job, the app opening, a provider change) run one at a
  * time. Built by `InvitationCheckModule`. After recording, it hands the invitations still pending
  * to [InvitationReReminders].
+ *
+ * The same pass follows the upcoming events the user goes to (accepted or maybe) and tells their
+ * changes and cancellations too (RF-07); see [AttendedEventDetector]. They use the events and
+ * occurrences already read for the invitations, plus one read per followed event that is not in
+ * the window any more (almost never any). Their record is replaced right after the invitations'.
  */
 // Every part is a separate port (source, sync, record, notifier, settings, time, threads).
 @Suppress("LongParameterList")
@@ -49,10 +58,12 @@ class InvitationChecker(
     private val settings: InvitationCheckSettings,
     private val clock: Clock,
     private val io: CoroutineDispatcher,
-    private val reReminders: InvitationReReminders = InvitationReReminders { }
+    private val reReminders: InvitationReReminders = InvitationReReminders { },
+    private val attended: AttendedEventRecord = NoAttendedEvents
 ) {
     private val running = Mutex()
     private val detector = InvitationDetector(clock)
+    private val attendedDetector = AttendedEventDetector(clock)
 
     /** Emits when the source says its data may have changed. */
     val sourceChanges: Flow<Unit> get() = source.changes
@@ -87,7 +98,7 @@ class InvitationChecker(
                 is CalendarResult.Success -> {
                     val aliases = settings.aliases()
                     readEvents(null, aliases).map {
-                        detector.scan(it, calendars.value, aliases).pending
+                        detector.scan(it.events, calendars.value, aliases).pending
                     }
                 }
             }
@@ -111,24 +122,31 @@ class InvitationChecker(
         if (requestSync) syncRequester.requestSync(calendars.map { it.account }.toSet(), reason)
 
         val previous = notified.load()
+        val followed = attended.load()
         val aliases = settings.aliases()
-        return when (val events = readEvents(previous.earliestStart(), aliases)) {
-            is CalendarResult.Failure -> InvitationCheckOutcome.Failed(events.error)
-            is CalendarResult.Success -> finish(previous, events.value, calendars, aliases)
+        val from = listOfNotNull(previous.earliestStart(), followed.earliestStart()).minOrNull()
+        return when (val read = readEvents(from, aliases, followed)) {
+            is CalendarResult.Failure -> InvitationCheckOutcome.Failed(read.error)
+            is CalendarResult.Success -> finish(previous, followed, read.value, calendars, aliases)
         }
     }
 
     /** Compares with what was notified, notifies the differences and only then records them. */
     private suspend fun finish(
         previous: List<Invitation>,
-        events: List<Event>,
+        followed: List<AttendedEvent>,
+        read: Read,
         calendars: List<CalendarInfo>,
         aliases: Set<String>
     ): InvitationCheckOutcome {
-        val scan = detector.scan(events, calendars, aliases)
-        val changes = detector.diff(previous, scan)
+        val scan = detector.scan(read.events, calendars, aliases)
+        val attendedScan = attendedDetector.scan(read.events, read.instances, calendars, aliases)
+        val pendingChanges = detector.diff(previous, scan)
+        val changes = pendingChanges.withAttended(attendedDetector.diff(followed, attendedScan))
         if (!changes.isEmpty) notifier.notify(changes)
         if (scan.pending.toSet() != previous.toSet()) notified.replaceAll(scan.pending)
+        val records = attendedScan.tracked.map { it.record }
+        if (records != followed) attended.replaceAll(records)
         // What is still pending decides which extra reminders exist (T40); an answered,
         // cancelled or moved invitation loses its own.
         reReminders.reconcile(scan.pending)
@@ -142,13 +160,21 @@ class InvitationChecker(
      */
     private suspend fun readEvents(
         from: Instant?,
-        aliases: Set<String>
-    ): CalendarResult<List<Event>> {
+        aliases: Set<String>,
+        followed: List<AttendedEvent> = emptyList()
+    ): CalendarResult<Read> {
         val now = clock.instant()
         val range = TimeRange(minOf(from ?: now, now), now.plus(HORIZON))
         return when (val instances = source.instances(range)) {
             is CalendarResult.Failure -> instances
-            is CalendarResult.Success -> readEach(candidates(instances.value, aliases))
+
+            is CalendarResult.Success -> {
+                val ids = candidates(instances.value, aliases)
+                // A followed event with no occurrence in the window (moved out of it, or gone)
+                // is read on its own: it must be told apart from a deleted one.
+                val missing = followed.map { it.key.eventId }.filter { it !in ids }.distinct()
+                readEach(ids + missing).map { Read(it, instances.value) }
+            }
         }
     }
 
@@ -183,6 +209,12 @@ class InvitationChecker(
         .distinct()
 
     private fun List<Invitation>.earliestStart() = minOfOrNull { it.time.startIn(clock.zone) }
+
+    @JvmName("earliestStartOfAttended")
+    private fun List<AttendedEvent>.earliestStart() = minOfOrNull { it.time.startIn(clock.zone) }
+
+    /** The events read, and the occurrences they were found from. */
+    private class Read(val events: List<Event>, val instances: List<EventInstance>)
 
     private companion object {
         val HORIZON: Duration = Duration.ofDays(365)

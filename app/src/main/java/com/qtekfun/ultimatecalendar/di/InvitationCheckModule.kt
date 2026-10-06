@@ -5,8 +5,11 @@ package com.qtekfun.ultimatecalendar.di
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.qtekfun.ultimatecalendar.data.invitations.AttendedEventRecord
+import com.qtekfun.ultimatecalendar.data.invitations.AttendedEvents
 import com.qtekfun.ultimatecalendar.data.invitations.InvitationResponses
 import com.qtekfun.ultimatecalendar.data.invitations.NotifiedInvitations
+import com.qtekfun.ultimatecalendar.data.invitations.OwnEditMarks
 import com.qtekfun.ultimatecalendar.data.invitations.SourceInvitationResponses
 import com.qtekfun.ultimatecalendar.data.settings.RepositoryInvitationCheckSettings
 import com.qtekfun.ultimatecalendar.data.settings.SettingsRepository
@@ -75,6 +78,17 @@ interface InvitationCheckBindingsModule {
     fun scheduler(scheduler: WorkManagerInvitationScheduler): InvitationCheckScheduler
 }
 
+/** The record of the events the user goes to (RF-07), for the check and for the app's writes. */
+@Module
+@InstallIn(SingletonComponent::class)
+interface AttendedEventsBindingsModule {
+    @Binds
+    fun attendedRecord(events: AttendedEvents): AttendedEventRecord
+
+    @Binds
+    fun ownEditMarks(events: AttendedEvents): OwnEditMarks
+}
+
 @Module
 @InstallIn(SingletonComponent::class)
 object InvitationCheckModule {
@@ -101,7 +115,8 @@ object InvitationCheckModule {
         settings: InvitationCheckSettings,
         clock: Clock,
         @IoDispatcher io: CoroutineDispatcher,
-        reReminders: InvitationReReminders
+        reReminders: InvitationReReminders,
+        attended: AttendedEventRecord
     ): InvitationChecker = InvitationChecker(
         source,
         syncRequester,
@@ -110,6 +125,7 @@ object InvitationCheckModule {
         settings,
         clock,
         io,
-        reReminders
+        reReminders,
+        attended
     )
 }

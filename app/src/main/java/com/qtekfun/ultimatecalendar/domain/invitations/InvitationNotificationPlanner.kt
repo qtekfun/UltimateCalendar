@@ -32,6 +32,9 @@ sealed interface NotificationOp {
 
     /** Tells, on the changes channel, that the organizer cancelled an event. */
     data class ShowCancelled(val invitation: Invitation) : NotificationOp
+
+    /** Removes the notes of the changes channel about an event the user no longer goes to. */
+    data class ClearChanges(val key: InvitationKey) : NotificationOp
 }
 
 /** Which optional notifications the user asked for in Settings (RF-07, both off by default). */
@@ -70,6 +73,15 @@ object InvitationNotificationPlanner {
                 if (optional.cancellations) add(NotificationOp.ShowCancelled(it))
             }
             changes.answeredElsewhere.forEach { add(NotificationOp.CancelInvitation(it.key)) }
+            // Events the user goes to (RF-07): nothing asks for an answer, only the notes remain.
+            if (optional.changes) {
+                changes.attendedChanged.forEach { add(NotificationOp.ShowMoved(it.current)) }
+            }
+            changes.attendedCancelled.forEach {
+                add(NotificationOp.ClearChanges(it.key))
+                if (optional.cancellations) add(NotificationOp.ShowCancelled(it))
+            }
+            changes.attendedDropped.forEach { add(NotificationOp.ClearChanges(it)) }
         }
 
     /** One notification needs no group; two or more are gathered under a summary. */

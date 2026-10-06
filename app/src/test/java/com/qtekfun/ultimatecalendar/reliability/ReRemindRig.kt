@@ -99,6 +99,8 @@ class ReRemindRig(
 
         override fun showCancelled(invitation: Invitation) = Unit
 
+        override fun clearChanges(key: InvitationKey) = Unit
+
         override fun cancel(key: InvitationKey) = Unit
 
         override fun refreshSummary() = Unit

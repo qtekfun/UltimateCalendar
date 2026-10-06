@@ -18,6 +18,7 @@ import com.qtekfun.ultimatecalendar.domain.invitations.InvitationKey
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationNotificationPlanner
 import com.qtekfun.ultimatecalendar.domain.invitations.NotificationTags
 import com.qtekfun.ultimatecalendar.domain.invitations.SummaryOp
+import com.qtekfun.ultimatecalendar.domain.invitations.detailRef
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -54,13 +55,22 @@ class AndroidInvitationNotifications @Inject constructor(
 
     override fun showMoved(invitation: Invitation) = post(
         NotificationTags.moved(invitation.key),
-        builders.info(invitation, R.string.invitation_moved)
+        builders.info(
+            invitation,
+            R.string.invitation_moved,
+            NotificationRoute.Event(invitation.detailRef())
+        )
     )
 
     override fun showCancelled(invitation: Invitation) = post(
         NotificationTags.cancelled(invitation.key),
-        builders.info(invitation, R.string.invitation_cancelled)
+        builders.info(invitation, R.string.invitation_cancelled, NotificationRoute.Inbox)
     )
+
+    override fun clearChanges(key: InvitationKey) {
+        manager.cancel(NotificationTags.moved(key), ID)
+        manager.cancel(NotificationTags.cancelled(key), ID)
+    }
 
     override fun cancel(key: InvitationKey) = manager.cancel(NotificationTags.invitation(key), ID)
 

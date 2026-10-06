@@ -48,6 +48,10 @@ class RecordingSurface : InvitationNotificationSurface {
         calls += "cancelled ${invitation.key.eventId.value}"
     }
 
+    override fun clearChanges(key: InvitationKey) {
+        calls += "clear ${key.eventId.value}"
+    }
+
     override fun cancel(key: InvitationKey) {
         calls += "cancel ${key.eventId.value}"
     }

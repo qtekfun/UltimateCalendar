@@ -69,14 +69,20 @@ class InvitationNotificationBuilders @Inject constructor(
         .setGroupAlertBehavior(NotificationCompat.GROUP_ALERT_CHILDREN)
         .setOnlyAlertOnce(true)
 
-    /** A note on the changes channel: the organizer moved or cancelled the event. */
-    fun info(invitation: Invitation, @StringRes headline: Int): NotificationCompat.Builder =
-        base(NotificationChannels.CHANGES)
-            .setContentTitle(invitation.title)
-            .setContentText(context.getString(headline, timeText(invitation)))
-            .setContentIntent(open(NotificationRoute.Inbox))
-            .setCategory(NotificationCompat.CATEGORY_EVENT)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+    /**
+     * A note on the changes channel: the organizer moved or cancelled the event. A tap goes to
+     * [route]: the event's detail for a move; a cancelled event has no detail to open.
+     */
+    fun info(
+        invitation: Invitation,
+        @StringRes headline: Int,
+        route: NotificationRoute
+    ): NotificationCompat.Builder = base(NotificationChannels.CHANGES)
+        .setContentTitle(invitation.title)
+        .setContentText(context.getString(headline, timeText(invitation)))
+        .setContentIntent(open(route))
+        .setCategory(NotificationCompat.CATEGORY_EVENT)
+        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 
     private fun base(channel: String) = NotificationCompat.Builder(context, channel)
         .setSmallIcon(R.drawable.ic_launcher_foreground)
