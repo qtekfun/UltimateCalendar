@@ -131,6 +131,10 @@ class Screenshots {
             driver.launch()
             lightViews(locale, week, driver)
             darkDay(locale, driver)
+        } catch (failure: Throwable) {
+            // What the screen showed when it went wrong, for whoever reads the artifact.
+            snap(locale, "failure", DeviceTools.screen())
+            throw failure
         } finally {
             driver.close()
             DeviceTools.shell("cmd uimode night auto")

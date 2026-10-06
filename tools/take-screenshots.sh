@@ -33,12 +33,14 @@ out=$(adb shell am instrument -w -e screenshots true \
   -e class "$package.Screenshots#$method" \
   "$package.test/$package.HiltTestRunner" | tr -d '\r')
 echo "$out"
+
+# Whatever was taken is copied, even when the test failed, to see how far it got.
+mkdir -p "$dest"
+adb pull "/sdcard/Android/data/$package/files/screenshots/." "$dest" || true
+
 # `am instrument` exits 0 even when a test fails: look for the verdict.
 if ! grep -q '^OK (' <<<"$out"; then
   echo "::error::the Screenshots test did not pass (or was skipped)" >&2
   exit 1
 fi
-
-mkdir -p "$dest"
-adb pull "/sdcard/Android/data/$package/files/screenshots/." "$dest"
 echo "Screenshots are in $dest"
