@@ -44,6 +44,22 @@ class AccountCalendarsTest {
     }
 
     @Test
+    fun `the CalDAV account has its own group beside the provider's, named by login and host`() {
+        val caldav = CalendarAccount("ana@cloud.example.com", CalendarAccount.CALDAV_TYPE)
+        val groups = AccountCalendars.group(
+            listOf(
+                calendar(1, "Personal", google),
+                calendar(2, "Work", caldav),
+                calendar(3, "Home", caldav)
+            )
+        )
+
+        assertEquals(listOf(caldav, google), groups.map { it.account })
+        assertTrue(groups[0].account.isCalDav)
+        assertEquals(listOf("Home", "Work"), groups[0].calendars.map { it.displayName })
+    }
+
+    @Test
     fun `no calendars make no groups`() {
         assertTrue(AccountCalendars.group(emptyList()).isEmpty())
     }

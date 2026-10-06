@@ -19,10 +19,15 @@ val LocalOpenWizard = staticCompositionLocalOf<() -> Unit> { {} }
 /**
  * Shows the wizard the first time the app opens, in place of [content], and lets any screen
  * under it open it again through [LocalOpenWizard]. Closing it, by "Done" or going back, counts
- * as seen: it is not shown by itself again.
+ * as seen: it is not shown by itself again. [onConnectCalDav] is the wizard's way to the CalDAV
+ * connection (RF-12): it closes the wizard, as seen, and asks the app to open that screen.
  */
 @Composable
-fun FirstRunHost(flag: FirstRunFlag, content: @Composable () -> Unit) {
+fun FirstRunHost(
+    flag: FirstRunFlag,
+    onConnectCalDav: () -> Unit = {},
+    content: @Composable () -> Unit
+) {
     var open by rememberSaveable { mutableStateOf(!flag.isDone()) }
     val close = {
         flag.markDone()
@@ -31,7 +36,13 @@ fun FirstRunHost(flag: FirstRunFlag, content: @Composable () -> Unit) {
     CompositionLocalProvider(LocalOpenWizard provides { open = true }) {
         if (open) {
             BackHandler(onBack = close)
-            ReliabilityWizardScreen(onDone = close)
+            ReliabilityWizardScreen(
+                onDone = close,
+                onConnectCalDav = {
+                    close()
+                    onConnectCalDav()
+                }
+            )
         } else {
             content()
         }

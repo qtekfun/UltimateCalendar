@@ -16,6 +16,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -46,7 +47,11 @@ import com.qtekfun.ultimatecalendar.ui.adaptive.ReadingPane
  * [LocalOpenWizard]. [onDone] is called when the user finishes or leaves it.
  */
 @Composable
-fun ReliabilityWizardScreen(onDone: () -> Unit, viewModel: FirstRunViewModel = viewModel()) {
+fun ReliabilityWizardScreen(
+    onDone: () -> Unit,
+    onConnectCalDav: () -> Unit = {},
+    viewModel: FirstRunViewModel = viewModel()
+) {
     val status by viewModel.status.collectAsStateWithLifecycle()
     // Permissions change in other screens and in the system's settings: read them again.
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.refresh() }
@@ -67,7 +72,9 @@ fun ReliabilityWizardScreen(onDone: () -> Unit, viewModel: FirstRunViewModel = v
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 status?.let { current ->
-                    viewModel.plan(current).forEach { item -> StepCard(item, current, viewModel) }
+                    viewModel.plan(current).forEach { item ->
+                        StepCard(item, current, viewModel, onConnectCalDav)
+                    }
                 }
                 Button(onClick = onDone, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(R.string.wizard_done))
@@ -78,7 +85,12 @@ fun ReliabilityWizardScreen(onDone: () -> Unit, viewModel: FirstRunViewModel = v
 }
 
 @Composable
-private fun StepCard(item: SetupItem, status: SetupStatus, viewModel: FirstRunViewModel) {
+private fun StepCard(
+    item: SetupItem,
+    status: SetupStatus,
+    viewModel: FirstRunViewModel,
+    onConnectCalDav: () -> Unit
+) {
     val context = LocalContext.current
     val done = item.state == SetupItem.State.DONE
     when (item.step) {
@@ -89,7 +101,9 @@ private fun StepCard(item: SetupItem, status: SetupStatus, viewModel: FirstRunVi
             R.string.wizard_account_why,
             action = Action(R.string.wizard_open_accounts) {
                 PhoneSettings.openAccounts(context)
-            }
+            },
+            // The app's own CalDAV connection (RF-12): one more button, not one more step.
+            secondary = Action(R.string.wizard_connect_caldav, onConnectCalDav)
         )
 
         SetupStep.NOTIFICATIONS -> NotificationsCard(done, viewModel::refresh)
@@ -181,7 +195,8 @@ internal fun WizardCard(
     why: Int,
     done: Boolean? = null,
     action: Action? = null,
-    hint: Int? = null
+    hint: Int? = null,
+    secondary: Action? = null
 ) {
     StepSurface {
         Text(
@@ -210,6 +225,9 @@ internal fun WizardCard(
             )
         } else if (action != null) {
             Button(onClick = action.onClick) { Text(stringResource(action.label)) }
+        }
+        if (done != true && secondary != null) {
+            OutlinedButton(onClick = secondary.onClick) { Text(stringResource(secondary.label)) }
         }
     }
 }

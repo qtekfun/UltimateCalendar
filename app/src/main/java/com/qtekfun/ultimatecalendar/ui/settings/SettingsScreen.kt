@@ -38,6 +38,7 @@ import com.qtekfun.ultimatecalendar.domain.settings.FirstDayOfWeek
 import com.qtekfun.ultimatecalendar.domain.settings.InitialView
 import com.qtekfun.ultimatecalendar.domain.settings.InviteCheckInterval
 import com.qtekfun.ultimatecalendar.domain.settings.SettingsRules
+import com.qtekfun.ultimatecalendar.ui.account.AccountsSection
 import com.qtekfun.ultimatecalendar.ui.adaptive.ReadingPane
 
 /**
@@ -50,6 +51,7 @@ import com.qtekfun.ultimatecalendar.ui.adaptive.ReadingPane
 fun SettingsScreen(
     onBack: () -> Unit,
     calendars: List<CalendarInfo> = emptyList(),
+    onOpenAccount: () -> Unit = {},
     viewModel: SettingsViewModel = viewModel()
 ) {
     val settings = viewModel.settings.collectAsStateWithLifecycle().value
@@ -71,6 +73,8 @@ fun SettingsScreen(
                 Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                SectionTitle(stringResource(R.string.settings_accounts))
+                AccountsSection(onOpenAccount)
                 SectionTitle(stringResource(R.string.settings_appearance))
                 AppearanceSection(settings, viewModel)
                 SectionTitle(stringResource(R.string.settings_calendar))

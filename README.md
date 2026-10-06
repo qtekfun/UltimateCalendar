@@ -12,7 +12,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 A beautiful, free calendar for Android: the look of Google Calendar, the invitations inbox of Apple Calendar, and reminders that arrive even on phones that kill apps.
 
-- Works with every calendar on your phone: Google, [DAVx⁵](https://www.davx5.com/) (Nextcloud and any CalDAV server) and more — no Google Play Services needed. A built-in CalDAV connection (Nextcloud) syncs its own calendars next to them; the sign-in screen is still to come, and without an account the app makes no network request.
+- Works with every calendar on your phone: Google, [DAVx⁵](https://www.davx5.com/) (Nextcloud and any CalDAV server) and more — no Google Play Services needed. A built-in CalDAV connection (Settings › Accounts › Connect a CalDAV server, for Nextcloud) syncs its own calendars next to them: you sign in in your browser, the app keeps only a revocable app password, encrypted with the Android Keystore, and talks only to the server you typed, over HTTPS. Without that account the app makes no network request. The encrypted settings backup can, if you choose, carry that sign-in too.
 - Agenda, day, 3-day, week and month views.
 - One inbox for all unanswered invitations, from every account, with Accept / Maybe / Decline right from the notification.
 - Reminders that recover: if the system put the app to sleep, missed reminders are shown as soon as it wakes.

@@ -23,6 +23,9 @@ class NavState {
     var detailRef by mutableStateOf<EventRef?>(null)
     var help by mutableStateOf(false)
 
+    /** The CalDAV account screen (RF-12): the login or the account, opened from Settings. */
+    var account by mutableStateOf(false)
+
     /** What the event editor (open while [newEvent] is true) edits; null is a new event. */
     var editorRequest by mutableStateOf<EditorRequest?>(null)
 
@@ -39,6 +42,7 @@ class NavState {
         settings = false
         eventDetail = false
         help = false
+        account = false
         closeEditor()
     }
 
@@ -50,6 +54,7 @@ class NavState {
     companion object {
         private const val DETAIL_INDEX = 6
         private const val EDITOR_INDEX = 7
+        private const val ACCOUNT_INDEX = 8
 
         val Saver: Saver<NavState, Any> = listSaver(
             save = {
@@ -61,7 +66,8 @@ class NavState {
                     it.eventDetail,
                     it.help,
                     it.detailRef?.encode(),
-                    it.editorRequest?.encode()
+                    it.editorRequest?.encode(),
+                    it.account
                 )
             },
             restore = { values ->
@@ -73,6 +79,7 @@ class NavState {
                     eventDetail = values.getOrNull(4) as? Boolean ?: false
                     help = values.getOrNull(5) as? Boolean ?: false
                     detailRef = EventRef.decode(values.getOrNull(DETAIL_INDEX) as? String)
+                    account = values.getOrNull(ACCOUNT_INDEX) as? Boolean ?: false
                     editorRequest = EditorRequest.decode(
                         (values.getOrNull(EDITOR_INDEX) as? List<*>)?.filterIsInstance<String>()
                     )

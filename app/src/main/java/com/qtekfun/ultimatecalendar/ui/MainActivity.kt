@@ -18,6 +18,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.qtekfun.ultimatecalendar.data.settings.SettingsRepository
 import com.qtekfun.ultimatecalendar.domain.firstrun.FirstRunFlag
 import com.qtekfun.ultimatecalendar.notify.InvitationIntents
+import com.qtekfun.ultimatecalendar.notify.NotificationRoute
 import com.qtekfun.ultimatecalendar.ui.firstrun.FirstRunHost
 import com.qtekfun.ultimatecalendar.ui.navigation.AppNavigation
 import com.qtekfun.ultimatecalendar.ui.navigation.NotificationRoutes
@@ -52,7 +53,10 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    FirstRunHost(firstRun) { AppNavigation(routes) }
+                    FirstRunHost(
+                        firstRun,
+                        onConnectCalDav = { routes.publish(NotificationRoute.ConnectCalDav) }
+                    ) { AppNavigation(routes) }
                 }
             }
         }
