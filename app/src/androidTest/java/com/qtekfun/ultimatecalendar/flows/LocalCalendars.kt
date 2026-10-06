@@ -122,6 +122,27 @@ class LocalCalendars(private val context: Context) {
         return id
     }
 
+    /**
+     * Makes [organizer] the organizer of [event], as the server of an invitation leaves it: a
+     * locally created event is organised by the calendar's owner, and the owner's own changes are
+     * not "changes by the organizer".
+     */
+    fun organizeBy(event: EventId, organizer: String) {
+        val values = ContentValues().apply { put(Events.ORGANIZER, organizer) }
+        val uri = ContentUris.withAppendedId(Events.CONTENT_URI, event.value)
+        resolver.update(asSyncAdapter(uri), values, null, null)
+    }
+
+    /** The organizer moves [event] to [start] (an hour long): written as a sync adapter does. */
+    fun moveTo(event: EventId, start: ZonedDateTime) {
+        val values = ContentValues().apply {
+            put(Events.DTSTART, start.toInstant().toEpochMilli())
+            put(Events.DTEND, start.plusHours(1).toInstant().toEpochMilli())
+        }
+        val uri = ContentUris.withAppendedId(Events.CONTENT_URI, event.value)
+        resolver.update(asSyncAdapter(uri), values, null, null)
+    }
+
     /** Every event of the test calendars that is not deleted, series, exceptions and all. */
     fun events(): List<StoredEvent> {
         val projection = arrayOf(
