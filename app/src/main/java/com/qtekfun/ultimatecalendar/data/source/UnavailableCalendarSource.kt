@@ -13,6 +13,7 @@ import com.qtekfun.ultimatecalendar.domain.model.EventInstance
 import com.qtekfun.ultimatecalendar.domain.model.TimeRange
 import com.qtekfun.ultimatecalendar.domain.result.CalendarError
 import com.qtekfun.ultimatecalendar.domain.result.CalendarResult
+import com.qtekfun.ultimatecalendar.domain.search.SearchableEvent
 import java.time.Instant
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
@@ -30,6 +31,12 @@ object UnavailableCalendarSource : CalendarSource {
         range: TimeRange,
         calendarIds: Set<CalendarId>?
     ): CalendarResult<List<EventInstance>> = unavailable()
+
+    override suspend fun search(
+        query: String,
+        calendarIds: Set<CalendarId>?,
+        range: TimeRange?
+    ): CalendarResult<List<SearchableEvent>> = unavailable()
 
     override suspend fun event(id: EventId): CalendarResult<Event> = unavailable()
 

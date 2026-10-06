@@ -17,6 +17,7 @@ import com.qtekfun.ultimatecalendar.domain.model.EventTime
 import com.qtekfun.ultimatecalendar.domain.model.TimeRange
 import com.qtekfun.ultimatecalendar.domain.result.CalendarError
 import com.qtekfun.ultimatecalendar.domain.result.CalendarResult
+import com.qtekfun.ultimatecalendar.domain.search.SearchableEvent
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
@@ -152,6 +153,12 @@ class DemoCalendarSource(private val zone: ZoneId, private val today: LocalDate)
             .filter { it.time.startIn(zone) < range.end && it.time.endIn(zone) > range.start }
             .sortedBy { it.time.startIn(zone) }
     )
+
+    override suspend fun search(
+        query: String,
+        calendarIds: Set<CalendarId>?,
+        range: TimeRange?
+    ): CalendarResult<List<SearchableEvent>> = CalendarResult.Success(emptyList())
 
     override suspend fun event(id: EventId): CalendarResult<Event> = unsupported
 

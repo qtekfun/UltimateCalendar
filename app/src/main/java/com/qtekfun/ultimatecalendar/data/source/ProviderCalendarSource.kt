@@ -14,6 +14,7 @@ import com.qtekfun.ultimatecalendar.data.source.provider.ProviderFailure
 import com.qtekfun.ultimatecalendar.data.source.provider.ProviderGateway
 import com.qtekfun.ultimatecalendar.data.source.provider.ProviderOp
 import com.qtekfun.ultimatecalendar.data.source.provider.ProviderQuery
+import com.qtekfun.ultimatecalendar.data.source.provider.ProviderSearch
 import com.qtekfun.ultimatecalendar.data.source.provider.ProviderStore
 import com.qtekfun.ultimatecalendar.data.source.provider.ProviderTable
 import com.qtekfun.ultimatecalendar.data.source.provider.SeriesExceptions
@@ -30,6 +31,9 @@ import com.qtekfun.ultimatecalendar.domain.model.EventInstance
 import com.qtekfun.ultimatecalendar.domain.model.TimeRange
 import com.qtekfun.ultimatecalendar.domain.result.CalendarError
 import com.qtekfun.ultimatecalendar.domain.result.CalendarResult
+import com.qtekfun.ultimatecalendar.domain.search.SearchMatcher
+import com.qtekfun.ultimatecalendar.domain.search.SearchQuery
+import com.qtekfun.ultimatecalendar.domain.search.SearchableEvent
 import java.time.Instant
 import java.time.ZoneOffset
 import javax.inject.Inject
@@ -57,6 +61,7 @@ class ProviderCalendarSource @Inject constructor(
 ) : CalendarSource {
     private val store = ProviderStore(gateway)
     private val exceptions = SeriesExceptions(store)
+    private val search = ProviderSearch(gateway)
 
     override val changes: Flow<Unit> get() = gateway.changes
 
@@ -77,6 +82,22 @@ class ProviderCalendarSource @Inject constructor(
             .mapNotNull { InstanceMapping.toInstance(it, range) }
             .filter { calendarIds == null || it.calendarId in calendarIds }
             .sortedBy { it.time.startIn(ZoneOffset.UTC) }
+    }
+
+    override suspend fun search(
+        query: String,
+        calendarIds: Set<CalendarId>?,
+        range: TimeRange?
+    ): CalendarResult<List<SearchableEvent>> = guarded {
+        val words = SearchQuery.of(query)
+        if (words.isBlank || calendarIds?.isEmpty() == true) {
+            emptyList()
+        } else {
+            val inRange = range?.let { search.eventsInRange(it) }
+            search.candidates(words, calendarIds)
+                .filter { inRange == null || it.eventId in inRange }
+                .filter { SearchMatcher.match(words, it) != null }
+        }
     }
 
     override suspend fun event(id: EventId): CalendarResult<Event> = guarded {
