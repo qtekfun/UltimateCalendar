@@ -13,13 +13,13 @@
 
     <!-- Login -->
     <string name="caldav_login_title">Connect a CalDAV server</string>
-    <string name="caldav_login_intro">Enter the address of your Nextcloud server. You will sign in in your browser; the app never sees your main password, only a revocable app password that it keeps encrypted.</string>
+    <string name="caldav_login_intro">Enter the address of your Nextcloud server. You will log in using your browser; the app never sees your main password, only a revocable app password that it keeps encrypted.</string>
     <string name="caldav_login_server_label">Server address</string>
     <string name="caldav_login_server_hint">cloud.example.com</string>
     <string name="caldav_login_target">Will connect to %1$s</string>
     <string name="caldav_login_button">Connect</string>
     <string name="caldav_login_checking">Checking the server…</string>
-    <string name="caldav_login_waiting">Waiting for you to sign in in the browser. Come back here when you are done.</string>
+    <string name="caldav_login_waiting">Waiting for you to log in using the browser. Come back here when you are done.</string>
     <string name="caldav_login_open_browser">Open the browser</string>
     <string name="caldav_login_cancel">Cancel</string>
     <string name="caldav_login_signing_in">Signing in…</string>
@@ -63,7 +63,6 @@
     <string name="caldav_sign_out_text">The app password is revoked on the server, and this account\'s calendars and events are removed from this phone. Changes that were not synced yet are lost. Your data on the server is not touched.</string>
     <string name="caldav_sign_out_confirm">Sign out and remove</string>
     <string name="caldav_signing_out">Signing out…</string>
-    <string name="caldav_back">Back</string>
 
     <!-- First-run wizard -->
     <string name="wizard_connect_caldav">Connect a CalDAV server</string>

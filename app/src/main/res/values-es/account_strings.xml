@@ -65,7 +65,6 @@
     <string name="caldav_sign_out_text">La contraseña de aplicación se revoca en el servidor y los calendarios y eventos de esta cuenta se eliminan de este teléfono. Los cambios que aún no se hayan sincronizado se pierden. Tus datos en el servidor no se tocan.</string>
     <string name="caldav_sign_out_confirm">Cerrar sesión y eliminar</string>
     <string name="caldav_signing_out">Cerrando sesión…</string>
-    <string name="caldav_back">Atrás</string>
 
     <!-- Asistente del primer arranque -->
     <string name="wizard_connect_caldav">Conectar un servidor CalDAV</string>

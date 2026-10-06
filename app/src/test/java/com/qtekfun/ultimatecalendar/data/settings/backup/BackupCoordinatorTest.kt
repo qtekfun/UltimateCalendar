@@ -17,9 +17,9 @@ import com.qtekfun.ultimatecalendar.data.settings.AppSettings
 import com.qtekfun.ultimatecalendar.data.settings.FakePreferences
 import com.qtekfun.ultimatecalendar.data.settings.SettingsRepository
 import com.qtekfun.ultimatecalendar.data.settings.ThemeMode
+import com.qtekfun.ultimatecalendar.data.source.FakeCalendarSource
 import com.qtekfun.ultimatecalendar.data.subscriptions.RestoredSubscriptions
 import com.qtekfun.ultimatecalendar.data.subscriptions.SubscriptionRepository
-import com.qtekfun.ultimatecalendar.data.source.FakeCalendarSource
 import com.qtekfun.ultimatecalendar.domain.model.CalendarAccess
 import com.qtekfun.ultimatecalendar.domain.model.CalendarAccount
 import com.qtekfun.ultimatecalendar.domain.model.CalendarId
@@ -226,7 +226,7 @@ class BackupCoordinatorTest {
         }
 
     @Test
-    fun `subscriptions travel with the backup, and refused ones are counted with the missing calendars`() =
+    fun `subscriptions travel with the backup, refused ones count as missing calendars`() =
         runBlocking {
             val feed = BackupSubscription("Work", "https://cal.example.com/work.ics")
             val old = Phone()
