@@ -4,7 +4,7 @@
 #
 # Checks the fastlane store texts (F-Droid limits). With --release, also requires the
 # en-US and es-ES changelogs for the versionCode of appVersion in gradle.properties,
-# which release-please has already bumped on its release PR. See RELEASING.md.
+# which the release PR (branch release/*) has already bumped. See RELEASING.md.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."

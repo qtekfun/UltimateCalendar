@@ -36,7 +36,7 @@ if re.search(r"\bgit\s+commit\b", cmd) and branch() == "master":
 if re.search(r"--no-verify\b", cmd):
     block("do not skip git hooks.")
 if re.search(r"\bgit\s+(tag|rebase\s+-i|reset\s+--hard\s+origin)", cmd):
-    block("tags come from release-please; no history rewriting.")
+    block("tags are created and pushed by the author; no history rewriting.")
 if re.search(r"\bgradlew\b.*\s-x\s+\S*(check|test|detekt|ktlint|lint|kover)", cmd, re.I):
     block("do not exclude quality tasks; `./gradlew check` must pass as is.")
 if re.search(r"\bgradlew\b.*\bconnected\w*AndroidTest\b", cmd):
@@ -46,5 +46,5 @@ if re.search(r"\bgradlew\b.*\bconnected\w*AndroidTest\b", cmd):
 if re.search(r"\bgh\s+api\b.*rulesets", cmd):
     block("the user manages rulesets.")
 if re.search(r"\bgh\s+release\b", cmd):
-    block("releases are created by release-please in CI.")
+    block("releases are created by the Release workflow from a tag pushed by the author.")
 sys.exit(0)

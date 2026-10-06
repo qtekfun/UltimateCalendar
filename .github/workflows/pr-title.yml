@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2026 UltimateCalendar contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-# PRs are squash-merged, so the PR title becomes the commit that release-please reads to
+# PRs are squash-merged, so the PR title becomes the commit that is read as the changelog entry to
 # compute the next version and the CHANGELOG. It must be a Conventional Commit.
 name: PR title
 

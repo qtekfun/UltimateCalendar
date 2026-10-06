@@ -49,8 +49,8 @@ jobs:
           retention-days: 14
 
   store-texts:
-    # Store texts limits on every PR; on the release-please PR, also requires the
-    # en-US and es-ES changelogs for the new versionCode. See RELEASING.md.
+    # Store texts limits on every PR; on a release PR (branch release/*), also requires the
+    # en-US and es-ES changelogs for the versionCode of appVersion. See RELEASING.md.
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -62,7 +62,7 @@ jobs:
         env:
           HEAD_REF: ${{ github.head_ref }}
         run: |
-          if [[ "$HEAD_REF" == release-please--* ]]; then
+          if [[ "$HEAD_REF" == release/* ]]; then
             tools/check-store-texts.sh --release
           else
             tools/check-store-texts.sh
