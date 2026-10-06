@@ -60,7 +60,8 @@ class DemoWeek(private val monday: LocalDate, private val spanish: Boolean) {
         DemoEvent(
             WORK,
             t("Team standup", "Daily del equipo"),
-            at(0, 9, 30),
+            // Started two weeks ago, so the month before today is not empty.
+            at(-14, 9, 30),
             minutes = 15,
             rrule = "FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR",
             location = t("Meeting room 2", "Sala 2")
@@ -82,7 +83,7 @@ class DemoWeek(private val monday: LocalDate, private val spanish: Boolean) {
         DemoEvent(
             PERSONAL,
             t("Yoga class", "Clase de yoga"),
-            at(1, 19),
+            at(-6, 19),
             60,
             rrule = "FREQ=WEEKLY;BYDAY=TU"
         )

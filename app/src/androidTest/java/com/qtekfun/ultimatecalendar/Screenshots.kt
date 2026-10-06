@@ -124,6 +124,7 @@ class Screenshots {
         files.reset(locale.store, PHONE)
         val week = prepare(locale)
         val driver = AppDriver(compose, context, locale.locale)
+        DeviceTools.shell("cmd uimode night no")
         DeviceTools.enterDemoMode(DEMO_CLOCK)
         try {
             invitationNotification(locale)
@@ -137,7 +138,7 @@ class Screenshots {
             throw failure
         } finally {
             driver.close()
-            DeviceTools.shell("cmd uimode night auto")
+            DeviceTools.shell("cmd uimode night no")
             DeviceTools.exitDemoMode()
         }
     }
