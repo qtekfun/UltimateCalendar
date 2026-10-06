@@ -54,13 +54,13 @@ class EdgePaging(private val delayMillis: Long) {
      * page towards, or [PageEdge.NONE] while there is nothing to do yet.
      */
     fun onPointer(at: PageEdge, now: Long): PageEdge {
-        if (at != edge) {
+        val arrived = at != edge
+        if (arrived) {
             edge = at
             since = now
-            return PageEdge.NONE
         }
-        if (at == PageEdge.NONE || now - since < delayMillis) return PageEdge.NONE
-        since = now
-        return at
+        val due = !arrived && at != PageEdge.NONE && now - since >= delayMillis
+        if (due) since = now
+        return if (due) at else PageEdge.NONE
     }
 }

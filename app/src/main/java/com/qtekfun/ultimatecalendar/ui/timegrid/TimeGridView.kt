@@ -3,12 +3,16 @@
 
 package com.qtekfun.ultimatecalendar.ui.timegrid
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -29,6 +33,7 @@ import com.qtekfun.ultimatecalendar.domain.navigation.WeekNumbers
 import com.qtekfun.ultimatecalendar.domain.timegrid.TimeScale
 import com.qtekfun.ultimatecalendar.ui.shell.ShellActions
 import com.qtekfun.ultimatecalendar.ui.shell.ShellUiState
+import com.qtekfun.ultimatecalendar.ui.theme.rememberReduceMotion
 import java.time.LocalDate
 import kotlinx.coroutines.flow.Flow
 
@@ -50,7 +55,8 @@ fun TimeGridScreen(
     state: ShellUiState,
     actions: ShellActions,
     modifier: Modifier = Modifier,
-    viewModel: TimeGridViewModel = viewModel()
+    viewModel: TimeGridViewModel = viewModel(),
+    moves: EventMoveViewModel = viewModel()
 ) {
     val now by viewModel.now.collectAsStateWithLifecycle()
     val pages = remember(viewModel) {
@@ -60,14 +66,17 @@ fun TimeGridScreen(
             override fun page(range: DateRange) = viewModel.page(range)
         }
     }
-    TimeGridView(
-        state = state,
-        now = now,
-        pages = pages,
-        callbacks = GridCallbacks(actions.onOpenEvent, actions.onCreateAt),
-        onSelectDate = actions.onSelectDate,
-        modifier = modifier
-    )
+    MoveFlow(moves) { editing, pending ->
+        TimeGridView(
+            state = state,
+            now = now,
+            pages = pages,
+            callbacks = GridCallbacks(actions.onOpenEvent, actions.onCreateAt, editing),
+            onSelectDate = actions.onSelectDate,
+            modifier = modifier,
+            pending = pending
+        )
+    }
 }
 
 /**
@@ -82,7 +91,8 @@ internal fun TimeGridView(
     pages: TimeGridPages,
     callbacks: GridCallbacks,
     onSelectDate: (LocalDate) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    pending: PendingMove? = null
 ) {
     val view = state.view
     val date = state.date
@@ -90,48 +100,63 @@ internal fun TimeGridView(
     val periods = remember(view, anchor) { PeriodPages(view, anchor) }
     val selected by rememberUpdatedState(date)
     val scroll = rememberFirstHourScroll()
-    key(periods) {
-        val pager = rememberPagerState(periods.pageOf(date) ?: PeriodPages.CENTER) {
-            PeriodPages.COUNT
-        }
-        LaunchedEffect(date) {
-            val target = periods.pageOf(date)
-            when {
-                target == null -> anchor = date
-                target != pager.currentPage -> pager.animateScrollToPage(target)
+    val drag = rememberDragController(callbacks.editing, busy = pending != null)
+    val reduceMotion = rememberReduceMotion()
+    Box(modifier.dragGestures(drag)) {
+        key(periods) {
+            val pager = rememberPagerState(periods.pageOf(date) ?: PeriodPages.CENTER) {
+                PeriodPages.COUNT
             }
-        }
-        LaunchedEffect(pager) {
-            snapshotFlow { pager.settledPage }.collect { page ->
-                val settled = periods.dateAt(page)
-                if (settled != selected) onSelectDate(settled)
+            SideEffect { drag.currentPage = { pager.currentPage } }
+            DragEdgeEffect(drag, pager, scroll, reduceMotion)
+            BackHandler(enabled = drag.active) { drag.cancel() }
+            LaunchedEffect(date) {
+                val target = periods.pageOf(date)
+                when {
+                    target == null -> anchor = date
+                    target != pager.currentPage -> pager.animateScrollToPage(target)
+                }
             }
-        }
-        HorizontalPager(pager, modifier) { page ->
-            val range = ViewPeriods.range(view, periods.dateAt(page), state.firstDayOfWeek)
-            val content by remember(range) { pages.page(range) }
-                .collectAsStateWithLifecycle(remember(range) { pages.initial(range) })
-            val options = if (view == CalendarView.WEEK) {
-                GridOptions(
-                    weekNumber = range.start
-                        .takeIf { state.showWeekNumbers }
-                        ?.let { WeekNumbers.of(it, state.firstDayOfWeek) },
-                    allDayRowLimit = WEEK_ALL_DAY_ROWS
+            LaunchedEffect(pager) {
+                snapshotFlow { pager.settledPage }.collect { page ->
+                    val settled = periods.dateAt(page)
+                    if (settled != selected) onSelectDate(settled)
+                }
+            }
+            HorizontalPager(
+                pager,
+                Modifier.fillMaxSize(),
+                userScrollEnabled = !drag.active
+            ) { page ->
+                val range = ViewPeriods.range(view, periods.dateAt(page), state.firstDayOfWeek)
+                val content by remember(range) { pages.page(range) }
+                    .collectAsStateWithLifecycle(remember(range) { pages.initial(range) })
+                TimeGridPageContent(
+                    content.page,
+                    content.failed,
+                    now,
+                    scroll,
+                    callbacks,
+                    options = gridOptions(state, range),
+                    drag = PageDrag(drag, page, pending)
                 )
-            } else {
-                GridOptions()
             }
-            TimeGridPageContent(
-                content.page,
-                content.failed,
-                now,
-                scroll,
-                callbacks,
-                options = options
-            )
         }
     }
 }
+
+/** What differs in the Week view: week numbers and a limit of all-day rows. */
+private fun gridOptions(state: ShellUiState, range: DateRange): GridOptions =
+    if (state.view == CalendarView.WEEK) {
+        GridOptions(
+            weekNumber = range.start
+                .takeIf { state.showWeekNumbers }
+                ?.let { WeekNumbers.of(it, state.firstDayOfWeek) },
+            allDayRowLimit = WEEK_ALL_DAY_ROWS
+        )
+    } else {
+        GridOptions()
+    }
 
 /** A vertical scroll that starts at the first hour people look at, not at midnight. */
 @Composable

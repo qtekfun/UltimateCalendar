@@ -85,21 +85,23 @@ class EventMover(private val source: CalendarSource, private val zone: () -> Zon
         instance: EventInstance,
         newTime: EventTime,
         scope: RecurrenceScope?
-    ): CalendarResult<SeriesChange> {
-        if (!master.isRecurring) {
-            return CalendarResult.Success(SeriesChange.Update(master.copy(time = newTime)))
+    ): CalendarResult<SeriesChange> = when {
+        !master.isRecurring ->
+            CalendarResult.Success(SeriesChange.Update(master.copy(time = newTime)))
+
+        scope == null ->
+            CalendarResult.Failure(CalendarError.Invalid("a repeating event needs a scope"))
+
+        else -> {
+            val occurrence = EventRef.of(instance).timeOn(master)
+            RecurrenceSplitter.edit(
+                master,
+                occurrence,
+                master.copy(time = newTime),
+                scope,
+                SeriesPosition.before(master, occurrence, zone())
+            )
         }
-        if (scope == null) {
-            return CalendarResult.Failure(CalendarError.Invalid("a repeating event needs a scope"))
-        }
-        val occurrence = EventRef.of(instance).timeOn(master)
-        return RecurrenceSplitter.edit(
-            master,
-            occurrence,
-            master.copy(time = newTime),
-            scope,
-            SeriesPosition.before(master, occurrence, zone())
-        )
     }
 
     private fun undoOf(
