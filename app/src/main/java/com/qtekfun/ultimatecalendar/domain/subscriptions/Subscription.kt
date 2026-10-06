@@ -8,9 +8,9 @@ import java.time.Instant
 /** How often a subscription is downloaded again; [MANUAL] only when the user asks. */
 enum class RefreshInterval(val hours: Int) {
     MANUAL(0),
-    EVERY_6_HOURS(6),
-    EVERY_12_HOURS(12),
-    EVERY_24_HOURS(24);
+    EVERY_6_HOURS(SIX),
+    EVERY_12_HOURS(TWELVE),
+    EVERY_24_HOURS(TWENTY_FOUR);
 
     companion object {
         val DEFAULT = EVERY_12_HOURS
@@ -19,6 +19,10 @@ enum class RefreshInterval(val hours: Int) {
         fun ofHours(hours: Int): RefreshInterval? = entries.firstOrNull { it.hours == hours }
     }
 }
+
+private const val SIX = 6
+private const val TWELVE = 12
+private const val TWENTY_FOUR = 24
 
 /** Why the last refresh of a subscription failed. Never carries the address. */
 enum class SubscriptionError {

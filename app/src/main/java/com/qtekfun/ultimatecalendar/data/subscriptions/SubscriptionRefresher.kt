@@ -103,11 +103,14 @@ class SubscriptionRefresher @Inject constructor(
     private suspend fun refreshLocked(id: Long): RefreshResult {
         val row = subscriptions.get(id) ?: return RefreshResult.Gone
         val url = vault.open(row.urlSecret)
-            ?: return failed(id, SubscriptionError.UNREADABLE_URL, null)
-        return when (val fetched = downloader.fetch(url, row.etag, row.lastModified)) {
-            is FetchResult.Failed -> failed(id, fetched.error, fetched.httpCode)
-            FetchResult.NotModified -> succeeded(id, null)
-            is FetchResult.Fresh -> store(id, fetched)
+        return if (url == null) {
+            failed(id, SubscriptionError.UNREADABLE_URL, null)
+        } else {
+            when (val fetched = downloader.fetch(url, row.etag, row.lastModified)) {
+                is FetchResult.Failed -> failed(id, fetched.error, fetched.httpCode)
+                FetchResult.NotModified -> succeeded(id, null)
+                is FetchResult.Fresh -> store(id, fetched)
+            }
         }
     }
 

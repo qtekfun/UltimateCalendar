@@ -88,28 +88,42 @@ class SubscriptionDownloader internal constructor(
     private fun follow(start: HttpUrl, etag: String?, lastModified: String?): FetchResult {
         var current = start
         repeat(MAX_REDIRECTS + 1) {
-            val request = Request.Builder()
-                .url(current)
-                .header("Accept", "text/calendar, text/plain;q=0.5, */*;q=0.1")
-                .apply {
-                    etag?.let { header("If-None-Match", it) }
-                    lastModified?.let { header("If-Modified-Since", it) }
-                }
-                .build()
-            http.newCall(request).execute().use { response ->
-                val code = response.code
-                if (code in REDIRECTS) {
-                    val next = response.header("Location")?.let { current.resolve(it) }
-                    if (next == null || !allowed(next)) {
-                        return FetchResult.Failed(SubscriptionError.INSECURE_REDIRECT)
-                    }
-                    current = next
-                } else {
-                    return result(response)
-                }
+            when (val step = step(current, etag, lastModified)) {
+                is Step.Done -> return step.result
+                is Step.Redirect -> current = step.to
             }
         }
         return FetchResult.Failed(SubscriptionError.TOO_MANY_REDIRECTS)
+    }
+
+    /** One request: its answer, or the address it sent us on to. */
+    private fun step(url: HttpUrl, etag: String?, lastModified: String?): Step {
+        val request = Request.Builder()
+            .url(url)
+            .header("Accept", "text/calendar, text/plain;q=0.5, */*;q=0.1")
+            .apply {
+                etag?.let { header("If-None-Match", it) }
+                lastModified?.let { header("If-Modified-Since", it) }
+            }
+            .build()
+        return http.newCall(request).execute().use { response ->
+            if (response.code in REDIRECTS) {
+                val next = response.header("Location")?.let { url.resolve(it) }
+                if (next == null || !allowed(next)) {
+                    Step.Done(FetchResult.Failed(SubscriptionError.INSECURE_REDIRECT))
+                } else {
+                    Step.Redirect(next)
+                }
+            } else {
+                Step.Done(result(response))
+            }
+        }
+    }
+
+    private sealed interface Step {
+        data class Done(val result: FetchResult) : Step
+
+        data class Redirect(val to: HttpUrl) : Step
     }
 
     private fun result(response: Response): FetchResult = when (response.code) {
@@ -121,16 +135,19 @@ class SubscriptionDownloader internal constructor(
 
     private fun body(response: Response): FetchResult {
         val body = response.body
-        if (body.contentLength() > MAX_BYTES) return FetchResult.Failed(SubscriptionError.TOO_LARGE)
         val source = body.source()
-        // Asks for one byte more than allowed: if it is there, the feed is too large.
-        source.request(MAX_BYTES + 1)
-        if (source.buffer.size > MAX_BYTES) return FetchResult.Failed(SubscriptionError.TOO_LARGE)
-        return FetchResult.Fresh(
-            body = source.readUtf8().removePrefix(BOM),
-            etag = response.header("ETag"),
-            lastModified = response.header("Last-Modified")
-        )
+        // Announced too large, or (asking for one byte more than allowed) found to be.
+        val tooLarge = body.contentLength() > MAX_BYTES ||
+            (source.request(MAX_BYTES + 1) && source.buffer.size > MAX_BYTES)
+        return if (tooLarge) {
+            FetchResult.Failed(SubscriptionError.TOO_LARGE)
+        } else {
+            FetchResult.Fresh(
+                body = source.readUtf8().removePrefix(BOM),
+                etag = response.header("ETag"),
+                lastModified = response.header("Last-Modified")
+            )
+        }
     }
 
     companion object {

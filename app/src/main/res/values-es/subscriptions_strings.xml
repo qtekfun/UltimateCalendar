@@ -45,18 +45,22 @@
     <string name="subscriptions_note_failed">No se pudo actualizar el calendario. Mira el motivo en la suscripción.</string>
     <plurals name="subscriptions_every_hours">
         <item quantity="one">Cada hora</item>
+        <item quantity="many">Cada %d de horas</item>
         <item quantity="other">Cada %d horas</item>
     </plurals>
     <plurals name="subscriptions_events">
         <item quantity="one">%d evento</item>
+        <item quantity="many">%d de eventos</item>
         <item quantity="other">%d eventos</item>
     </plurals>
     <plurals name="subscriptions_skipped">
         <item quantity="one">%d entrada no se pudo leer.</item>
+        <item quantity="many">%d de entradas no se pudieron leer.</item>
         <item quantity="other">%d entradas no se pudieron leer.</item>
     </plurals>
     <plurals name="subscriptions_note_read">
         <item quantity="one">Actualizada: %d evento.</item>
+        <item quantity="many">Actualizada: %d de eventos.</item>
         <item quantity="other">Actualizada: %d eventos.</item>
     </plurals>
 </resources>

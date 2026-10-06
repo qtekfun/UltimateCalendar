@@ -24,16 +24,16 @@ object SubscriptionPolicy {
 
     private const val HTTP_SERVER_ERROR = 500
     private const val HTTP_TOO_MANY = 429
+    private const val GRACE_MINUTES = 30L
 
     /** WorkManager is not exact: a run a little before the interval counts as the one due. */
-    private val GRACE: Duration = Duration.ofMinutes(30)
+    private val GRACE: Duration = Duration.ofMinutes(GRACE_MINUTES)
 
     /** Whether [subscription] is due for its automatic refresh at [now]. */
     fun isDue(subscription: Subscription, now: Instant): Boolean {
-        if (!subscription.automatic) return false
-        val last = subscription.lastAttemptAt ?: return true
-        val due = last.plus(Duration.ofHours(subscription.interval.hours.toLong())).minus(GRACE)
-        return !now.isBefore(due)
+        val last = subscription.lastAttemptAt
+        return subscription.automatic &&
+            (last == null || !now.isBefore(last.plus(subscription.interval.length).minus(GRACE)))
     }
 
     /**
@@ -68,6 +68,8 @@ object SubscriptionPolicy {
     /** A name the user typed, trimmed and limited; a blank one becomes [fallback] (the host). */
     fun cleanName(name: String, fallback: String): String =
         name.trim().take(MAX_NAME_LENGTH).trim().ifEmpty { fallback }
+
+    private val RefreshInterval.length: Duration get() = Duration.ofHours(hours.toLong())
 
     private val Subscription.automatic: Boolean
         get() = enabled && interval != RefreshInterval.MANUAL

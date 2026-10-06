@@ -43,6 +43,7 @@ data class RestoredSubscriptions(val added: Int, val refused: Int)
  * sealed.
  */
 @Singleton
+@Suppress("TooManyFunctions")
 class SubscriptionRepository @Inject constructor(
     private val database: UltimateCalendarDatabase,
     private val vault: SubscriptionUrlVault,

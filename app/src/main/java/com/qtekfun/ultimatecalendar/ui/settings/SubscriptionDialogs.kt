@@ -145,23 +145,30 @@ internal fun EditSubscriptionDialog(
         }
     )
     if (confirmRemove) {
-        AlertDialog(
-            onDismissRequest = { confirmRemove = false },
-            title = { Text(stringResource(R.string.subscriptions_remove_title)) },
-            text = { Text(stringResource(R.string.subscriptions_remove_text, subscription.name)) },
-            confirmButton = {
-                TextButton(onClick = {
-                    viewModel.remove(subscription.id)
-                    onDismiss()
-                }) { Text(stringResource(R.string.subscriptions_remove)) }
+        RemoveSubscriptionDialog(
+            subscription.name,
+            onRemove = {
+                viewModel.remove(subscription.id)
+                onDismiss()
             },
-            dismissButton = {
-                TextButton(onClick = { confirmRemove = false }) {
-                    Text(stringResource(R.string.cancel))
-                }
-            }
+            onDismiss = { confirmRemove = false }
         )
     }
+}
+
+@Composable
+private fun RemoveSubscriptionDialog(name: String, onRemove: () -> Unit, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.subscriptions_remove_title)) },
+        text = { Text(stringResource(R.string.subscriptions_remove_text, name)) },
+        confirmButton = {
+            TextButton(onClick = onRemove) { Text(stringResource(R.string.subscriptions_remove)) }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
+        }
+    )
 }
 
 @OptIn(ExperimentalLayoutApi::class)

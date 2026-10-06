@@ -136,22 +136,23 @@ private fun SubscriptionItem(row: SubscriptionRow, onClick: () -> Unit) {
 @Composable
 private fun NotesToast(viewModel: SubscriptionsViewModel) {
     val context = LocalContext.current
-    LaunchedEffect(viewModel) {
-        viewModel.notes.collect { note ->
-            val text = when (note) {
-                is SubscriptionNote.Refreshed -> context.resources.getQuantityString(
-                    R.plurals.subscriptions_note_read,
-                    note.events,
-                    note.events
-                )
-
-                SubscriptionNote.Unchanged -> context.getString(
-                    R.string.subscriptions_note_unchanged
-                )
-
-                is SubscriptionNote.Failed -> context.getString(R.string.subscriptions_note_failed)
-            }
+    var note by remember { mutableStateOf<SubscriptionNote?>(null) }
+    LaunchedEffect(viewModel) { viewModel.notes.collect { note = it } }
+    note?.let { told ->
+        val text = noteText(told)
+        LaunchedEffect(told) {
             Toast.makeText(context, text, Toast.LENGTH_SHORT).show()
+            note = null
         }
     }
+}
+
+@Composable
+private fun noteText(note: SubscriptionNote): String = when (note) {
+    is SubscriptionNote.Refreshed ->
+        pluralStringResource(R.plurals.subscriptions_note_read, note.events, note.events)
+
+    SubscriptionNote.Unchanged -> stringResource(R.string.subscriptions_note_unchanged)
+
+    is SubscriptionNote.Failed -> stringResource(R.string.subscriptions_note_failed)
 }
