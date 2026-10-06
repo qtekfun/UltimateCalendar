@@ -74,7 +74,7 @@ class SettingsBackupTest {
     @Test
     fun `settings travel to a new phone`() {
         val backup = exported()
-        assertEquals(RestoreResult.Restored, restorer().restore(backup, passphrase))
+        assertEquals(RestoreResult.Restored(), restorer().restore(backup, passphrase))
         // The default calendar is an id of the old phone: it is not carried.
         assertEquals(customized.copy(defaultCalendar = null), newPhone.current())
     }
@@ -181,7 +181,7 @@ class SettingsBackupTest {
     fun `an older backup with fewer settings keeps the rest as it was`() {
         newPhone.update { it.copy(notifyChanges = false, ownEmails = listOf("keep@x.org")) }
         val older = fileWith("{\"version\":1,\"settings\":{\"theme\":\"LIGHT\",\"amoled\":true}}")
-        assertEquals(RestoreResult.Restored, restorer().restore(older, passphrase))
+        assertEquals(RestoreResult.Restored(), restorer().restore(older, passphrase))
         val settings = newPhone.current()
         assertEquals(ThemeMode.LIGHT, settings.theme)
         assertTrue(settings.amoled)
@@ -196,7 +196,7 @@ class SettingsBackupTest {
             "\"firstDayOfWeek\":\"FUNDAY\",\"initialView\":\"HOLOGRAM\"," +
             "\"inviteCheck\":\"NEVER\"," +
             "\"newSetting\":true,\"amoled\":true}}"
-        assertEquals(RestoreResult.Restored, restorer().restore(fileWith(content), passphrase))
+        assertEquals(RestoreResult.Restored(), restorer().restore(fileWith(content), passphrase))
         val settings = newPhone.current()
         assertEquals(ThemeMode.DARK, settings.theme)
         assertEquals(FirstDayOfWeek.LOCALE, settings.firstDayOfWeek)
@@ -212,7 +212,7 @@ class SettingsBackupTest {
                 "\"defaultReminders\":[30,-2,30]," +
                 "\"ownEmails\":[\"Ana@Example.com\",\"nonsense\"]," +
                 "\"missedWindowHours\":13,\"allDayMinute\":-9}}"
-        assertEquals(RestoreResult.Restored, restorer().restore(fileWith(content), passphrase))
+        assertEquals(RestoreResult.Restored(), restorer().restore(fileWith(content), passphrase))
         val settings = newPhone.current()
         assertEquals(5, settings.defaultDurationMinutes)
         assertEquals(listOf(30), settings.defaultReminders)

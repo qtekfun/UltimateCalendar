@@ -16,6 +16,9 @@ interface CalendarSettingsDao {
     @Query("SELECT * FROM calendar_settings")
     fun observeAll(): Flow<List<CalendarSettingsEntity>>
 
+    @Query("SELECT * FROM calendar_settings")
+    suspend fun all(): List<CalendarSettingsEntity>
+
     @Query("SELECT * FROM calendar_settings WHERE calendarId = :calendarId")
     suspend fun find(calendarId: Long): CalendarSettingsEntity?
 
