@@ -14,6 +14,8 @@ import com.qtekfun.ultimatecalendar.data.local.entity.DavEventEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.NotifiedInvitationEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.PendingOperationEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.ReRemindEntity
+import com.qtekfun.ultimatecalendar.data.local.entity.SubscriptionEntity
+import com.qtekfun.ultimatecalendar.data.local.entity.SubscriptionEventEntity
 import com.qtekfun.ultimatecalendar.data.local.model.OperationType
 import io.mockk.every
 import io.mockk.mockk
@@ -91,6 +93,7 @@ class MigrationTest {
             assertEquals(listOf(row), invitations.all())
             assertCalDavTablesWork(database)
             assertReRemindTableWorks(database)
+            assertSubscriptionTablesWork(database)
         } finally {
             database.close()
         }
@@ -169,6 +172,57 @@ class MigrationTest {
         } finally {
             database.close()
         }
+    }
+
+    @Test
+    fun `version 5 data survives and the subscription tables are created by the migration to 6`(
+        @TempDir dir: File
+    ) = runTest {
+        val file = File(dir, "calendar.db")
+        createVersion(5, file)
+
+        val database = open(file)
+        try {
+            assertEquals(
+                CalendarSettingsEntity(7, "Work", 255, false),
+                database.calendarSettingsDao().find(7)
+            )
+            assertEquals(emptyList<SubscriptionEntity>(), database.subscriptionDao().all())
+            assertSubscriptionTablesWork(database)
+        } finally {
+            database.close()
+        }
+    }
+
+    /** Subscriptions keep their events apart by UID and take them along when removed. */
+    private suspend fun assertSubscriptionTablesWork(database: UltimateCalendarDatabase) {
+        val subscription = database.subscriptionDao().insert(
+            SubscriptionEntity(
+                name = "Holidays",
+                color = 1,
+                refreshHours = 12,
+                host = "example.com",
+                urlKey = "key",
+                urlSecret = "sealed"
+            )
+        )
+        val event = database.subscriptionEventDao().insert(
+            SubscriptionEventEntity(
+                subscriptionId = subscription,
+                uid = "a@x",
+                title = "New Year",
+                start = 1,
+                end = 2,
+                windowStart = 1,
+                windowEnd = 2
+            )
+        )
+        assertEquals("New Year", database.subscriptionEventDao().get(event)?.title)
+        assertEquals(1, database.subscriptionEventDao().inWindow(listOf(subscription), 0, 10).size)
+
+        database.subscriptionDao().delete(subscription)
+
+        assertNull(database.subscriptionEventDao().get(event))
     }
 
     private suspend fun assertReRemindTableWorks(database: UltimateCalendarDatabase) {

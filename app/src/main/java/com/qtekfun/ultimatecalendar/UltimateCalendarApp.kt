@@ -5,6 +5,7 @@ package com.qtekfun.ultimatecalendar
 
 import android.app.Application
 import androidx.work.Configuration
+import com.qtekfun.ultimatecalendar.data.subscriptions.SubscriptionRepository
 import com.qtekfun.ultimatecalendar.notify.KeepAliveController
 import com.qtekfun.ultimatecalendar.notify.NotificationChannels
 import com.qtekfun.ultimatecalendar.notify.ReRemindCoordinator
@@ -43,6 +44,9 @@ class UltimateCalendarApp :
     lateinit var caldavSync: CalDavSync
 
     @Inject
+    lateinit var subscriptions: SubscriptionRepository
+
+    @Inject
     lateinit var workerFactory: InvitationWorkerFactory
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -65,6 +69,8 @@ class UltimateCalendarApp :
         invitationChecks.start(scope)
         // CalDAV syncs exist only while an account is signed in (RF-12).
         caldavSync.start(scope)
+        // The periodic refresh of the subscriptions exists only while one needs it (T39).
+        scope.launch { subscriptions.reschedule() }
         // The home-screen widgets follow the calendar while the process lives (T38).
         widgets.start(scope)
         registerActivityLifecycleCallbacks(

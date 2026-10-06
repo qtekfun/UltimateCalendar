@@ -136,7 +136,12 @@ private fun Message(text: String) {
 /** One account: its name (tap to fold) and its calendars with colored checkboxes. */
 @Composable
 private fun AccountSection(group: AccountCalendars, actions: ShellActions) {
-    val name = group.account.name
+    // The subscriptions' group has no account name of its own to show.
+    val name = if (group.account.isSubscription) {
+        stringResource(R.string.cal_subscriptions_group)
+    } else {
+        group.account.name
+    }
     var expanded by rememberSaveable(name, group.account.type) { mutableStateOf(true) }
     val arrow by animateFloatAsState(
         if (expanded) 0f else COLLAPSED_ARROW,
