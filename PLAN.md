@@ -56,7 +56,8 @@ Reglas: una tarea cada vez, en su rama `feat/<tarea>`, con `./gradlew check` en 
 - [ ] **T16 Vista Semana**.
 - [ ] **T17 Vista Mes**.
 - [ ] **T18 Arrastrar para mover y cambiar duración** en Día/3 días/Semana (con deshacer; pregunta "este/siguientes/todos" en repeticiones).
-- [ ] **T19 Detalle de evento** (RF-04) con respuesta a invitaciones.
+- [x] **T19 Detalle de evento** (RF-04) con respuesta a invitaciones.
+  - *Resultado:* lógica pura en `domain.detail` (descriptor de repeticiones `RepeatDescriber` → `RepeatPhrase`, agrupación de asistentes con organizador primero, reglas de responder/editar, hora con zona distinta, avisos de todo el día, `EventRef`) y `data.source.SeriesChanges` (aplica un `SeriesChange` con las primitivas de `CalendarSource`; si falla un corte, restaura la serie). `ui/detail`: pantalla con botones Aceptar/Quizá/Rechazar (respuesta optimista con vuelta atrás y snackbar), editar (callback hacia el marcador de T20), eliminar con confirmación y alcance (este / este y siguientes / todos) y Deshacer solo si no hay invitados, compartir como texto, lugar con `geo:` o navegador, botón Unirse (detector de T10) y descripción seleccionable con enlaces. Las palabras (inglés y español, con plurales) se prueban contra los `strings.xml` reales. **No se ha visto en un móvil**: solo tests unitarios, lint y previews.
 - [ ] **T20 Editor de eventos** (RF-05): campos, avisos múltiples, zona horaria, editor de repetición, asistentes.
 - [ ] **T21 Bandeja de invitaciones** (RF-06) + **notificaciones** con acciones (RF-07): invitaciones, cambios/cancelaciones opcionales, recordatorios con Posponer, canales separados.
 - [ ] **T22 Búsqueda** (RF-09).
