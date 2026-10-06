@@ -4,6 +4,7 @@
 package com.qtekfun.ultimatecalendar.ui.settings
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -60,6 +61,22 @@ internal fun Hint(text: String) {
         style = MaterialTheme.typography.bodySmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant
     )
+}
+
+/** A label with a hint that does something when tapped; the whole row is the button. */
+@Composable
+internal fun ActionRow(title: String, hint: String, onClick: () -> Unit) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .heightIn(min = RowMinHeight)
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(title)
+        Hint(hint)
+    }
 }
 
 /** A label with an optional hint and a switch; the whole row toggles. */

@@ -17,10 +17,12 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.NavigationDrawerItem
@@ -175,13 +177,35 @@ private fun AccountSection(group: AccountCalendars, actions: ShellActions) {
         AnimatedVisibility(expanded) {
             Column {
                 group.calendars.forEach { calendar ->
-                    CalendarCheckRow(
-                        name = calendar.displayName,
-                        color = calendar.color,
-                        checked = calendar.visible,
-                        onCheckedChange = { actions.onSetCalendarVisible(calendar.id, it) },
-                        modifier = Modifier.padding(horizontal = Spacing.s)
-                    )
+                    var editing by rememberSaveable(calendar.id.value) { mutableStateOf(false) }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        CalendarCheckRow(
+                            name = calendar.displayName,
+                            color = calendar.color,
+                            checked = calendar.visible,
+                            onCheckedChange = { actions.onSetCalendarVisible(calendar.id, it) },
+                            modifier = Modifier.weight(1f).padding(start = Spacing.s)
+                        )
+                        IconButton(onClick = { editing = true }) {
+                            Icon(
+                                Icons.Filled.Edit,
+                                contentDescription = stringResource(
+                                    R.string.cal_look_edit,
+                                    calendar.displayName
+                                )
+                            )
+                        }
+                    }
+                    if (editing) {
+                        CalendarLookDialog(
+                            calendar,
+                            onDismiss = { editing = false },
+                            onSave = { name, color ->
+                                editing = false
+                                actions.onSaveCalendarLook(calendar, name, color)
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -202,11 +226,11 @@ private fun Footer(actions: ShellActions, onClose: () -> Unit) {
         )
         NavigationDrawerItem(
             icon = { Icon(CalendarIcons.Help, contentDescription = null) },
-            label = { Text(stringResource(R.string.shell_help)) },
+            label = { Text(stringResource(R.string.shell_setup)) },
             selected = false,
             onClick = {
                 onClose()
-                actions.onHelp()
+                actions.onSetup()
             }
         )
     }

@@ -48,4 +48,28 @@ class CalendarSettingsTest {
         assertFalse(CalendarSettings(color = 1).isEmpty)
         assertFalse(CalendarSettings(visible = true).isEmpty)
     }
+
+    @Test
+    fun `a new name and color become overrides, the visibility stays`() {
+        val look = CalendarSettings(visible = false).withLook("Work", " Job ", 1, 2)
+
+        assertEquals(CalendarSettings("Job", 2, false), look)
+    }
+
+    @Test
+    fun `what was shown and not changed keeps the stored override or none`() {
+        assertEquals(CalendarSettings(), CalendarSettings().withLook("Work", "Work", 1, 1))
+        assertEquals(
+            CalendarSettings("Work", 1),
+            CalendarSettings("Work", 1).withLook("Work", "Work", 1, 1)
+        )
+    }
+
+    @Test
+    fun `a blank name and no color go back to the source's`() {
+        assertEquals(
+            CalendarSettings(visible = true),
+            CalendarSettings("Work", 1, true).withLook("Work", "  ", 1, null)
+        )
+    }
 }

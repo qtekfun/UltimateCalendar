@@ -61,6 +61,7 @@ class ShellViewModelTest {
     private lateinit var repository: CalendarRepository
     private val invitations = MutableStateFlow(0)
     private var firstDay = DayOfWeek.MONDAY
+    private var initial = CalendarView.WEEK
     private val main = UnconfinedTestDispatcher()
 
     @BeforeEach
@@ -91,7 +92,8 @@ class ShellViewModelTest {
         PendingInvitations { invitations },
         clock,
         SystemZone { madrid },
-        { firstDay }
+        { firstDay },
+        { initial }
     )
 
     /** The first state from here on that [matches]: the calendars load on another thread. */
@@ -123,6 +125,21 @@ class ShellViewModelTest {
                 state.range
             )
             assertEquals(DayOfWeek.MONDAY, state.firstDayOfWeek)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `it opens on the view chosen in Settings, unless one was already selected`() = runTest {
+        initial = CalendarView.MONTH
+
+        viewModel().state.test {
+            assertEquals(CalendarView.MONTH, awaitItem().view)
+            cancelAndIgnoreRemainingEvents()
+        }
+        val saved = SavedStateHandle(mapOf("view" to "DAY"))
+        viewModel(saved).state.test {
+            assertEquals(CalendarView.DAY, awaitItem().view)
             cancelAndIgnoreRemainingEvents()
         }
     }
@@ -249,6 +266,26 @@ class ShellViewModelTest {
             model.setCalendarVisible(work.id, true)
             awaitUntil { it.isVisible(work.id) == true }
             assertEquals(true, repository.settings(work.id).visible)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `customizing a calendar stores a name and a color on this phone only`() = runTest {
+        val model = viewModel()
+
+        model.state.test {
+            loaded()
+            model.saveCalendarLook(work, "Job", 0xFF112233.toInt())
+
+            awaitUntil {
+                it.accounts.flatMap { g -> g.calendars }.any { c -> c.displayName == "Job" }
+            }
+            val stored = repository.settings(work.id)
+            assertEquals("Job", stored.displayName)
+            assertEquals(0xFF112233.toInt(), stored.color)
+            // The source itself was not touched.
+            assertEquals("Work", source.calendars().value.first { it.id == work.id }.displayName)
             cancelAndIgnoreRemainingEvents()
         }
     }

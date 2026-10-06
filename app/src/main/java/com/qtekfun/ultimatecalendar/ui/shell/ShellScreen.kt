@@ -86,7 +86,8 @@ fun ShellScreen(
             onToday = viewModel::goToToday,
             onPrevious = viewModel::previous,
             onNext = viewModel::next,
-            onSetCalendarVisible = viewModel::setCalendarVisible
+            onSetCalendarVisible = viewModel::setCalendarVisible,
+            onSaveCalendarLook = viewModel::saveCalendarLook
         ),
         detailPane = detailPane
     )

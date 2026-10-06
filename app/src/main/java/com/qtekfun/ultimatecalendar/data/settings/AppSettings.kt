@@ -18,7 +18,7 @@ data class AppSettings(
     /** Material You colors from the wallpaper (Android 12+). */
     val dynamicColor: Boolean = true,
     val firstDayOfWeek: FirstDayOfWeek = FirstDayOfWeek.LOCALE,
-    val initialView: InitialView = InitialView.AGENDA,
+    val initialView: InitialView = InitialView.WEEK,
     /** Where new events go; null: the first calendar that can be written. */
     val defaultCalendar: CalendarId? = null,
     val defaultDurationMinutes: Int = SettingsRules.DEFAULT_DURATION_MINUTES,

@@ -17,7 +17,6 @@
     <string name="shell_back">Atrás</string>
     <string name="shell_ok">Aceptar</string>
     <string name="shell_cancel">Cancelar</string>
-    <string name="shell_coming_soon">Próximamente</string>
     <string name="shell_view_agenda">Agenda</string>
     <string name="shell_view_day">Día</string>
     <string name="shell_view_three_days">3 días</string>
@@ -27,4 +26,10 @@
     <string name="shell_calendars_none">Aún no hay calendarios</string>
     <string name="shell_calendars_failed">No se pudieron leer los calendarios</string>
     <string name="shell_settings">Ajustes</string>
+    <string name="cal_look_edit">Personalizar %1$s</string>
+    <string name="cal_look_title">Nombre y color en este teléfono</string>
+    <string name="cal_look_hint">Solo cambia cómo se ve el calendario aquí: la cuenta no se toca.</string>
+    <string name="cal_look_name">Nombre</string>
+    <string name="cal_look_color_default">Color original</string>
+    <string name="cal_look_save">Guardar</string>
 </resources>

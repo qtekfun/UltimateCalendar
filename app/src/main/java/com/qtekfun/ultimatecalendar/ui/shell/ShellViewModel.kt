@@ -8,15 +8,18 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.qtekfun.ultimatecalendar.data.calendar.CalendarRepository
 import com.qtekfun.ultimatecalendar.domain.model.CalendarId
+import com.qtekfun.ultimatecalendar.domain.model.CalendarInfo
 import com.qtekfun.ultimatecalendar.domain.navigation.AccountCalendars
 import com.qtekfun.ultimatecalendar.domain.navigation.CalendarView
 import com.qtekfun.ultimatecalendar.domain.navigation.FirstDayOfWeekSource
+import com.qtekfun.ultimatecalendar.domain.navigation.InitialViewSource
 import com.qtekfun.ultimatecalendar.domain.navigation.PendingInvitations
 import com.qtekfun.ultimatecalendar.domain.navigation.ViewPeriods
 import com.qtekfun.ultimatecalendar.domain.result.CalendarResult
 import com.qtekfun.ultimatecalendar.notify.SystemZone
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.Clock
+import java.time.DayOfWeek
 import java.time.LocalDate
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,7 +42,8 @@ class ShellViewModel @Inject constructor(
     invitations: PendingInvitations,
     private val clock: Clock,
     private val zone: SystemZone,
-    private val firstDayOfWeek: FirstDayOfWeekSource
+    private val firstDayOfWeek: FirstDayOfWeekSource,
+    private val initialView: InitialViewSource
 ) : ViewModel() {
     private data class Selection(val view: CalendarView, val date: LocalDate)
 
@@ -48,10 +52,12 @@ class ShellViewModel @Inject constructor(
     val state: StateFlow<ShellUiState> = combine(
         selection,
         repository.calendars(),
-        invitations.count()
-    ) { selected, calendars, pending ->
+        invitations.count(),
+        firstDayOfWeek.changes()
+    ) { selected, calendars, pending, first ->
         build(
             selected,
+            first,
             accounts = calendars.getOrNull()?.let(AccountCalendars::group).orEmpty(),
             failed = calendars is CalendarResult.Failure,
             pending = pending
@@ -59,7 +65,13 @@ class ShellViewModel @Inject constructor(
     }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS),
-        build(selection.value, accounts = emptyList(), failed = false, pending = 0)
+        build(
+            selection.value,
+            firstDayOfWeek.current(),
+            accounts = emptyList(),
+            failed = false,
+            pending = 0
+        )
     )
 
     fun selectView(view: CalendarView) = select { it.copy(view = view) }
@@ -79,24 +91,36 @@ class ShellViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Gives a calendar the name and color the user typed and picked, on this phone only (RF-02).
+     * [pickedColor] null goes back to the source's color; a blank [typedName], to its name.
+     */
+    fun saveCalendarLook(calendar: CalendarInfo, typedName: String, pickedColor: Int?) {
+        viewModelScope.launch {
+            val current = repository.settings(calendar.id)
+            repository.saveSettings(
+                calendar.id,
+                current.withLook(calendar.displayName, typedName, calendar.color, pickedColor)
+            )
+        }
+    }
+
     private fun build(
         selected: Selection,
+        first: DayOfWeek,
         accounts: List<AccountCalendars>,
         failed: Boolean,
         pending: Int
-    ): ShellUiState {
-        val first = firstDayOfWeek.current()
-        return ShellUiState(
-            view = selected.view,
-            date = selected.date,
-            today = today(),
-            range = ViewPeriods.range(selected.view, selected.date, first),
-            firstDayOfWeek = first,
-            accounts = accounts,
-            calendarsFailed = failed,
-            pendingInvitations = pending
-        )
-    }
+    ): ShellUiState = ShellUiState(
+        view = selected.view,
+        date = selected.date,
+        today = today(),
+        range = ViewPeriods.range(selected.view, selected.date, first),
+        firstDayOfWeek = first,
+        accounts = accounts,
+        calendarsFailed = failed,
+        pendingInvitations = pending
+    )
 
     private fun today(): LocalDate = ViewPeriods.today(clock, zone.current())
 
@@ -110,7 +134,7 @@ class ShellViewModel @Inject constructor(
         val view = saved.get<String>(KEY_VIEW)
             ?.let { name -> CalendarView.entries.firstOrNull { it.name == name } }
         val date = saved.get<Long>(KEY_DATE)?.let(LocalDate::ofEpochDay)
-        return Selection(view ?: CalendarView.WEEK, date ?: today())
+        return Selection(view ?: initialView.initial(), date ?: today())
     }
 
     private companion object {

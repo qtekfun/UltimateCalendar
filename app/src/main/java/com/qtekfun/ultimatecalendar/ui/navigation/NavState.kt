@@ -21,7 +21,6 @@ class NavState {
 
     /** The occurrence the event detail shows; set together with [eventDetail]. */
     var detailRef by mutableStateOf<EventRef?>(null)
-    var help by mutableStateOf(false)
 
     /** The CalDAV account screen (RF-12): the login or the account, opened from Settings. */
     var account by mutableStateOf(false)
@@ -41,7 +40,6 @@ class NavState {
         invitations = false
         settings = false
         eventDetail = false
-        help = false
         account = false
         closeEditor()
     }
@@ -64,7 +62,8 @@ class NavState {
                     it.invitations,
                     it.settings,
                     it.eventDetail,
-                    it.help,
+                    // Slot 5 was the placeholder Help screen: kept so older saved states still line up.
+                    false,
                     it.detailRef?.encode(),
                     it.editorRequest?.encode(),
                     it.account
@@ -77,7 +76,6 @@ class NavState {
                     invitations = values[2] as Boolean
                     settings = values[3] as Boolean
                     eventDetail = values.getOrNull(4) as? Boolean ?: false
-                    help = values.getOrNull(5) as? Boolean ?: false
                     detailRef = EventRef.decode(values.getOrNull(DETAIL_INDEX) as? String)
                     account = values.getOrNull(ACCOUNT_INDEX) as? Boolean ?: false
                     editorRequest = EditorRequest.decode(

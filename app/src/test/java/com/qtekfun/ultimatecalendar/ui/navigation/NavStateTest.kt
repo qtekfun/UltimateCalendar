@@ -69,8 +69,8 @@ class NavStateTest {
 
     @Test
     fun `no event detail, no ref`() {
-        val restored = roundTrip(NavState().apply { help = true })
-        assertTrue(restored.help)
+        val restored = roundTrip(NavState().apply { settings = true })
+        assertTrue(restored.settings)
         assertNull(restored.detailRef)
     }
 

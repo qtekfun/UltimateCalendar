@@ -40,21 +40,24 @@ import com.qtekfun.ultimatecalendar.domain.settings.InviteCheckInterval
 import com.qtekfun.ultimatecalendar.domain.settings.SettingsRules
 import com.qtekfun.ultimatecalendar.ui.account.AccountsSection
 import com.qtekfun.ultimatecalendar.ui.adaptive.ReadingPane
+import com.qtekfun.ultimatecalendar.ui.firstrun.LocalOpenWizard
 
 /**
- * Settings (RF-10). [calendars] are the ones a default can be picked from; the navigation (T13)
- * passes them, and the row is left out while there are none. Thin: the rules are in
+ * Settings (RF-10). The default calendar can be picked from the ones that accept events; the row
+ * is left out while there are none. Thin: the rules are in
  * [SettingsRules] and the repository.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
-    calendars: List<CalendarInfo> = emptyList(),
     onOpenAccount: () -> Unit = {},
     viewModel: SettingsViewModel = viewModel()
 ) {
     val settings = viewModel.settings.collectAsStateWithLifecycle().value
+    val calendars = viewModel.calendars.collectAsStateWithLifecycle().value
+    // The first-run wizard (RF-01) again: permissions, battery, accounts.
+    val openWizard = LocalOpenWizard.current
     Scaffold(
         topBar = {
             TopAppBar(
@@ -87,6 +90,14 @@ fun SettingsScreen(
                 SubscriptionsSection()
                 SectionTitle(stringResource(R.string.settings_backup))
                 BackupSection()
+                SectionTitle(stringResource(R.string.settings_setup))
+                SettingsCard {
+                    ActionRow(
+                        stringResource(R.string.settings_setup_open),
+                        stringResource(R.string.settings_setup_hint),
+                        openWizard
+                    )
+                }
                 Text(
                     stringResource(R.string.settings_version, BuildConfig.VERSION_NAME),
                     style = MaterialTheme.typography.bodySmall,

@@ -4,7 +4,6 @@
 package com.qtekfun.ultimatecalendar.ui.navigation
 
 import androidx.activity.compose.BackHandler
-import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -24,6 +23,7 @@ import com.qtekfun.ultimatecalendar.ui.adaptive.PaneDialog
 import com.qtekfun.ultimatecalendar.ui.adaptive.currentAdaptiveLayout
 import com.qtekfun.ultimatecalendar.ui.detail.EventDetailScreen
 import com.qtekfun.ultimatecalendar.ui.editor.EventEditorRoute
+import com.qtekfun.ultimatecalendar.ui.firstrun.LocalOpenWizard
 import com.qtekfun.ultimatecalendar.ui.invitations.InvitationsScreen
 import com.qtekfun.ultimatecalendar.ui.search.SearchScreen
 import com.qtekfun.ultimatecalendar.ui.settings.SettingsScreen
@@ -45,6 +45,8 @@ fun AppNavigation(routes: NotificationRoutes = remember { NotificationRoutes() }
     val nav = rememberSaveable(saver = NavState.Saver) { NavState() }
     val layout = currentAdaptiveLayout()
     val shell: ShellViewModel = viewModel()
+    // The setup assistant of the first run (RF-01), reopened from the drawer.
+    val openWizard = LocalOpenWizard.current
     // The shell's view lives in its ViewModel, so it survives rotation and resizing too.
     val shellState = shell.state.collectAsStateWithLifecycle()
     val view by remember { derivedStateOf { shellState.value.view } }
@@ -85,34 +87,32 @@ fun AppNavigation(routes: NotificationRoutes = remember { NotificationRoutes() }
             )
         }
 
-        // Help: a later task fills this in.
-        nav.help -> Placeholder(R.string.shell_help) { nav.help = false }
-
         else -> {
-            ShellScreen(shellActions(nav, layout), shell, nav.detailPane())
+            ShellScreen(shellActions(nav, layout, openWizard), shell, nav.detailPane())
             WideOverlays(nav, dialogs)
         }
     }
 }
 
 /** The shell's way out to the rest of the app. */
-private fun shellActions(nav: NavState, layout: AdaptiveLayout) = ShellActions(
-    // Leaving the Agenda closes the detail beside it: the other views open it full screen.
-    onSelectView = {
-        if (layout.agendaTwoPane &&
-            it != CalendarView.AGENDA
-        ) {
-            nav.eventDetail = false
-        }
-    },
-    onSearch = { nav.search = true },
-    onNewEvent = { nav.openEditor() },
-    onInvitations = { nav.invitations = true },
-    onSettings = { nav.settings = true },
-    onHelp = { nav.help = true },
-    onOpenEvent = { nav.open(EventRef.of(it)) },
-    onCreateAt = { nav.openEditor(EditorRequest.New(it)) }
-)
+private fun shellActions(nav: NavState, layout: AdaptiveLayout, openWizard: () -> Unit) =
+    ShellActions(
+        // Leaving the Agenda closes the detail beside it: the other views open it full screen.
+        onSelectView = {
+            if (layout.agendaTwoPane &&
+                it != CalendarView.AGENDA
+            ) {
+                nav.eventDetail = false
+            }
+        },
+        onSearch = { nav.search = true },
+        onNewEvent = { nav.openEditor() },
+        onInvitations = { nav.invitations = true },
+        onSettings = { nav.settings = true },
+        onSetup = openWizard,
+        onOpenEvent = { nav.open(EventRef.of(it)) },
+        onCreateAt = { nav.openEditor(EditorRequest.New(it)) }
+    )
 
 /** The Agenda's second pane: the same detail screen the phone opens full screen. */
 private fun NavState.detailPane() = DetailPane(detailRef.takeIf { eventDetail }) {
@@ -196,10 +196,4 @@ private fun OpenRequestedRoute(routes: NotificationRoutes, nav: NavState, shell:
         }
         routes.consume()
     }
-}
-
-@Composable
-private fun Placeholder(@StringRes title: Int, onBack: () -> Unit) {
-    BackHandler(onBack = onBack)
-    PlaceholderScreen(title, onBack)
 }
