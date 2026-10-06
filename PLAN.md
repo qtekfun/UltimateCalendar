@@ -76,7 +76,8 @@ Reglas: una tarea cada vez, en su rama `feat/<tarea>`, con `./gradlew check` en 
 
 ## Fase 4 — Pulido
 - [ ] **T25 Medidas**: rendimiento de Semana/Mes con 5.000 y 20.000 eventos (Macrobenchmark o medidas manuales anotadas en `SPEC.md` §6), batería de la comprobación periódica.
-- [ ] **T26 Accesibilidad**: TalkBack en agenda, bandeja y editor; fuente al 200 %; contraste.
+- [x] **T26 Accesibilidad**: TalkBack en agenda, bandeja y editor; fuente al 200 %; contraste.
+  - *Resultado:* hecho en código y con tests (descriptor `EventSpeech` en ambos idiomas, auditoría de contraste sobre una rejilla de colores y los tres temas, auditoría semántica en androidTest al 100 % y 200 % de fuente). Quedan excepciones de 48 dp en el Mes y la cuadrícula (ver SPEC §6, "Accesibilidad (T26)"). **Pendiente del autor:** una pasada real con TalkBack en el móvil (orden de lectura, foco, acciones personalizadas, frases en español) y con la fuente al máximo en ColorOS.
 - [x] **T27 Tests de UI de flujos clave**: crear evento, responder invitación desde la notificación y desde la bandeja, editar "este y los siguientes". Corren cada noche en el emulador (`ui-tests.yml`).
   - *Resultado:* hecho (`androidTest/.../flows/`, 10 tests, verdes en emuladores API 26 y 36, unos 2 s cada uno salvo crear evento, 5-8 s). Contra el `CalendarProvider` real, con una cuenta LOCAL de pruebas por test y eventos con `_SYNC_ID`; lo que hizo la app se lee de las tablas del proveedor. Cubiertos: crear evento (título, hora con el reloj, calendario, recordatorio) y verlo en la Agenda; responder desde la bandeja; responder desde la notificación; editar "este y los siguientes" (serie cortada con `UNTIL`, serie nueva con `COUNT` restante); borrar "este y los siguientes" con Deshacer; borrar una ocurrencia; borrar un evento con Deshacer; búsqueda; el asistente no vuelve tras Hecho. **Límites:** el botón de la notificación se dispara con el `PendingIntent` de la propia notificación (no se toca en la cortina: haría falta UiAutomator y su disposición cambia entre API 26 y 36); borrar una sola ocurrencia no ofrece Deshacer (la app no puede devolver una cancelada), así que se comprueba que no hay Deshacer; la copia de seguridad (exportar/importar) no se prueba: pasa por el selector de archivos del sistema. Los tests encontraron y arreglaron dos fallos de la app: cambiar de Semana a Agenda o Mes la cerraba, y abrir la app sin permiso de calendario también.
 
@@ -99,8 +100,9 @@ Reglas: una tarea cada vez, en su rama `feat/<tarea>`, con `./gradlew check` en 
 - [ ] **T36 `CalDavCalendarSource`**: la suite de contrato pasa con MockWebServer; planificación en el servidor para invitar y responder.
 - [ ] **T37 Login y gestión de la cuenta CalDAV** en la UI; la copia de seguridad incluye la sesión opcional.
 
-## Después del MVP (backlog, no implementar aún)
-- Widget de pantalla de inicio (agenda y mes).
-- Suscripciones `webcal`/ICS.
-- Invitaciones desde el correo (IMAP).
-- Recordar de nuevo invitaciones sin responder.
+## Fase 7 — Extras (pasan al plan el 2026-10-06, por decisión del autor; antes "Después del MVP")
+- [ ] **T38 Widget de pantalla de inicio** (agenda y mes): sin dependencias nuevas si es posible (`RemoteViews`); si se usa `androidx.glance`, comprobar la licencia (Apache-2.0) y anotarlo. Datos del `CalendarRepository`, tema claro/oscuro/AMOLED y colores dinámicos, tamaños redimensionables, toque en un evento abre el detalle y en el encabezado la app, actualización por el `ContentObserver` y por alarma a medianoche, sin red.
+  - *Verificación:* vista previa de los tamaños; pruebas de la lógica de qué se muestra; comprobado en emulador.
+- [ ] **T39 Suscripciones `webcal`/ICS de solo lectura**: añadir una URL, descargar con el cliente HTTP de T33 (HTTPS, ETag/If-Modified-Since), leer con el lector iCalendar y mostrarlas como calendario local de solo lectura (Room), refresco periódico configurable. Requiere declarar `INTERNET` y revisar `PRIVACY.md` (se coordina con T36/T37). Depende de T33 y T34.
+- [ ] **T40 Recordar de nuevo las invitaciones sin responder**: opción en Ajustes (desactivada / un día antes / una hora antes / ambas), usando el detector de T07 y el registro de T08, sin duplicar avisos. **100 % en la lógica nueva de `domain.invitations`.**
+- [ ] **T41 Invitaciones desde el correo (IMAP)**: **pendiente de confirmar con el autor antes de empezar**, porque guarda las credenciales de un buzón de correo y abre la red a un servidor más; si se hace, cifrado con Keystore, solo lectura, y `PRIVACY.md` actualizado.

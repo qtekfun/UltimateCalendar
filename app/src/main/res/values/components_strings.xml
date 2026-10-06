@@ -20,4 +20,9 @@
     <string name="shell_help">Help</string>
     <string name="shell_switch_view">Change view, now %1$s</string>
     <string name="shell_week_number">Week %1$d</string>
+    <string name="cal_speech_calendar">calendar %1$s</string>
+    <string name="cal_state_visible">Shown</string>
+    <string name="cal_state_hidden">Hidden</string>
+    <string name="cal_state_expanded">Expanded</string>
+    <string name="cal_state_collapsed">Collapsed</string>
 </resources>

@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -137,7 +138,7 @@ private fun CalendarChoiceRow(calendar: CalendarInfo, selected: Boolean, onClick
         Modifier
             .fillMaxWidth()
             .heightIn(min = Dimens.minTouch)
-            .clickable(role = Role.RadioButton, onClick = onClick)
+            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
             .semantics(mergeDescendants = true) { contentDescription = calendar.displayName }
             .padding(horizontal = Spacing.l),
         verticalAlignment = Alignment.CenterVertically,
@@ -201,7 +202,7 @@ private fun ColorSwatch(color: Int?, selected: Boolean, name: String, onClick: (
         Modifier
             .size(Dimens.minTouch)
             .clip(CircleShape)
-            .clickable(role = Role.RadioButton, onClick = onClick)
+            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
             .semantics { contentDescription = name },
         contentAlignment = Alignment.Center
     ) {

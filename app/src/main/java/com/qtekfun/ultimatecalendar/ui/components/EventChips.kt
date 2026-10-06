@@ -46,7 +46,8 @@ internal fun EventDisplay.statusLabel(): String? = when (this) {
 /**
  * An event in a time grid, a month cell or the agenda: title, optional [detail] line (time and
  * place) and the colors of its [display] state. Height wraps the text, so large fonts never clip.
- * Pass [maxLines] to cap the title where space is tight (month cells use 1).
+ * Pass [maxLines] to cap the title where space is tight (month cells use 1). [description] is
+ * what a screen reader says instead of the title, detail and status (see `EventSpeech`).
  */
 @Composable
 fun EventChip(
@@ -56,11 +57,12 @@ fun EventChip(
     detail: String? = null,
     display: EventDisplay = EventDisplay.of(null),
     maxLines: Int = 2,
+    description: String? = null,
     onClick: (() -> Unit)? = null
 ) {
     val colors = rememberEventChipColors(color, display)
     val status = display.statusLabel()
-    val spoken = listOfNotNull(title, detail, status).joinToString(", ")
+    val spoken = description ?: listOfNotNull(title, detail, status).joinToString(", ")
     ChipBox(
         colors,
         modifier.semantics(mergeDescendants = true) { contentDescription = spoken },

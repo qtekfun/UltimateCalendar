@@ -36,6 +36,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
@@ -217,7 +220,6 @@ private fun InvitationList(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun InvitationCard(
     invitation: Invitation,
@@ -225,11 +227,16 @@ private fun InvitationCard(
     onOpen: () -> Unit,
     onAnswer: (InvitationAnswer) -> Unit
 ) {
+    // The answers are buttons below, and also actions of the card, so a screen reader user can
+    // answer from the actions menu without walking through the three buttons of every card.
+    val labels = InvitationAnswer.entries.associateWith { stringResource(it.label()) }
+    val actions = answerActions(labels, onAnswer)
     Card(
         onClick = onOpen,
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = Dimens.minTouch),
+            .heightIn(min = Dimens.minTouch)
+            .semantics { customActions = actions },
         shape = CalendarShapes.card,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow
@@ -272,22 +279,9 @@ private fun InvitationCard(
                     overflow = TextOverflow.Ellipsis
                 )
             }
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
-                InvitationAnswer.entries.forEach { answer ->
-                    TextButton(
-                        onClick = { onAnswer(answer) },
-                        modifier = Modifier.heightIn(min = Dimens.minTouch)
-                    ) { Text(stringResource(answer.label())) }
-                }
-            }
+            AnswerButtons(invitation.title, labels, onAnswer)
         }
     }
-}
-
-private fun InvitationAnswer.label(): Int = when (this) {
-    InvitationAnswer.ACCEPT -> R.string.invitation_accept
-    InvitationAnswer.MAYBE -> R.string.invitation_maybe
-    InvitationAnswer.DECLINE -> R.string.invitation_decline
 }
 
 private fun sample(

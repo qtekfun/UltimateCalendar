@@ -33,6 +33,7 @@ import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import com.qtekfun.ultimatecalendar.R
+import com.qtekfun.ultimatecalendar.domain.accessibility.EventSpeech
 import com.qtekfun.ultimatecalendar.domain.model.EventInstance
 import com.qtekfun.ultimatecalendar.domain.model.EventTime
 import com.qtekfun.ultimatecalendar.domain.search.FieldMatch
@@ -41,6 +42,7 @@ import com.qtekfun.ultimatecalendar.domain.search.SearchField
 import com.qtekfun.ultimatecalendar.domain.search.SearchResult
 import com.qtekfun.ultimatecalendar.ui.components.CalendarColorDot
 import com.qtekfun.ultimatecalendar.ui.components.SectionHeader
+import com.qtekfun.ultimatecalendar.ui.components.rememberSpeechWords
 import com.qtekfun.ultimatecalendar.ui.theme.Dimens
 import com.qtekfun.ultimatecalendar.ui.theme.Spacing
 import java.time.ZoneId
@@ -82,7 +84,8 @@ internal fun SearchResultRow(
         title.text.ifBlank { untitled },
         moment,
         detail?.text,
-        stringResource(R.string.search_repeats).takeIf { result.instance.isRecurring }
+        stringResource(R.string.search_repeats).takeIf { result.instance.isRecurring },
+        EventSpeech.statusWord(result.instance.selfStatus, rememberSpeechWords())
     ).joinToString(", ")
     Row(
         modifier

@@ -49,6 +49,7 @@ import com.qtekfun.ultimatecalendar.ui.agenda.AgendaScreen
 import com.qtekfun.ultimatecalendar.ui.components.AnimatedPeriod
 import com.qtekfun.ultimatecalendar.ui.components.CalendarSnackbarHost
 import com.qtekfun.ultimatecalendar.ui.components.CreateFab
+import com.qtekfun.ultimatecalendar.ui.components.LocalCalendarNames
 import com.qtekfun.ultimatecalendar.ui.components.LocalSnackbarHost
 import com.qtekfun.ultimatecalendar.ui.components.PeriodKey
 import com.qtekfun.ultimatecalendar.ui.components.rememberFabScrollState
@@ -148,7 +149,13 @@ fun ShellContent(
             content = content
         )
     }
-    CompositionLocalProvider(LocalSnackbarHost provides snackbarHost) {
+    val names = remember(state.accounts) {
+        state.accounts.flatMap { it.calendars }.associate { it.id to it.displayName }
+    }
+    CompositionLocalProvider(
+        LocalSnackbarHost provides snackbarHost,
+        LocalCalendarNames provides names
+    ) {
         when (layout.navigation) {
             NavigationStyle.PERMANENT_DRAWER -> PermanentNavigationDrawer(
                 drawerContent = { drawerContent(true) },
