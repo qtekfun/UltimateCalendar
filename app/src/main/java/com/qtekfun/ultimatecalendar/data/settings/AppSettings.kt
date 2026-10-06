@@ -28,8 +28,10 @@ data class AppSettings(
     val inviteCheck: InviteCheckInterval = InviteCheckInterval.EVERY_30,
     /** Addresses that are the user's own, besides the accounts' (lower case). */
     val ownEmails: List<String> = emptyList(),
-    val notifyChanges: Boolean = true,
-    val notifyCancellations: Boolean = true,
+    /** Tell when the organizer moves an invitation (RF-07); off by default. */
+    val notifyChanges: Boolean = false,
+    /** Tell when the organizer cancels an invitation (RF-07); off by default. */
+    val notifyCancellations: Boolean = false,
     /** How far back reminders the system kept from showing are brought back; 0: never. */
     val missedWindowHours: Int = SettingsRules.DEFAULT_MISSED_WINDOW_HOURS,
     /** Aggressive mode: reminders are set like an alarm clock, which no battery saver delays. */

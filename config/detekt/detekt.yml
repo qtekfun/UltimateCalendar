@@ -51,5 +51,7 @@ style:
       - '**/ui/demo/**'
       # Invented sample data of the grid previews (T15).
       - '**/ui/timegrid/TimeGridPreviews.kt'
+      # Invented sample data of the month previews (T17).
+      - '**/ui/month/MonthPreviews.kt'
       # Invented sample data of the Week previews (T16).
       - '**/ui/timegrid/WeekPreviews.kt'
