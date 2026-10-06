@@ -20,6 +20,7 @@ import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
@@ -51,7 +52,8 @@ class CalendarRepository @Inject constructor(
 
     /**
      * The occurrences overlapping [range] in the visible calendars, in the source's order.
-     * Repetitions are expanded by the source, never here.
+     * Repetitions are expanded by the source, never here. It reads again on every calendar or
+     * source change, but only emits when the result differs from the last one.
      */
     fun instances(range: TimeRange): Flow<CalendarResult<List<EventInstance>>> =
         visibleCalendars().map { result ->
@@ -65,7 +67,7 @@ class CalendarRepository @Inject constructor(
                     source.instances(range, result.value.map { it.id }.toSet())
                 }
             }
-        }.flowOn(io)
+        }.distinctUntilChanged().flowOn(io)
 
     /**
      * The calendar for new events: the one the user chose if it still exists and accepts

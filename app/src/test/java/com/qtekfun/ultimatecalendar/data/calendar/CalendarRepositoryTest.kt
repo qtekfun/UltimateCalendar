@@ -25,6 +25,7 @@ import io.mockk.mockk
 import java.time.Instant
 import java.time.ZoneId
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.AfterEach
@@ -148,6 +149,25 @@ class CalendarRepositoryTest {
                 setOf("Standup", "Retro"),
                 awaitItem().value().map(EventInstance::title).toSet()
             )
+        }
+    }
+
+    @Test
+    fun `instances do not repeat when a source change changes nothing`() = runTest {
+        val changes = MutableSharedFlow<Unit>()
+        val quiet = mockk<CalendarSource>()
+        every { quiet.changes } returns changes
+        coEvery { quiet.calendars() } returns CalendarResult.Success(listOf(work))
+        coEvery { quiet.instances(range, setOf(work.id)) } returns
+            CalendarResult.Success(emptyList())
+        val quietRepository =
+            CalendarRepository(quiet, database.calendarSettingsDao(), Dispatchers.Unconfined)
+
+        quietRepository.instances(range).test {
+            assertEquals(emptyList<EventInstance>(), awaitItem().value())
+            changes.emit(Unit)
+            expectNoEvents()
+            cancelAndIgnoreRemainingEvents()
         }
     }
 
