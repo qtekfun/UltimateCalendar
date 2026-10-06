@@ -3,19 +3,27 @@
 
 package com.qtekfun.ultimatecalendar.ui.agenda
 
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import com.qtekfun.ultimatecalendar.domain.agenda.AgendaDays
+import com.qtekfun.ultimatecalendar.domain.agenda.AgendaItem
 import com.qtekfun.ultimatecalendar.domain.agenda.AgendaItems
+import com.qtekfun.ultimatecalendar.domain.detail.EventRef
 import com.qtekfun.ultimatecalendar.domain.model.AttendeeStatus
 import com.qtekfun.ultimatecalendar.domain.model.CalendarId
 import com.qtekfun.ultimatecalendar.domain.model.EventId
 import com.qtekfun.ultimatecalendar.domain.model.EventInstance
 import com.qtekfun.ultimatecalendar.domain.model.EventTime
 import com.qtekfun.ultimatecalendar.domain.navigation.DateRange
+import com.qtekfun.ultimatecalendar.ui.adaptive.AdaptivePreviews
+import com.qtekfun.ultimatecalendar.ui.adaptive.currentAdaptiveLayout
 import com.qtekfun.ultimatecalendar.ui.components.ComponentPreviews
 import com.qtekfun.ultimatecalendar.ui.components.PreviewSurface
 import com.qtekfun.ultimatecalendar.ui.components.PreviewToday
+import com.qtekfun.ultimatecalendar.ui.detail.InvitationDetailPreviewContent
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -93,5 +101,51 @@ private fun previewState(): AgendaState {
 internal fun AgendaListPreview() {
     PreviewSurface {
         AgendaList(rememberLazyListState(), previewState(), PreviewToday, onOpenEvent = {})
+    }
+}
+
+/** The Agenda on a phone, a 7" and a 10" tablet and a phone in landscape: two panes when wide. */
+@AdaptivePreviews
+@Composable
+internal fun AgendaAdaptivePreview() {
+    val state = previewState()
+    val first = state.items.filterIsInstance<AgendaItem.EventRow>().first().entry.instance
+    val selected = EventRef.of(first)
+    val list = @Composable { modifier: Modifier ->
+        AgendaList(
+            rememberLazyListState(),
+            state,
+            PreviewToday,
+            onOpenEvent = {},
+            selected = selected,
+            modifier = modifier
+        )
+    }
+    PreviewSurface {
+        if (currentAdaptiveLayout().agendaTwoPane) {
+            AgendaMasterDetail(
+                selected,
+                list,
+                detail = { InvitationDetailPreviewContent() },
+                modifier = Modifier.fillMaxSize()
+            )
+        } else {
+            list(Modifier)
+        }
+    }
+}
+
+/** The two-pane Agenda before anything is picked. */
+@Preview(name = "Tablet 10in, nothing selected", widthDp = 1280, heightDp = 800)
+@Composable
+internal fun AgendaNothingSelectedPreview() {
+    val state = previewState()
+    PreviewSurface {
+        AgendaMasterDetail(
+            selected = null,
+            list = { AgendaList(rememberLazyListState(), state, PreviewToday, {}, modifier = it) },
+            detail = {},
+            modifier = Modifier.fillMaxSize()
+        )
     }
 }

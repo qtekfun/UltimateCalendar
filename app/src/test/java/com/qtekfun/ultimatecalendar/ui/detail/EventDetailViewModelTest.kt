@@ -77,7 +77,7 @@ class EventDetailViewModelTest {
         Dispatchers.setMain(UnconfinedTestDispatcher())
         database = inMemoryDatabase()
         source = FakeCalendarSource(listOf(work, readOnly))
-        settings = SettingsRepository(FakePreferences(), FakePreferences())
+        settings = SettingsRepository(FakePreferences(), FakePreferences(), FakePreferences())
         repository =
             CalendarRepository(source, database.calendarSettingsDao(), Dispatchers.Unconfined)
     }

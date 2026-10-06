@@ -5,6 +5,7 @@ package com.qtekfun.ultimatecalendar.data.settings
 
 import android.content.SharedPreferences
 import androidx.core.content.edit
+import com.qtekfun.ultimatecalendar.domain.firstrun.FirstRunFlag
 import com.qtekfun.ultimatecalendar.domain.model.CalendarId
 import com.qtekfun.ultimatecalendar.domain.settings.FirstDayOfWeek
 import com.qtekfun.ultimatecalendar.domain.settings.InitialView
@@ -34,20 +35,27 @@ private const val KEY_MISSED_WINDOW = "missed_window_hours"
 private const val KEY_ALARM_CLOCK = "alarm_clock"
 private const val KEY_ROBUST_MODE = "robust_mode"
 private const val KEY_ALL_DAY_MINUTE = "all_day_minute"
+private const val KEY_FIRST_RUN_DONE = "first_run_done"
+private const val LEGACY_KEY_ROBUST = "robust_mode"
+private const val LEGACY_KEY_FIRST_RUN = "wizard_shown"
 private const val LIST_SEPARATOR = ","
 
 /**
  * Per-device preferences (RF-10). They are not calendar data, so they live in SharedPreferences
  * rather than in Room, and need no extra library. Whatever is written is sanitized first, and
- * whatever is read is too, so a damaged value never reaches the rest of the app.
+ * whatever is read is too, so a damaged value never reaches the rest of the app. It also keeps
+ * whether the first-run wizard was shown, which is not a setting the user can change, so it is
+ * not part of [AppSettings] and does not travel in backups.
  */
 @Singleton
 class SettingsRepository @Inject constructor(
     @Named(SETTINGS_PREFERENCES) private val preferences: SharedPreferences,
-    @Named(LEGACY_REMINDER_PREFERENCES) private val legacyReminders: SharedPreferences
-) {
+    @Named(LEGACY_REMINDER_PREFERENCES) private val legacyReminders: SharedPreferences,
+    @Named(LEGACY_FIRST_RUN_PREFERENCES) private val legacyFirstRun: SharedPreferences
+) : FirstRunFlag {
     init {
-        migrateRobustMode()
+        migrateRobustMode(preferences, legacyReminders)
+        migrateFirstRun(preferences, legacyFirstRun)
     }
 
     /** The current settings, and every change after. */
@@ -66,6 +74,10 @@ class SettingsRepository @Inject constructor(
     /** Changes the settings with [transform]; the result is sanitized before it is kept. */
     @Synchronized
     fun update(transform: (AppSettings) -> AppSettings) = write(transform(current()).sanitized())
+
+    override fun isDone(): Boolean = preferences.getBoolean(KEY_FIRST_RUN_DONE, false)
+
+    override fun markDone() = preferences.edit { putBoolean(KEY_FIRST_RUN_DONE, true) }
 
     /** Replaces every setting at once, from a backup (RF-11). */
     fun restore(restored: AppSettings) = update { restored }
@@ -139,22 +151,34 @@ class SettingsRepository @Inject constructor(
         return text.split(LIST_SEPARATOR).mapNotNull { it.toIntOrNull() }
     }
 
-    /**
-     * Robust mode used to live in its own preferences file (T02b, before this repository). Moves
-     * a value found there, unless the settings already have one, so nobody loses it.
-     */
-    private fun migrateRobustMode() {
-        if (!legacyReminders.contains(LEGACY_KEY_ROBUST)) return
-        val legacy = legacyReminders.getBoolean(LEGACY_KEY_ROBUST, false)
-        if (!preferences.contains(KEY_ROBUST_MODE)) {
-            preferences.edit { putBoolean(KEY_ROBUST_MODE, legacy) }
-        }
-        legacyReminders.edit { remove(LEGACY_KEY_ROBUST) }
-    }
-
     companion object {
         const val SETTINGS_PREFERENCES = "settings"
         const val LEGACY_REMINDER_PREFERENCES = "reminder_settings"
-        private const val LEGACY_KEY_ROBUST = "robust_mode"
+        const val LEGACY_FIRST_RUN_PREFERENCES = "first_run"
     }
+}
+
+/**
+ * Robust mode used to live in its own preferences file (T02b, before this repository). Moves
+ * a value found there, unless the settings already have one, so nobody loses it.
+ */
+private fun migrateRobustMode(preferences: SharedPreferences, legacy: SharedPreferences) {
+    if (!legacy.contains(LEGACY_KEY_ROBUST)) return
+    val robust = legacy.getBoolean(LEGACY_KEY_ROBUST, false)
+    if (!preferences.contains(KEY_ROBUST_MODE)) {
+        preferences.edit { putBoolean(KEY_ROBUST_MODE, robust) }
+    }
+    legacy.edit { remove(LEGACY_KEY_ROBUST) }
+}
+
+/**
+ * The first-run flag used to live in its own preferences file (T12, before this repository).
+ * Moves it once, so whoever already saw the wizard does not see it again.
+ */
+private fun migrateFirstRun(preferences: SharedPreferences, legacy: SharedPreferences) {
+    if (!legacy.contains(LEGACY_KEY_FIRST_RUN)) return
+    if (legacy.getBoolean(LEGACY_KEY_FIRST_RUN, false)) {
+        preferences.edit { putBoolean(KEY_FIRST_RUN_DONE, true) }
+    }
+    legacy.edit { remove(LEGACY_KEY_FIRST_RUN) }
 }

@@ -19,6 +19,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import com.qtekfun.ultimatecalendar.R
 
 /**
@@ -80,10 +82,12 @@ fun rememberFabScrollState(): FabScrollState = remember { FabScrollState() }
  */
 @Composable
 fun CreateFab(expanded: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val description = stringResource(R.string.shell_create)
     ExtendedFloatingActionButton(
         onClick = onClick,
         expanded = expanded,
-        modifier = modifier,
+        // Collapsed, the label is gone and the icon has none: the button itself says what it does.
+        modifier = modifier.semantics { contentDescription = description },
         icon = { Icon(Icons.Filled.Add, contentDescription = null) },
         text = { Text(stringResource(R.string.shell_create)) }
     )

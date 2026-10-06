@@ -51,14 +51,18 @@ class InvitationCheckCoordinatorTest {
 
     @Test
     fun `changing the interval replaces the job, manual only included`() = runTest {
-        val coordinator = coordinator()
+        coordinator().start(backgroundScope)
+        runCurrent()
 
         settings.interval = CheckInterval.HALF_HOUR
-        coordinator.intervalChanged()
+        runCurrent()
         settings.interval = CheckInterval.MANUAL_ONLY
-        coordinator.intervalChanged()
+        runCurrent()
 
-        assertEquals(listOf(CheckInterval.HALF_HOUR, CheckInterval.MANUAL_ONLY), scheduler.applied)
+        assertEquals(
+            listOf(CheckInterval.QUARTER_HOUR, CheckInterval.HALF_HOUR, CheckInterval.MANUAL_ONLY),
+            scheduler.applied
+        )
     }
 
     @Test
