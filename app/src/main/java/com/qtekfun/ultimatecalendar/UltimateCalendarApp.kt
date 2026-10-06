@@ -7,6 +7,7 @@ import android.app.Application
 import androidx.work.Configuration
 import com.qtekfun.ultimatecalendar.notify.KeepAliveController
 import com.qtekfun.ultimatecalendar.notify.NotificationChannels
+import com.qtekfun.ultimatecalendar.notify.ReRemindCoordinator
 import com.qtekfun.ultimatecalendar.notify.ReminderCoordinator
 import com.qtekfun.ultimatecalendar.sync.InvitationCheckCoordinator
 import com.qtekfun.ultimatecalendar.sync.InvitationWorkerFactory
@@ -22,6 +23,9 @@ class UltimateCalendarApp :
     Configuration.Provider {
     @Inject
     lateinit var reminders: ReminderCoordinator
+
+    @Inject
+    lateinit var reRemindings: ReRemindCoordinator
 
     @Inject
     lateinit var keepAlive: KeepAliveController
@@ -45,6 +49,8 @@ class UltimateCalendarApp :
         // Alarms, recovery of missed reminders and robust mode live as long as the process.
         reminders.start(scope)
         keepAlive.start(scope)
+        // The extra reminders of unanswered invitations (T40).
+        reRemindings.start(scope)
         // The periodic invitation check, and the checks the provider's changes and the app
         // opening start (RF-06).
         invitationChecks.start(scope)

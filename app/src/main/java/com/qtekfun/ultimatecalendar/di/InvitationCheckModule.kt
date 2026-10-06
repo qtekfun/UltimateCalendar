@@ -16,9 +16,13 @@ import com.qtekfun.ultimatecalendar.data.sync.ProviderSyncRequester
 import com.qtekfun.ultimatecalendar.data.sync.SourceSyncRequester
 import com.qtekfun.ultimatecalendar.domain.invitations.ChangeNotifications
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationNotifier
+import com.qtekfun.ultimatecalendar.domain.invitations.InvitationReReminders
 import com.qtekfun.ultimatecalendar.notify.AndroidInvitationNotifications
+import com.qtekfun.ultimatecalendar.notify.AndroidInvitationReReminderAlarms
 import com.qtekfun.ultimatecalendar.notify.ChangeNotificationSettings
 import com.qtekfun.ultimatecalendar.notify.InvitationNotificationSurface
+import com.qtekfun.ultimatecalendar.notify.InvitationReReminderAlarms
+import com.qtekfun.ultimatecalendar.notify.ReRemindCoordinator
 import com.qtekfun.ultimatecalendar.notify.SystemInvitationNotifier
 import com.qtekfun.ultimatecalendar.sync.InvitationCheckScheduler
 import com.qtekfun.ultimatecalendar.sync.InvitationCheckSettings
@@ -46,6 +50,12 @@ interface InvitationCheckBindingsModule {
 
     @Binds
     fun notifications(notifications: AndroidInvitationNotifications): InvitationNotificationSurface
+
+    @Binds
+    fun reReminders(coordinator: ReRemindCoordinator): InvitationReReminders
+
+    @Binds
+    fun reReminderAlarms(alarms: AndroidInvitationReReminderAlarms): InvitationReReminderAlarms
 
     @Binds
     fun responses(responses: SourceInvitationResponses): InvitationResponses
@@ -90,7 +100,8 @@ object InvitationCheckModule {
         notifier: InvitationNotifier,
         settings: InvitationCheckSettings,
         clock: Clock,
-        @IoDispatcher io: CoroutineDispatcher
+        @IoDispatcher io: CoroutineDispatcher,
+        reReminders: InvitationReReminders
     ): InvitationChecker = InvitationChecker(
         source.orElse(UnavailableCalendarSource),
         syncRequester,
@@ -98,6 +109,7 @@ object InvitationCheckModule {
         notifier,
         settings,
         clock,
-        io
+        io,
+        reReminders
     )
 }

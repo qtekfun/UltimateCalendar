@@ -9,6 +9,7 @@ import com.qtekfun.ultimatecalendar.data.sync.SourceSyncRequester
 import com.qtekfun.ultimatecalendar.domain.invitations.Invitation
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationDetector
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationNotifier
+import com.qtekfun.ultimatecalendar.domain.invitations.InvitationReReminders
 import com.qtekfun.ultimatecalendar.domain.model.CalendarInfo
 import com.qtekfun.ultimatecalendar.domain.model.Event
 import com.qtekfun.ultimatecalendar.domain.model.EventId
@@ -34,7 +35,8 @@ import kotlinx.coroutines.withContext
  * the notifier has been called. A check that is killed or fails halfway records nothing, so the
  * next one starts from the same point and notifies whatever is still pending (RF-08). Checks
  * from different triggers (the periodic job, the app opening, a provider change) run one at a
- * time. Built by `InvitationCheckModule`.
+ * time. Built by `InvitationCheckModule`. After recording, it hands the invitations still pending
+ * to [InvitationReReminders].
  */
 // Every part is a separate port (source, sync, record, notifier, settings, time, threads).
 @Suppress("LongParameterList")
@@ -45,7 +47,8 @@ class InvitationChecker(
     private val notifier: InvitationNotifier,
     private val settings: InvitationCheckSettings,
     private val clock: Clock,
-    private val io: CoroutineDispatcher
+    private val io: CoroutineDispatcher,
+    private val reReminders: InvitationReReminders = InvitationReReminders { }
 ) {
     private val running = Mutex()
     private val detector = InvitationDetector(clock)
@@ -122,6 +125,9 @@ class InvitationChecker(
         val changes = detector.diff(previous, scan)
         if (!changes.isEmpty) notifier.notify(changes)
         if (scan.pending.toSet() != previous.toSet()) notified.replaceAll(scan.pending)
+        // What is still pending decides which extra reminders exist (T40); an answered,
+        // cancelled or moved invitation loses its own.
+        reReminders.reconcile(scan.pending)
         return InvitationCheckOutcome.Done(changes, scan.pending.size)
     }
 

@@ -18,6 +18,7 @@ import com.qtekfun.ultimatecalendar.domain.reminders.SnoozeOption
 import com.qtekfun.ultimatecalendar.domain.reminders.Snoozes
 import com.qtekfun.ultimatecalendar.domain.result.CalendarResult
 import com.qtekfun.ultimatecalendar.notify.MissedReminderRecovery
+import com.qtekfun.ultimatecalendar.notify.ReRemindCoordinator
 import com.qtekfun.ultimatecalendar.notify.ReminderCoordinator
 import com.qtekfun.ultimatecalendar.notify.ReminderHeartbeat
 import com.qtekfun.ultimatecalendar.notify.ReminderNotifier
@@ -163,7 +164,8 @@ class ReminderRig(
         recovery = MissedReminderRecovery(events, settings, shownLog, snoozed, notifier, time)
         coordinator =
             ReminderCoordinator(events, settings, scheduler, recovery, snoozed, shownLog, time)
-        heartbeat = ReminderHeartbeat(coordinator, recovery)
+        heartbeat =
+            ReminderHeartbeat(coordinator, recovery, mockk<ReRemindCoordinator>(relaxed = true))
         coordinator.start(CoroutineScope(dispatcher + process))
     }
 
