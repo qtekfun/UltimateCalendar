@@ -30,33 +30,29 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.qtekfun.ultimatecalendar.R
+import com.qtekfun.ultimatecalendar.domain.navigation.CalendarView
+import com.qtekfun.ultimatecalendar.ui.timegrid.TimeGridScreen
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import kotlinx.coroutines.launch
 
-/** The app shell in Google Calendar's style: header, drawer, current view and new-event button. */
+/**
+ * The app shell in Google Calendar's style: header, drawer, current view and new-event button.
+ * [navigation] carries the actions that leave the shell (search, editor, detail...); the shell
+ * fills in the ones that change what it shows.
+ */
 @Composable
-fun ShellScreen(
-    onSearch: () -> Unit,
-    onNewEvent: () -> Unit,
-    onInvitations: () -> Unit,
-    onSettings: () -> Unit,
-    viewModel: ShellViewModel = viewModel()
-) {
+fun ShellScreen(navigation: ShellActions, viewModel: ShellViewModel = viewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     ShellContent(
         state,
-        ShellActions(
+        navigation.copy(
             onSelectView = viewModel::selectView,
             onSelectDate = viewModel::selectDate,
             onToday = viewModel::goToToday,
             onPrevious = viewModel::previous,
             onNext = viewModel::next,
-            onSetCalendarVisible = viewModel::setCalendarVisible,
-            onSearch = onSearch,
-            onInvitations = onInvitations,
-            onNewEvent = onNewEvent,
-            onSettings = onSettings
+            onSetCalendarVisible = viewModel::setCalendarVisible
         )
     )
 }
@@ -86,8 +82,13 @@ fun ShellContent(state: ShellUiState, actions: ShellActions, modifier: Modifier 
                 }
             }
         ) { padding ->
-            // T14-T17 replace this with the Agenda, Day, 3 days, Week and Month views.
-            ViewPlaceholder(state, actions, Modifier.fillMaxSize().padding(padding))
+            val content = Modifier.fillMaxSize().padding(padding)
+            when (state.view) {
+                CalendarView.DAY, CalendarView.THREE_DAYS -> TimeGridScreen(state, actions, content)
+
+                // T14, T16 and T17 replace this with the Agenda, Week and Month views.
+                else -> ViewPlaceholder(state, actions, content)
+            }
         }
     }
 }

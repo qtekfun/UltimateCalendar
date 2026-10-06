@@ -8,6 +8,7 @@ import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.rememberSaveable
 import com.qtekfun.ultimatecalendar.R
+import com.qtekfun.ultimatecalendar.ui.shell.ShellActions
 import com.qtekfun.ultimatecalendar.ui.shell.ShellScreen
 
 /**
@@ -31,11 +32,19 @@ fun AppNavigation() {
         // T23: the Settings screen replaces this placeholder.
         nav.settings -> Placeholder(R.string.shell_settings) { nav.settings = false }
 
+        // T19: the event detail replaces this placeholder.
+        nav.eventDetail -> Placeholder(R.string.timegrid_event_detail) { nav.eventDetail = false }
+
         else -> ShellScreen(
-            onSearch = { nav.search = true },
-            onNewEvent = { nav.newEvent = true },
-            onInvitations = { nav.invitations = true },
-            onSettings = { nav.settings = true }
+            ShellActions(
+                onSearch = { nav.search = true },
+                onNewEvent = { nav.newEvent = true },
+                onInvitations = { nav.invitations = true },
+                onSettings = { nav.settings = true },
+                onOpenEvent = { nav.eventDetail = true },
+                // T20: the editor will take the tapped time; for now it opens the same placeholder.
+                onCreateAt = { nav.newEvent = true }
+            )
         )
     }
 }
