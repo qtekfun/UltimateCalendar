@@ -6,6 +6,7 @@ package com.qtekfun.ultimatecalendar.ui.theme
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Shapes
 import androidx.compose.ui.unit.dp
+import com.qtekfun.ultimatecalendar.domain.layout.AdaptiveLayout
 
 /** The spacing scale (4 dp grid) every screen uses instead of loose numbers. */
 object Spacing {
@@ -42,8 +43,17 @@ object Dimens {
     /** The calendar icon of the Today button. */
     val todayIcon = 24.dp
 
-    /** Widest the content grows on tablets before it is centered (full layout is T24). */
-    val contentMaxWidth = 840.dp
+    /** Widest a settings page, the event detail or the editor gets: wider is hard to read. */
+    val readingMaxWidth = AdaptiveLayout.READING_MAX_DP.dp
+
+    /** Widest a day or a plain list gets on a tablet before it is centered. */
+    val wideMaxWidth = AdaptiveLayout.WIDE_MAX_DP.dp
+
+    /** The list pane of the two-pane Agenda. */
+    val listPaneWidth = 400.dp
+
+    /** The dialog that holds search or the invitations tray on wide windows. */
+    val dialogMaxWidth = 640.dp
 
     val illustration = 168.dp
     val drawerMaxWidth = 320.dp

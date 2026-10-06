@@ -8,8 +8,11 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.CompositionLocalProvider
 import com.qtekfun.ultimatecalendar.data.settings.ThemeMode
+import com.qtekfun.ultimatecalendar.domain.layout.AdaptiveLayout
 import com.qtekfun.ultimatecalendar.domain.navigation.CalendarView
+import com.qtekfun.ultimatecalendar.ui.adaptive.LocalAdaptiveLayout
 import com.qtekfun.ultimatecalendar.ui.theme.ThemeOptions
 import com.qtekfun.ultimatecalendar.ui.theme.UltimateCalendarTheme
 
@@ -21,7 +24,8 @@ import com.qtekfun.ultimatecalendar.ui.theme.UltimateCalendarTheme
  *         --es screen gallery --es theme amoled --ez drawer true
  *
  * Extras: `screen` (shell, gallery), `theme` (system, light, dark, amoled), `view` (a
- * `CalendarView` name), `drawer`, `weeks`, `empty`, `dynamic` (booleans) and `offset` (days).
+ * `CalendarView` name), `drawer`, `weeks`, `empty`, `dynamic` (booleans), `offset` (days) and
+ * `width` (dp: 360 phone, 600 7" tablet, 1280 10" tablet; forces that window's layout).
  */
 class DemoActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,7 +34,13 @@ class DemoActivity : ComponentActivity() {
         val options = DemoOptions.of(intent)
         setContent {
             UltimateCalendarTheme(options.theme) {
-                if (options.gallery) DemoGallery() else DemoShell(options)
+                // `width` forces the layout of that window width (dp), to see the tablet
+                // layouts on a phone; without it the layout follows the window.
+                CompositionLocalProvider(
+                    LocalAdaptiveLayout provides options.widthDp?.let { AdaptiveLayout.of(it) }
+                ) {
+                    if (options.gallery) DemoGallery() else DemoShell(options)
+                }
             }
         }
     }
@@ -44,7 +54,8 @@ internal data class DemoOptions(
     val drawer: Boolean,
     val weeks: Boolean,
     val empty: Boolean,
-    val offsetDays: Int
+    val offsetDays: Int,
+    val widthDp: Int?
 ) {
     companion object {
         fun of(intent: Intent): DemoOptions {
@@ -64,7 +75,8 @@ internal data class DemoOptions(
                 drawer = intent.getBooleanExtra("drawer", false),
                 weeks = intent.getBooleanExtra("weeks", false),
                 empty = intent.getBooleanExtra("empty", false),
-                offsetDays = intent.getIntExtra("offset", 0)
+                offsetDays = intent.getIntExtra("offset", 0),
+                widthDp = intent.getIntExtra("width", 0).takeIf { it > 0 }
             )
         }
     }

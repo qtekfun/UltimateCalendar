@@ -10,6 +10,8 @@ import com.qtekfun.ultimatecalendar.domain.model.AttendeeStatus
 import com.qtekfun.ultimatecalendar.domain.navigation.DateRange
 import com.qtekfun.ultimatecalendar.domain.timegrid.TimeGridLayout
 import com.qtekfun.ultimatecalendar.domain.timegrid.TimeGridPage
+import com.qtekfun.ultimatecalendar.ui.adaptive.AdaptivePreviews
+import com.qtekfun.ultimatecalendar.ui.adaptive.WithAdaptiveGridScale
 import com.qtekfun.ultimatecalendar.ui.theme.UltimateCalendarTheme
 
 // Invented data only; the helpers are those of the Day previews.
@@ -55,3 +57,8 @@ private fun WeekLargeFontPreview() = WeekPreview(weekNumber = null)
 @Preview(showBackground = true, heightDp = 640, widthDp = 320, uiMode = 32)
 @Composable
 private fun WeekNarrowDarkPreview() = WeekPreview()
+
+/** Week on a phone, a 7" and a 10" tablet and a phone in landscape: bigger hours and text. */
+@AdaptivePreviews
+@Composable
+internal fun WeekAdaptivePreview() = WithAdaptiveGridScale { WeekPreview() }

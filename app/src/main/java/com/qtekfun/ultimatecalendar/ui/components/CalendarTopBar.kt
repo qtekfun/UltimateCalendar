@@ -73,7 +73,8 @@ fun CalendarTopBar(
     onInvitations: () -> Unit,
     modifier: Modifier = Modifier,
     subtitle: String? = null,
-    pickerOpen: Boolean = false
+    pickerOpen: Boolean = false,
+    showMenu: Boolean = true
 ) {
     val pickDescription = stringResource(R.string.shell_pick_date, title)
     val arrow by animateFloatAsState(
@@ -85,11 +86,14 @@ fun CalendarTopBar(
         modifier = modifier,
         colors = TopAppBarDefaults.topAppBarColors(MaterialTheme.colorScheme.surface),
         navigationIcon = {
-            IconButton(onClick = onOpenDrawer) {
-                Icon(
-                    Icons.Filled.Menu,
-                    contentDescription = stringResource(R.string.shell_open_drawer)
-                )
+            // The permanent drawer of wide windows is always open: nothing to open.
+            if (showMenu) {
+                IconButton(onClick = onOpenDrawer) {
+                    Icon(
+                        Icons.Filled.Menu,
+                        contentDescription = stringResource(R.string.shell_open_drawer)
+                    )
+                }
             }
         },
         title = { TitleButton(title, subtitle, pickDescription, arrow, onTitleClick) },

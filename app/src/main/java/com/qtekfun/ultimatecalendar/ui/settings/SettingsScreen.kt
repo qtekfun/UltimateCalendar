@@ -37,6 +37,7 @@ import com.qtekfun.ultimatecalendar.domain.settings.FirstDayOfWeek
 import com.qtekfun.ultimatecalendar.domain.settings.InitialView
 import com.qtekfun.ultimatecalendar.domain.settings.InviteCheckInterval
 import com.qtekfun.ultimatecalendar.domain.settings.SettingsRules
+import com.qtekfun.ultimatecalendar.ui.adaptive.ReadingPane
 
 /**
  * Settings (RF-10). [calendars] are the ones a default can be picked from; the navigation (T13)
@@ -64,29 +65,29 @@ fun SettingsScreen(
         },
         containerColor = MaterialTheme.colorScheme.surfaceContainerLow
     ) { padding ->
-        Column(
-            Modifier.padding(
-                padding
-            ).fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            SectionTitle(stringResource(R.string.settings_appearance))
-            AppearanceSection(settings, viewModel)
-            SectionTitle(stringResource(R.string.settings_calendar))
-            CalendarSection(settings, calendars, viewModel)
-            SectionTitle(stringResource(R.string.settings_reminders))
-            RemindersSection(settings, viewModel)
-            SectionTitle(stringResource(R.string.settings_invitations))
-            InvitationsSection(settings, viewModel)
-            SectionTitle(stringResource(R.string.settings_backup))
-            BackupSection()
-            Text(
-                stringResource(R.string.settings_version, BuildConfig.VERSION_NAME),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                textAlign = TextAlign.Center
-            )
+        ReadingPane(Modifier.padding(padding)) {
+            Column(
+                Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                SectionTitle(stringResource(R.string.settings_appearance))
+                AppearanceSection(settings, viewModel)
+                SectionTitle(stringResource(R.string.settings_calendar))
+                CalendarSection(settings, calendars, viewModel)
+                SectionTitle(stringResource(R.string.settings_reminders))
+                RemindersSection(settings, viewModel)
+                SectionTitle(stringResource(R.string.settings_invitations))
+                InvitationsSection(settings, viewModel)
+                SectionTitle(stringResource(R.string.settings_backup))
+                BackupSection()
+                Text(
+                    stringResource(R.string.settings_version, BuildConfig.VERSION_NAME),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    textAlign = TextAlign.Center
+                )
+            }
         }
     }
 }

@@ -27,6 +27,7 @@ import com.qtekfun.ultimatecalendar.domain.navigation.PeriodPages
 import com.qtekfun.ultimatecalendar.domain.navigation.ViewPeriods
 import com.qtekfun.ultimatecalendar.domain.navigation.WeekNumbers
 import com.qtekfun.ultimatecalendar.domain.timegrid.TimeScale
+import com.qtekfun.ultimatecalendar.ui.adaptive.WithAdaptiveGridScale
 import com.qtekfun.ultimatecalendar.ui.shell.ShellActions
 import com.qtekfun.ultimatecalendar.ui.shell.ShellUiState
 import java.time.LocalDate
@@ -60,14 +61,16 @@ fun TimeGridScreen(
             override fun page(range: DateRange) = viewModel.page(range)
         }
     }
-    TimeGridView(
-        state = state,
-        now = now,
-        pages = pages,
-        callbacks = GridCallbacks(actions.onOpenEvent, actions.onCreateAt),
-        onSelectDate = actions.onSelectDate,
-        modifier = modifier
-    )
+    WithAdaptiveGridScale {
+        TimeGridView(
+            state = state,
+            now = now,
+            pages = pages,
+            callbacks = GridCallbacks(actions.onOpenEvent, actions.onCreateAt),
+            onSelectDate = actions.onSelectDate,
+            modifier = modifier
+        )
+    }
 }
 
 /**
