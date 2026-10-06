@@ -3,7 +3,9 @@
 
 package com.qtekfun.ultimatecalendar.sync.engine
 
+import com.qtekfun.ultimatecalendar.data.local.entity.CalendarSettingsEntity
 import com.qtekfun.ultimatecalendar.data.remote.caldav.DavResult
+import com.qtekfun.ultimatecalendar.data.source.CalDavIds
 import com.qtekfun.ultimatecalendar.domain.model.Attendee
 import com.qtekfun.ultimatecalendar.domain.model.AttendeeStatus
 import com.qtekfun.ultimatecalendar.domain.model.EventTime
@@ -294,5 +296,29 @@ class PullSyncTest {
 
         assertEquals(120, env.events.inCalendar(env.calendar().id).size)
         assertEquals("E120", env.row(env.work + "e120.ics").title)
+    }
+
+    @Test
+    fun `a calendar switched off is not pulled, and is pulled again when switched on`() = runTest {
+        env.pullAll()
+        val calendar = env.calendar()
+        val id = CalDavIds.calendar(calendar.id).value
+        val settings = env.db.calendarSettingsDao()
+        settings.save(CalendarSettingsEntity(id, null, null, false))
+        // A provider calendar that happens to be off has nothing to do with this account.
+        settings.save(CalendarSettingsEntity(3, null, null, false))
+        fake.put(eventHref, env.ics(event(title = "Standup")))
+        val requests = fake.requests.size
+
+        assertNull(env.pullAll())
+
+        assertNull(env.events.byHref(env.account.id, eventHref))
+        // The calendars are still listed, but none of them was asked for its events.
+        assertEquals(env.work, env.calendar().href)
+        assertTrue(fake.requests.drop(requests).none { it.startsWith("REPORT") })
+
+        settings.clear(id)
+        assertNull(env.pullAll())
+        assertEquals("Standup", env.row(eventHref).title)
     }
 }

@@ -10,6 +10,7 @@ import com.qtekfun.ultimatecalendar.domain.model.CalendarInfo
 import com.qtekfun.ultimatecalendar.domain.result.CalendarResult
 import com.qtekfun.ultimatecalendar.sync.engine.EngineFixtures
 import com.qtekfun.ultimatecalendar.sync.engine.FakeCalDav
+import com.qtekfun.ultimatecalendar.sync.engine.InMemoryLastSyncStore
 import com.qtekfun.ultimatecalendar.sync.engine.PullSync
 import com.qtekfun.ultimatecalendar.sync.engine.PushSync
 import com.qtekfun.ultimatecalendar.sync.engine.SyncEngine
@@ -66,7 +67,9 @@ class CalDavRig(server: MockWebServer, zone: ZoneId = ZoneId.of("Europe/Madrid")
             env.db,
             env.push,
             env.pull,
-            Dispatchers.Unconfined
+            Dispatchers.Unconfined,
+            env.clock,
+            InMemoryLastSyncStore()
         )
         source = restarted()
         sync()
@@ -94,7 +97,9 @@ class CalDavRig(server: MockWebServer, zone: ZoneId = ZoneId.of("Europe/Madrid")
             env.db,
             PushSync(env.db, queue, env.clock),
             PullSync(env.db, queue, env.clock),
-            Dispatchers.Unconfined
+            Dispatchers.Unconfined,
+            env.clock,
+            InMemoryLastSyncStore()
         )
     }
 

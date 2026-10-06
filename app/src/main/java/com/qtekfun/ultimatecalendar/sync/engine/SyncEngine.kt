@@ -10,6 +10,7 @@ import com.qtekfun.ultimatecalendar.data.remote.caldav.CalDav
 import com.qtekfun.ultimatecalendar.data.remote.caldav.DavResult
 import com.qtekfun.ultimatecalendar.di.IoDispatcher
 import com.qtekfun.ultimatecalendar.sync.queue.ProcessResult
+import java.time.Clock
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
@@ -45,24 +46,41 @@ sealed interface SyncOutcome {
 /**
  * Syncs the signed-in account: first sends the queued local changes, then pulls the server
  * state, so the conflict resolver only sees real conflicts. Syncs never overlap: one started
- * while another runs waits for it. Nothing starts it yet; scheduling comes with the UI.
+ * while another runs waits for it. [CalDavSync] and the account screen start it.
  */
 @Singleton
+@Suppress("LongParameterList")
 class SyncEngine @Inject constructor(
     private val source: SyncSource,
     private val database: UltimateCalendarDatabase,
     private val push: PushSync,
     private val pull: PullSync,
-    @IoDispatcher private val dispatcher: CoroutineDispatcher
+    @IoDispatcher private val dispatcher: CoroutineDispatcher,
+    private val clock: Clock,
+    private val lastSync: LastSyncStore
 ) {
     private val mutex = Mutex()
     private val mutableLastOutcome = MutableStateFlow<SyncOutcome?>(null)
+    private val mutableSyncing = MutableStateFlow(false)
 
     /** How the latest sync of this process ended; null until one finishes. */
     val lastOutcome: StateFlow<SyncOutcome?> = mutableLastOutcome.asStateFlow()
 
+    /** Whether a sync is running right now (the account screen shows it). */
+    val syncing: StateFlow<Boolean> = mutableSyncing.asStateFlow()
+
     suspend fun sync(): SyncOutcome = withContext(dispatcher) {
-        mutex.withLock { run().also { mutableLastOutcome.value = it } }
+        mutex.withLock {
+            mutableSyncing.value = true
+            try {
+                run().also { outcome ->
+                    if (outcome is SyncOutcome.Ok) lastSync.recordOk(clock.instant())
+                    mutableLastOutcome.value = outcome
+                }
+            } finally {
+                mutableSyncing.value = false
+            }
+        }
     }
 
     private suspend fun run(): SyncOutcome {

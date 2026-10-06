@@ -53,7 +53,9 @@ class SyncEngineTest {
     private fun engine(
         source: SyncSource = SyncSource { session },
         dispatcher: CoroutineDispatcher = Dispatchers.Unconfined
-    ) = SyncEngine(source, env.db, env.push, env.pull, dispatcher)
+    ) = SyncEngine(source, env.db, env.push, env.pull, dispatcher, env.clock, lastSync)
+
+    private val lastSync = InMemoryLastSyncStore()
 
     private val href get() = env.work + "standup.ics"
 
@@ -112,6 +114,31 @@ class SyncEngineTest {
         env.fake.failures["/remote.php/dav/"] = ArrayDeque(listOf(403))
         assertEquals(SyncOutcome.Error("Forbidden"), engine.sync())
         assertEquals(SyncOutcome.Error("Forbidden"), engine.lastOutcome.value)
+    }
+
+    @Test
+    fun `a good sync records when it finished, a failed one does not`() = runTest {
+        val engine = engine()
+        assertNull(lastSync.lastOk())
+
+        env.fake.failures["/remote.php/dav/"] = ArrayDeque(listOf(500))
+        engine.sync()
+        assertNull(lastSync.lastOk())
+
+        engine.sync()
+        assertEquals(env.clock.instant(), lastSync.lastOk())
+    }
+
+    @Test
+    fun `tells while a sync runs`() = runTest {
+        val engine = engine()
+        assertEquals(false, engine.syncing.value)
+        engine.syncing.test {
+            assertEquals(false, awaitItem())
+            engine.sync()
+            assertEquals(true, awaitItem())
+            assertEquals(false, awaitItem())
+        }
     }
 
     @Test

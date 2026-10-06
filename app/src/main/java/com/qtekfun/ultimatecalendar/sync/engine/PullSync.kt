@@ -14,6 +14,7 @@ import com.qtekfun.ultimatecalendar.data.remote.caldav.DavCollection
 import com.qtekfun.ultimatecalendar.data.remote.caldav.DavResource
 import com.qtekfun.ultimatecalendar.data.remote.caldav.DavResult
 import com.qtekfun.ultimatecalendar.data.remote.caldav.then
+import com.qtekfun.ultimatecalendar.data.source.CalDavIds
 import com.qtekfun.ultimatecalendar.sync.queue.OperationQueue
 import java.time.Clock
 import javax.inject.Inject
@@ -40,10 +41,20 @@ class PullSync @Inject constructor(
             .then { home -> dav.read.calendars(home) }
             .then { collections -> DavResult.Success(saveCalendars(account.id, collections)) }
         if (result !is DavResult.Success) return result
-        return result.value.firstNotNullOfOrNull { (calendar, ctag) ->
-            pullCalendar(dav, account.id, calendar, ctag)
-        }
+        // A calendar the user switched off is not pulled; its rows stay, and switching it on
+        // again resumes from its sync token.
+        val off = switchedOff()
+        return result.value.filterNot { (calendar, _) -> calendar.id in off }
+            .firstNotNullOfOrNull { (calendar, ctag) ->
+                pullCalendar(dav, account.id, calendar, ctag)
+            }
     }
+
+    /** The rows of the CalDAV calendars the user switched off (hidden, RF-12). */
+    private suspend fun switchedOff(): Set<Long> = database.calendarSettingsDao().all()
+        .filter { it.visible == false && CalDavIds.isCalDav(it.calendarId) }
+        .map { CalDavIds.decode(it.calendarId) }
+        .toSet()
 
     private suspend fun home(dav: CalDav, account: DavAccountEntity): DavResult<String> =
         account.calendarHome?.let { DavResult.Success(it) } ?: dav.read.profile().then { found ->
