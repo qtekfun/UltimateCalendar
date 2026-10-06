@@ -5,7 +5,7 @@ package com.qtekfun.ultimatecalendar
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
-import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import com.qtekfun.ultimatecalendar.ui.MainActivity
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
@@ -21,7 +21,7 @@ class StartupTest {
     val compose = createAndroidComposeRule<MainActivity>()
 
     @Test
-    fun appStartsAndShowsItsName() {
-        compose.onNodeWithText("UltimateCalendar").assertIsDisplayed()
+    fun appStartsAndShowsTheShell() {
+        compose.onNodeWithContentDescription("New event").assertIsDisplayed()
     }
 }
