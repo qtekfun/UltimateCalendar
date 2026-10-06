@@ -59,4 +59,17 @@ class SeriesPositionTest {
 
         assertEquals(3, SeriesPosition.before(master, fourth, zone))
     }
+
+    @Test
+    fun `a rule that never matches counts nothing before an occurrence far away`() {
+        val start = LocalDate.of(2026, 1, 31)
+        val master =
+            series(
+                "FREQ=YEARLY;BYMONTH=2;BYMONTHDAY=30",
+                EventTime.AllDay(start, start.plusDays(1))
+            )
+        val far = LocalDate.of(200_000, 1, 1)
+
+        assertEquals(0, SeriesPosition.before(master, EventTime.AllDay(far, far.plusDays(1)), zone))
+    }
 }

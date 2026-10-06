@@ -3,7 +3,7 @@
 
 package com.qtekfun.ultimatecalendar.ui.timegrid
 
-import android.content.Context
+import android.content.res.Resources
 import androidx.annotation.StringRes
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -13,7 +13,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.intl.Locale
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -79,8 +79,8 @@ internal fun MoveFlow(
 /** Tells the user what happened to their change, once: Undo after a change, or why it failed. */
 @Composable
 private fun MoveMessages(viewModel: EventMoveViewModel, snackbar: SnackbarHostState) {
-    val context = LocalContext.current
-    LaunchedEffect(viewModel) {
+    val resources = LocalResources.current
+    LaunchedEffect(viewModel, resources) {
         viewModel.messages.collect { message ->
             // Each message gets its own coroutine: one waiting for Undo must not hold the next.
             launch {
@@ -88,18 +88,18 @@ private fun MoveMessages(viewModel: EventMoveViewModel, snackbar: SnackbarHostSt
                 when (message) {
                     is MoveMessage.Moved -> {
                         val undone = snackbar.showUndo(
-                            movedText(context, message.move),
-                            context.getString(R.string.cal_undo)
+                            movedText(resources, message.move),
+                            resources.getString(R.string.cal_undo)
                         )
                         if (undone) viewModel.undo(message.undo)
                     }
 
                     is MoveMessage.Failed -> snackbar.showSnackbar(
-                        failureText(context, message.error, R.string.drag_failed)
+                        failureText(resources, message.error, R.string.drag_failed)
                     )
 
                     is MoveMessage.UndoFailed -> snackbar.showSnackbar(
-                        failureText(context, message.error, R.string.drag_undo_failed)
+                        failureText(resources, message.error, R.string.drag_undo_failed)
                     )
                 }
             }
@@ -107,22 +107,25 @@ private fun MoveMessages(viewModel: EventMoveViewModel, snackbar: SnackbarHostSt
     }
 }
 
-private fun failureText(context: Context, error: CalendarError, @StringRes fallback: Int): String =
-    context.getString(
-        when (error) {
-            is CalendarError.ReadOnly -> R.string.detail_error_read_only
-            is CalendarError.PermissionDenied -> R.string.detail_error_permission
-            else -> fallback
-        }
-    )
+private fun failureText(
+    resources: Resources,
+    error: CalendarError,
+    @StringRes fallback: Int
+): String = resources.getString(
+    when (error) {
+        is CalendarError.ReadOnly -> R.string.detail_error_read_only
+        is CalendarError.PermissionDenied -> R.string.detail_error_permission
+        else -> fallback
+    }
+)
 
 /** "Event moved to Mar 12, 2026, 9:15 AM", or "Event now ends at ..." when only the end moved. */
-private fun movedText(context: Context, move: PendingMove): String {
+private fun movedText(resources: Resources, move: PendingMove): String {
     val locale = Locale.current.platformLocale
     val zone = ZoneId.systemDefault()
     val before = move.instance.time
     return when (val after = move.newTime) {
-        is EventTime.AllDay -> context.getString(
+        is EventTime.AllDay -> resources.getString(
             R.string.drag_moved,
             after.startDate.format(
                 DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale)
@@ -136,9 +139,9 @@ private fun movedText(context: Context, move: PendingMove): String {
             )
                 .withLocale(locale)
             if ((before as? EventTime.Timed)?.start == after.start) {
-                context.getString(R.string.drag_resized, after.end.atZone(zone).format(format))
+                resources.getString(R.string.drag_resized, after.end.atZone(zone).format(format))
             } else {
-                context.getString(R.string.drag_moved, after.start.atZone(zone).format(format))
+                resources.getString(R.string.drag_moved, after.start.atZone(zone).format(format))
             }
         }
     }
