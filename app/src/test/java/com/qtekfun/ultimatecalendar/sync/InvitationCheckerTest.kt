@@ -24,6 +24,7 @@ import com.qtekfun.ultimatecalendar.sync.CheckFixtures.invitation
 import com.qtekfun.ultimatecalendar.sync.CheckFixtures.now
 import java.time.ZoneOffset
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.launch
@@ -186,10 +187,13 @@ class InvitationCheckerTest {
     fun `a check killed halfway records nothing and the next one notifies it all`() = runTest {
         create(invitation("Lunch"))
         create(invitation("Dinner", start = now.plusSeconds(7200)))
+        val stalled = CompletableDeferred<Unit>()
         val reading = launch(Dispatchers.Unconfined) {
-            checker(StallingSource(source)).check(false)
+            checker(StallingSource(source, stalled)).check(false)
         }
-        // The source stalled reading the first event: cancel the check there, as a kill would.
+        // Cancel only once the source is stalled reading the first event, as a kill would: before
+        // that the check may still be inside a Room query, and cancelling it there interrupts SQLite.
+        stalled.await()
         reading.cancel(CancellationException("process killed"))
         reading.join()
 
@@ -252,8 +256,14 @@ class InvitationCheckerTest {
         assertTrue(notifier.calls.isEmpty())
     }
 
-    private class StallingSource(private val inner: CalendarSource) : CalendarSource by inner {
-        override suspend fun event(id: EventId): CalendarResult<Event> = awaitCancellation()
+    private class StallingSource(
+        private val inner: CalendarSource,
+        private val stalled: CompletableDeferred<Unit>
+    ) : CalendarSource by inner {
+        override suspend fun event(id: EventId): CalendarResult<Event> {
+            stalled.complete(Unit)
+            awaitCancellation()
+        }
     }
 
     private class Throwing(private val inner: CalendarSource) : CalendarSource by inner {
