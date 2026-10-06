@@ -12,20 +12,35 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import com.qtekfun.ultimatecalendar.data.settings.ThemeMode
 
 internal val LightColors = lightColorScheme(
     primary = Blue40,
+    onPrimary = Color.White,
+    primaryContainer = BlueContainerLight,
+    onPrimaryContainer = BlueOnContainerLight,
     secondary = Orange40,
-    tertiary = Red40
+    secondaryContainer = SlateContainerLight,
+    onSecondaryContainer = SlateOnContainerLight,
+    tertiary = Red40,
+    background = SurfaceLight,
+    surface = SurfaceLight
 )
 
 internal val DarkColors = darkColorScheme(
     primary = Blue80,
+    onPrimary = BlueOnPrimaryDark,
+    primaryContainer = BlueContainerDark,
+    onPrimaryContainer = BlueOnContainerDark,
     secondary = Orange80,
-    tertiary = Red80
+    secondaryContainer = SlateContainerDark,
+    onSecondaryContainer = SlateOnContainerDark,
+    tertiary = Red80,
+    background = SurfaceDark,
+    surface = SurfaceDark
 )
 
 /**
@@ -72,9 +87,12 @@ fun UltimateCalendarTheme(options: ThemeOptions = ThemeOptions(), content: @Comp
         dynamicLight = if (dynamic) dynamicLightColorScheme(context) else null,
         dynamicDark = if (dynamic) dynamicDarkColorScheme(context) else null
     )
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = UltimateCalendarTypography,
-        content = content
-    )
+    CompositionLocalProvider(LocalCalendarTypography provides CalendarTypography()) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = UltimateCalendarTypography,
+            shapes = UltimateCalendarShapes,
+            content = content
+        )
+    }
 }

@@ -19,10 +19,18 @@ object MissedReminders {
     ): List<PlannedReminder> {
         val since = now.minus(window)
         return planned.filter { reminder ->
-            !reminder.at.isAfter(now) && reminder.at.isAfter(since) &&
-                ShownReminder(reminder.id, reminder.at) !in shown
+            !reminder.at.isAfter(now) && reminder.at.isAfter(since) && !wasShown(reminder, shown)
         }.sortedBy { it.at }
     }
+
+    /**
+     * Whether [reminder] already showed. An all-day one is the same reminder in any zone, though
+     * it goes off at another instant after the phone moved, so only its id counts; any other is
+     * the same reminder only at the same time.
+     */
+    fun wasShown(reminder: PlannedReminder, shown: Set<ShownReminder>): Boolean =
+        ShownReminder(reminder.id, reminder.at) in shown ||
+            (reminder.allDay && shown.any { it.reminderId == reminder.id })
 
     /** Records older than this can go: no reminder that old is picked any more. */
     fun keepAfter(now: Instant, window: Duration): Instant = now.minus(window)

@@ -3,6 +3,7 @@
 
 package com.qtekfun.ultimatecalendar.notify
 
+import com.qtekfun.ultimatecalendar.domain.reminders.MissedReminders
 import com.qtekfun.ultimatecalendar.domain.reminders.ReminderEventSource
 import com.qtekfun.ultimatecalendar.domain.reminders.ReminderPlanner
 import com.qtekfun.ultimatecalendar.domain.reminders.Snoozes
@@ -24,12 +25,14 @@ import kotlinx.coroutines.withTimeoutOrNull
  * of the clock or time zone.
  */
 @Singleton
+@Suppress("LongParameterList")
 class ReminderCoordinator @Inject constructor(
     private val events: ReminderEventSource,
     private val settings: ReminderSettingsSource,
     private val scheduler: ReminderScheduler,
     private val recovery: MissedReminderRecovery,
     private val snoozed: SnoozedReminders,
+    private val shown: ShownReminders,
     private val time: ReminderTime
 ) {
     private val ticks = MutableStateFlow(0)
@@ -47,12 +50,15 @@ class ReminderCoordinator @Inject constructor(
                     val now = time.now()
                     events.observe(now, now.plus(ReminderPlanner.HORIZON)).map { occurrences ->
                         val at = time.now()
+                        // One that already showed is not set again: the clock went back, or an
+                        // all-day one moved to another zone where it is still to come.
+                        val showed = shown.all()
                         val planned = ReminderPlanner.plan(
                             occurrences,
                             current.allDayTime,
                             at,
                             time.zone()
-                        )
+                        ).filterNot { MissedReminders.wasShown(it, showed) }
                         // Postponed reminders ring from the same plan, so they survive a reboot.
                         val postponed = Snoozes.resolve(
                             snoozed.all(),

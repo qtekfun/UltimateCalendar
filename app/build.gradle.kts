@@ -137,6 +137,7 @@ detekt {
     config.setFrom(rootProject.file("config/detekt/detekt.yml"))
     source.setFrom(
         "src/main/java",
+        "src/debug/java",
         "src/test/java",
         "src/sharedTest/java",
         "src/androidTest/java"

@@ -21,6 +21,7 @@ data class ShellActions(
     val onInvitations: () -> Unit = {},
     val onNewEvent: () -> Unit = {},
     val onSettings: () -> Unit = {},
+    val onHelp: () -> Unit = {},
     /** A tap on an event: T19 opens its detail. */
     val onOpenEvent: (EventInstance) -> Unit = {},
     /** A tap on an empty slot: T20 starts a new event at that wall-clock time. */

@@ -38,12 +38,16 @@ fun AppNavigation() {
         // T19: the event detail replaces this placeholder.
         nav.eventDetail -> Placeholder(R.string.timegrid_event_detail) { nav.eventDetail = false }
 
+        // Help: a later task fills this in.
+        nav.help -> Placeholder(R.string.shell_help) { nav.help = false }
+
         else -> ShellScreen(
             ShellActions(
                 onSearch = { nav.search = true },
                 onNewEvent = { nav.newEvent = true },
                 onInvitations = { nav.invitations = true },
                 onSettings = { nav.settings = true },
+                onHelp = { nav.help = true },
                 onOpenEvent = { nav.eventDetail = true },
                 // T20: the editor will take the tapped time; for now it opens the same placeholder.
                 onCreateAt = { nav.newEvent = true }

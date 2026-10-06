@@ -241,6 +241,17 @@ class ReminderPlannerTest {
     }
 
     @Test
+    fun `an all-day reminder keeps its id in every zone, a timed one at another day does not`() {
+        val event = allDay(1, "2026-10-10", 1_440)
+        val inMadrid = plan(event, zone = madrid).single()
+        val inNewYork = plan(event, zone = ZoneId.of("America/New_York")).single()
+        assertNotEquals(inMadrid.at, inNewYork.at)
+        assertEquals(inMadrid.id, inNewYork.id)
+        assertNotEquals(inMadrid.id, plan(allDay(1, "2026-10-11", 1_440)).single().id)
+        assertNotEquals(inMadrid.id, plan(allDay(1, "2026-10-10", 600)).single().id)
+    }
+
+    @Test
     fun `occurrences of a repetition and their reminders get their own ids`() {
         val first = plan(timed(1, "2026-10-04T12:00:00Z", 10)).single()
         val next = plan(timed(1, "2026-10-11T12:00:00Z", 10)).single()
