@@ -133,3 +133,4 @@ Login Flow v2 de Nextcloud, descubrimiento, `sync-collection`, eventos en Room c
 - Releases con **release-please**; F-Droid preparado desde el día 1 (reproducible, sin dependencias prohibidas, fastlane), alta en fdroiddata tras la 1.0, solo versiones finales.
 - Al final del plan: icono, capturas generadas por test, gráfico de cabecera y textos de tienda.
 - Forzar CI (el autor no tenía preferencia; elegido): rama `master` protegida con ruleset, título de PR validado, hooks de Claude Code y tests de UI en emulador cada noche y bajo demanda.
+- 2026-10-06 (T00): `gradle/libs.versions.toml` arranca con las versiones de UltimateTasks, sin retrofit, okhttp ni kotlinx-serialization (fase 6). detekt y ktlint se cablean ya en T00 porque los hooks de Claude Code los ejecutan; el resto de la calidad (Kover, licensee, dependencias prohibidas) queda en T01. `Random` no se copia de `TimeModule`: aquí no se usa.
