@@ -44,5 +44,7 @@ style:
       - '**/ui/theme/**'
       # Sample data of the drag and drop prototype (T02).
       - '**/ui/prototype/board/FakeBoard.kt'
+      # Invented demo calendars and events (debug builds only).
+      - '**/ui/demo/**'
       # Invented sample data of the grid previews (T15).
       - '**/ui/timegrid/TimeGridPreviews.kt'

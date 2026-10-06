@@ -3,20 +3,22 @@
 
 package com.qtekfun.ultimatecalendar.ui.shell
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -24,23 +26,36 @@ import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.style.TextOverflow
 import com.qtekfun.ultimatecalendar.R
-import com.qtekfun.ultimatecalendar.domain.model.CalendarInfo
+import com.qtekfun.ultimatecalendar.domain.navigation.AccountCalendars
 import com.qtekfun.ultimatecalendar.domain.navigation.CalendarView
+import com.qtekfun.ultimatecalendar.ui.components.CalendarCheckRow
+import com.qtekfun.ultimatecalendar.ui.components.CalendarIcons
+import com.qtekfun.ultimatecalendar.ui.components.SectionHeader
+import com.qtekfun.ultimatecalendar.ui.theme.Dimens
+import com.qtekfun.ultimatecalendar.ui.theme.Motion
+import com.qtekfun.ultimatecalendar.ui.theme.Spacing
 
-private val DrawerPadding = 28.dp
+private val ItemPadding = Spacing.m
+private const val COLLAPSED_ARROW = -90f
 
 /**
- * The drawer (RF-02): the views, the calendars of each account with their color and a
- * visible/hidden checkbox, and Settings. [onClose] runs after a choice that leaves the drawer.
+ * The drawer (RF-02), laid out like Google Calendar's: the views, then the calendars of each
+ * account (a collapsible section, a colored checkbox per calendar), then Settings and Help.
+ * [onClose] runs after a choice that leaves the drawer.
  */
 @Composable
 fun ShellDrawer(
@@ -49,79 +64,52 @@ fun ShellDrawer(
     onClose: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    ModalDrawerSheet(modifier) {
+    ModalDrawerSheet(modifier.widthIn(max = Dimens.drawerMaxWidth)) {
         LazyColumn {
             item {
                 Text(
                     stringResource(R.string.app_name),
                     style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(DrawerPadding)
+                    modifier = Modifier
+                        .padding(horizontal = Spacing.xl, vertical = Spacing.l)
+                        .semantics { heading() }
                 )
             }
             items(CalendarView.entries) { view ->
                 NavigationDrawerItem(
+                    icon = { Icon(CalendarIcons.of(view), contentDescription = null) },
                     label = { Text(stringResource(view.label())) },
                     selected = view == state.view,
                     onClick = {
                         actions.onSelectView(view)
                         onClose()
                     },
-                    modifier = Modifier.padding(horizontal = 12.dp)
+                    modifier = Modifier.padding(horizontal = ItemPadding)
                 )
             }
-            item { HorizontalDivider(Modifier.padding(vertical = 8.dp)) }
-            item { SectionTitle(stringResource(R.string.shell_calendars)) }
-            calendars(state, actions)
-            item { HorizontalDivider(Modifier.padding(vertical = 8.dp)) }
-            item {
-                NavigationDrawerItem(
-                    icon = { Icon(Icons.Filled.Settings, contentDescription = null) },
-                    label = { Text(stringResource(R.string.shell_settings)) },
-                    selected = false,
-                    onClick = {
-                        onClose()
-                        actions.onSettings()
-                    },
-                    modifier = Modifier.padding(horizontal = 12.dp)
-                )
-            }
-        }
-    }
-}
+            item { Divider() }
+            item { SectionHeader(stringResource(R.string.shell_calendars)) }
+            when {
+                state.calendarsFailed ->
+                    item { Message(stringResource(R.string.shell_calendars_failed)) }
 
-private fun LazyListScope.calendars(state: ShellUiState, actions: ShellActions) {
-    when {
-        state.calendarsFailed -> item { Message(stringResource(R.string.shell_calendars_failed)) }
+                state.accounts.isEmpty() ->
+                    item { Message(stringResource(R.string.shell_calendars_none)) }
 
-        state.accounts.isEmpty() -> item { Message(stringResource(R.string.shell_calendars_none)) }
-
-        else -> state.accounts.forEach { group ->
-            item(key = "account:${group.account.type}:${group.account.name}") {
-                Text(
-                    group.account.name,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier
-                        .padding(horizontal = DrawerPadding, vertical = 8.dp)
-                        .semantics { heading() }
-                )
+                else -> items(
+                    state.accounts,
+                    key = { "account:${it.account.type}:${it.account.name}" }
+                ) { group -> AccountSection(group, actions) }
             }
-            items(group.calendars, key = { it.id.value }) { calendar ->
-                CalendarRow(calendar) { actions.onSetCalendarVisible(calendar.id, it) }
-            }
+            item { Divider() }
+            item { Footer(actions, onClose) }
         }
     }
 }
 
 @Composable
-private fun SectionTitle(text: String) {
-    Text(
-        text,
-        style = MaterialTheme.typography.titleSmall,
-        modifier = Modifier
-            .padding(horizontal = DrawerPadding, vertical = 8.dp)
-            .semantics { heading() }
-    )
+private fun Divider() {
+    HorizontalDivider(Modifier.padding(vertical = Spacing.s, horizontal = Spacing.l))
 }
 
 @Composable
@@ -129,31 +117,80 @@ private fun Message(text: String) {
     Text(
         text,
         style = MaterialTheme.typography.bodyMedium,
-        modifier = Modifier.padding(horizontal = DrawerPadding, vertical = 8.dp)
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(horizontal = Spacing.xl, vertical = Spacing.s)
     )
 }
 
+/** One account: its name (tap to fold) and its calendars with colored checkboxes. */
 @Composable
-private fun CalendarRow(calendar: CalendarInfo, onVisibleChange: (Boolean) -> Unit) {
-    val color = Color(calendar.color)
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .heightIn(min = 48.dp)
-            .toggleable(
-                value = calendar.visible,
-                role = Role.Checkbox,
-                onValueChange = onVisibleChange
+private fun AccountSection(group: AccountCalendars, actions: ShellActions) {
+    val name = group.account.name
+    var expanded by rememberSaveable(name, group.account.type) { mutableStateOf(true) }
+    val arrow by animateFloatAsState(
+        if (expanded) 0f else COLLAPSED_ARROW,
+        tween(Motion.SHORT_MS),
+        label = "accountArrow"
+    )
+    val action = stringResource(
+        if (expanded) R.string.cal_account_collapse else R.string.cal_account_expand,
+        name
+    )
+    Column(Modifier.animateContentSize(tween(Motion.MEDIUM_MS))) {
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .heightIn(min = Dimens.minTouch)
+                .clickable(role = Role.Button) { expanded = !expanded }
+                .padding(horizontal = Spacing.xl)
+                .semantics(mergeDescendants = true) { contentDescription = action },
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                name,
+                style = MaterialTheme.typography.titleSmall,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f)
             )
-            .padding(horizontal = 20.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Checkbox(
-            checked = calendar.visible,
-            onCheckedChange = null,
-            colors = CheckboxDefaults.colors(checkedColor = color, uncheckedColor = color)
+            Icon(Icons.Filled.KeyboardArrowDown, contentDescription = null, Modifier.rotate(arrow))
+        }
+        AnimatedVisibility(expanded) {
+            Column {
+                group.calendars.forEach { calendar ->
+                    CalendarCheckRow(
+                        name = calendar.displayName,
+                        color = calendar.color,
+                        checked = calendar.visible,
+                        onCheckedChange = { actions.onSetCalendarVisible(calendar.id, it) },
+                        modifier = Modifier.padding(horizontal = Spacing.s)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun Footer(actions: ShellActions, onClose: () -> Unit) {
+    Column(Modifier.padding(horizontal = ItemPadding)) {
+        NavigationDrawerItem(
+            icon = { Icon(Icons.Filled.Settings, contentDescription = null) },
+            label = { Text(stringResource(R.string.shell_settings)) },
+            selected = false,
+            onClick = {
+                onClose()
+                actions.onSettings()
+            }
         )
-        Spacer(Modifier.width(16.dp))
-        Text(calendar.displayName, style = MaterialTheme.typography.bodyLarge)
+        NavigationDrawerItem(
+            icon = { Icon(CalendarIcons.Help, contentDescription = null) },
+            label = { Text(stringResource(R.string.shell_help)) },
+            selected = false,
+            onClick = {
+                onClose()
+                actions.onHelp()
+            }
+        )
     }
 }

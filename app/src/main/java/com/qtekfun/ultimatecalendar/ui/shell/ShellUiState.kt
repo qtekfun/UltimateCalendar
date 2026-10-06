@@ -21,5 +21,7 @@ data class ShellUiState(
     val accounts: List<AccountCalendars> = emptyList(),
     /** The calendars could not be read (permission, provider). */
     val calendarsFailed: Boolean = false,
-    val pendingInvitations: Int = 0
+    val pendingInvitations: Int = 0,
+    /** Show the week number under the month title (the setting arrives with T23). */
+    val showWeekNumbers: Boolean = false
 )

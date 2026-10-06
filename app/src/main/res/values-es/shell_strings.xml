@@ -6,7 +6,6 @@
 <resources>
     <string name="shell_open_drawer">Abrir menú</string>
     <string name="shell_pick_date">Elegir fecha, %1$s</string>
-    <string name="shell_today">Hoy</string>
     <string name="shell_search">Buscar</string>
     <string name="shell_invitations">Invitaciones</string>
     <plurals name="shell_invitations_pending">
