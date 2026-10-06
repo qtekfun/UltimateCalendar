@@ -22,6 +22,9 @@ class TimeScale(val hourHeight: Float) {
     fun heightOf(startMinute: Int, endMinute: Int, minHeight: Float = 0f): Float =
         maxOf(offsetOf(endMinute) - offsetOf(startMinute), minHeight)
 
+    /** How many minutes a distance of [distance] (negative: upwards) on the scale stands for. */
+    fun minutesOf(distance: Float): Float = distance * MINUTES_PER_HOUR / hourHeight
+
     /**
      * The minute under [offset] from the top of the grid, rounded down to a multiple of
      * [snapMinutes] and kept inside the day: a tap on an empty slot starts an event there, and

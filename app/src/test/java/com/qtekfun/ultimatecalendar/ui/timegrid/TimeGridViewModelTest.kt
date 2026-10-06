@@ -176,7 +176,9 @@ class TimeGridViewModelTest {
         model.page(range).test {
             assertTrue(awaitItem().page.timed.isEmpty())
             add(work, "Late addition", 14)
-            val updated = awaitItem()
+            // The calendars and the instances may both report the change: skip repeats.
+            var updated = awaitItem()
+            while (updated.page.timed.isEmpty()) updated = awaitItem()
             assertEquals(listOf("Late addition"), updated.page.timed.map { it.instance.title })
             cancelAndIgnoreRemainingEvents()
         }
@@ -216,7 +218,9 @@ class TimeGridViewModelTest {
                         )
                     )
                 )
-                val updated = awaitItem()
+                // The calendars and the instances may both report the change: skip repeats.
+                var updated = awaitItem()
+                while (updated.page.timed.size < 2) updated = awaitItem()
                 assertEquals(listOf(2, 4), updated.page.timed.map { it.dayIndex })
                 cancelAndIgnoreRemainingEvents()
             }

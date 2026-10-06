@@ -8,6 +8,7 @@ import com.qtekfun.ultimatecalendar.domain.model.CalendarId
 import com.qtekfun.ultimatecalendar.domain.settings.FirstDayOfWeek
 import com.qtekfun.ultimatecalendar.domain.settings.InitialView
 import com.qtekfun.ultimatecalendar.domain.settings.InviteCheckInterval
+import com.qtekfun.ultimatecalendar.sync.CheckInterval
 import java.time.LocalTime
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -20,7 +21,8 @@ import org.junit.jupiter.api.Test
 class SettingsRepositoryTest {
     private val prefs = FakePreferences()
     private val legacy = FakePreferences()
-    private val repository = SettingsRepository(prefs, legacy)
+    private val legacyFirstRun = FakePreferences()
+    private val repository = SettingsRepository(prefs, legacy, legacyFirstRun)
 
     @Test
     fun `a new install has the defaults`() = runTest {
@@ -66,7 +68,7 @@ class SettingsRepositoryTest {
         )
         repository.update { changed }
         assertEquals(changed, repository.settings.first())
-        assertEquals(changed, SettingsRepository(prefs, legacy).current())
+        assertEquals(changed, SettingsRepository(prefs, legacy, legacyFirstRun).current())
     }
 
     @Test
@@ -153,18 +155,18 @@ class SettingsRepositoryTest {
     @Test
     fun `robust mode kept by the first reminder settings is moved, not lost`() {
         legacy.values["robust_mode"] = true
-        val migrated = SettingsRepository(prefs, legacy)
+        val migrated = SettingsRepository(prefs, legacy, legacyFirstRun)
         assertTrue(migrated.current().robustMode)
         assertFalse(legacy.contains("robust_mode"))
         // Once moved it belongs to the settings: a later run does not touch it again.
         migrated.update { it.copy(robustMode = false) }
-        assertFalse(SettingsRepository(prefs, legacy).current().robustMode)
+        assertFalse(SettingsRepository(prefs, legacy, legacyFirstRun).current().robustMode)
     }
 
     @Test
     fun `an old robust mode switched off migrates as off`() {
         legacy.values["robust_mode"] = false
-        assertFalse(SettingsRepository(prefs, legacy).current().robustMode)
+        assertFalse(SettingsRepository(prefs, legacy, legacyFirstRun).current().robustMode)
         assertFalse(legacy.contains("robust_mode"))
     }
 
@@ -172,15 +174,62 @@ class SettingsRepositoryTest {
     fun `a value already in the settings wins over an old one`() {
         prefs.values["robust_mode"] = false
         legacy.values["robust_mode"] = true
-        assertFalse(SettingsRepository(prefs, legacy).current().robustMode)
+        assertFalse(SettingsRepository(prefs, legacy, legacyFirstRun).current().robustMode)
         assertFalse(legacy.contains("robust_mode"))
     }
 
     @Test
     fun `nothing to migrate leaves the settings alone`() {
         assertFalse(prefs.contains("robust_mode"))
-        SettingsRepository(prefs, legacy)
+        SettingsRepository(prefs, legacy, legacyFirstRun)
         assertFalse(prefs.contains("robust_mode"))
+    }
+
+    @Test
+    fun `a new install has not seen the wizard, and marking it done is kept`() {
+        assertFalse(repository.isDone())
+        repository.markDone()
+        assertTrue(repository.isDone())
+        assertTrue(SettingsRepository(prefs, legacy, legacyFirstRun).isDone())
+        // It is not a setting: nothing of it travels in AppSettings.
+        assertEquals(AppSettings(), repository.current())
+    }
+
+    @Test
+    fun `a wizard already seen under the old flag is not shown again`() {
+        legacyFirstRun.values["wizard_shown"] = true
+        val migrated = SettingsRepository(prefs, legacy, legacyFirstRun)
+        assertTrue(migrated.isDone())
+        assertFalse(legacyFirstRun.contains("wizard_shown"))
+        assertTrue(SettingsRepository(prefs, legacy, legacyFirstRun).isDone())
+    }
+
+    @Test
+    fun `an old flag that says not seen leaves the wizard to show`() {
+        legacyFirstRun.values["wizard_shown"] = false
+        assertFalse(SettingsRepository(prefs, legacy, legacyFirstRun).isDone())
+        assertFalse(legacyFirstRun.contains("wizard_shown"))
+    }
+
+    @Test
+    fun `the invitation check reads the interval and the aliases of the settings`() = runTest {
+        val check = RepositoryInvitationCheckSettings(repository)
+        check.intervals.test {
+            assertEquals(CheckInterval.HALF_HOUR, awaitItem())
+            repository.update { it.copy(inviteCheck = InviteCheckInterval.EVERY_60) }
+            assertEquals(CheckInterval.HOUR, awaitItem())
+            // A change of something else is not a new interval.
+            repository.update { it.copy(amoled = true) }
+            expectNoEvents()
+            repository.update { it.copy(inviteCheck = InviteCheckInterval.MANUAL) }
+            assertEquals(CheckInterval.MANUAL_ONLY, awaitItem())
+            repository.update { it.copy(inviteCheck = InviteCheckInterval.EVERY_15) }
+            assertEquals(CheckInterval.QUARTER_HOUR, awaitItem())
+            cancelAndIgnoreRemainingEvents()
+        }
+        assertEquals(emptySet<String>(), check.aliases())
+        repository.update { it.copy(ownEmails = listOf("Ana@Example.com", "b@x.org")) }
+        assertEquals(setOf("ana@example.com", "b@x.org"), check.aliases())
     }
 
     @Test

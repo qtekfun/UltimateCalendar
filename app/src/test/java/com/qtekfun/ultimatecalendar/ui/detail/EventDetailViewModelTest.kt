@@ -77,7 +77,7 @@ class EventDetailViewModelTest {
         Dispatchers.setMain(UnconfinedTestDispatcher())
         database = inMemoryDatabase()
         source = FakeCalendarSource(listOf(work, readOnly))
-        settings = SettingsRepository(FakePreferences(), FakePreferences())
+        settings = SettingsRepository(FakePreferences(), FakePreferences(), FakePreferences())
         repository =
             CalendarRepository(source, database.calendarSettingsDao(), Dispatchers.Unconfined)
     }
@@ -414,11 +414,15 @@ class EventDetailViewModelTest {
     @Test
     fun `a series the app cannot split reports the failure`() = runTest {
         val ref = series()
-        val viewModel = viewModel()
+        // Cutting the series means ending it, which the source refuses here.
+        val noUpdate = object : CalendarSource by source {
+            override suspend fun update(event: Event): CalendarResult<Unit> =
+                CalendarResult.Failure(CalendarError.SourceFailure("down"))
+        }
+        val viewModel = viewModel(noUpdate)
         viewModel.show(ref)
 
         viewModel.failure.test {
-            // The fake only keeps rules with a count, so cutting the series with an UNTIL fails.
             viewModel.delete(RecurrenceScope.THIS_AND_FOLLOWING)
             assertEquals(DetailAction.DELETE, awaitItem().action)
         }

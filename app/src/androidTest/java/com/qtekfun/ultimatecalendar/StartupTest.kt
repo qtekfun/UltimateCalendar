@@ -6,6 +6,7 @@ package com.qtekfun.ultimatecalendar
 import android.content.Context
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.platform.app.InstrumentationRegistry
@@ -25,8 +26,10 @@ class StartupTest {
     @get:Rule(order = 1)
     val firstRun = object : ExternalResource() {
         override fun before() {
-            InstrumentationRegistry.getInstrumentation().targetContext
-                .getSharedPreferences("first_run", Context.MODE_PRIVATE).edit().clear().commit()
+            val context = InstrumentationRegistry.getInstrumentation().targetContext
+            context.getSharedPreferences("settings", Context.MODE_PRIVATE).edit()
+                .remove("first_run_done").commit()
+            context.getSharedPreferences("first_run", Context.MODE_PRIVATE).edit().clear().commit()
         }
     }
 
@@ -37,7 +40,8 @@ class StartupTest {
     fun firstRunShowsTheWizardThenTheApp() {
         compose.onNodeWithText("Set up UltimateCalendar").assertIsDisplayed()
         compose.onNodeWithText("Done").performClick()
-        // The extended "Create" button of the shell, expanded when the app opens.
-        compose.onNodeWithText("Create").assertIsDisplayed()
+        // The shell's "Create" button, found by its description: the grid may have scrolled to the
+        // current hour already, which collapses the button to its icon.
+        compose.onNodeWithContentDescription("Create").assertIsDisplayed()
     }
 }

@@ -5,10 +5,10 @@ package com.qtekfun.ultimatecalendar.di
 
 import android.content.ContentResolver
 import android.content.Context
+import com.qtekfun.ultimatecalendar.data.settings.SettingsRepository
 import com.qtekfun.ultimatecalendar.data.source.ProviderCalendarPresence
 import com.qtekfun.ultimatecalendar.domain.firstrun.CalendarPresence
 import com.qtekfun.ultimatecalendar.domain.firstrun.FirstRunFlag
-import com.qtekfun.ultimatecalendar.ui.firstrun.PreferencesFirstRunFlag
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -20,7 +20,7 @@ import dagger.hilt.components.SingletonComponent
 @InstallIn(SingletonComponent::class)
 interface FirstRunBindingsModule {
     @Binds
-    fun flag(flag: PreferencesFirstRunFlag): FirstRunFlag
+    fun flag(settings: SettingsRepository): FirstRunFlag
 
     @Binds
     fun presence(presence: ProviderCalendarPresence): CalendarPresence

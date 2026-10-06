@@ -14,6 +14,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.res.stringResource
@@ -35,6 +39,23 @@ private const val LIGHT_TEXT_LUMINANCE = 0.5f
 private val OUTLINE_WIDTH = 2.dp
 private val CORNER = 4.dp
 private val BAR_MARGIN = 8.dp
+private val LIFT = 8.dp
+private val HANDLE_WIDTH = 24.dp
+private val HANDLE_HEIGHT = 4.dp
+private val HANDLE_INSET = 3.dp
+private const val HANDLE_ALPHA = 0.7f
+
+/** The little bar at the bottom of an event held in the hand: the end can be dragged (T18). */
+private fun Modifier.dragHandle(color: Color): Modifier = drawBehind {
+    val width = HANDLE_WIDTH.toPx()
+    val height = HANDLE_HEIGHT.toPx()
+    drawRoundRect(
+        color.copy(alpha = HANDLE_ALPHA),
+        Offset((size.width - width) / 2, size.height - height - HANDLE_INSET.toPx()),
+        Size(width, height),
+        CornerRadius(height / 2)
+    )
+}
 
 /** How an event is painted: filled with its color, or only outlined while the invitation is open. */
 internal data class EventPaint(val fill: Color, val border: BorderStroke?, val text: Color)
@@ -100,7 +121,8 @@ internal fun TimedEventBlock(
     block: TimedBlock,
     zone: ZoneId,
     onClick: (EventInstance) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    lifted: Boolean = false
 ) {
     val paint = eventPaint(block.color, block.isPending)
     val description = describe(block, zone)
@@ -113,9 +135,15 @@ internal fun TimedEventBlock(
         shape = RoundedCornerShape(CORNER),
         color = paint.fill,
         contentColor = paint.text,
-        border = paint.border
+        border = paint.border,
+        shadowElevation = if (lifted) LIFT else 0.dp
     ) {
-        Column(Modifier.fillMaxSize().padding(horizontal = 4.dp, vertical = 2.dp)) {
+        Column(
+            Modifier
+                .fillMaxSize()
+                .then(if (lifted) Modifier.dragHandle(paint.text) else Modifier)
+                .padding(horizontal = 4.dp, vertical = 2.dp)
+        ) {
             Text(
                 block.instance.title.ifBlank { stringResource(R.string.timegrid_untitled) },
                 style = MaterialTheme.typography.labelMedium,
@@ -145,7 +173,8 @@ internal fun TimedEventBlock(
 internal fun AllDayEventBar(
     bar: AllDayBar,
     onClick: (EventInstance) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    lifted: Boolean = false
 ) {
     val paint = eventPaint(bar.color, bar.isPending)
     val title = bar.instance.title.ifBlank { stringResource(R.string.timegrid_untitled) }
@@ -164,7 +193,8 @@ internal fun AllDayEventBar(
         shape = RoundedCornerShape(CORNER),
         color = paint.fill,
         contentColor = paint.text,
-        border = paint.border
+        border = paint.border,
+        shadowElevation = if (lifted) LIFT else 0.dp
     ) {
         Text(
             title,

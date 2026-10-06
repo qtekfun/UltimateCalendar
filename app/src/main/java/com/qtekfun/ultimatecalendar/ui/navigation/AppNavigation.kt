@@ -13,8 +13,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.qtekfun.ultimatecalendar.R
 import com.qtekfun.ultimatecalendar.domain.detail.EventRef
+import com.qtekfun.ultimatecalendar.domain.editor.EditorRequest
 import com.qtekfun.ultimatecalendar.notify.NotificationRoute
 import com.qtekfun.ultimatecalendar.ui.detail.EventDetailScreen
+import com.qtekfun.ultimatecalendar.ui.editor.EventEditorRoute
 import com.qtekfun.ultimatecalendar.ui.invitations.InvitationsScreen
 import com.qtekfun.ultimatecalendar.ui.search.SearchScreen
 import com.qtekfun.ultimatecalendar.ui.settings.SettingsScreen
@@ -40,26 +42,13 @@ fun AppNavigation(routes: NotificationRoutes = remember { NotificationRoutes() }
             }
         )
 
-        // T20: the event editor replaces this placeholder.
-        nav.newEvent -> Placeholder(R.string.shell_new_event) { nav.newEvent = false }
+        nav.newEvent -> EventEditorRoute(
+            request = nav.editorRequest ?: EditorRequest.New(),
+            onClose = nav::closeEditor
+        )
 
         // The detail comes before the tray, so back from the detail returns to the tray.
-        nav.eventDetail -> {
-            val ref = nav.detailRef
-            if (ref == null) {
-                nav.eventDetail = false
-            } else {
-                // T20: the editor replaces this placeholder; it will take the occurrence.
-                EventDetailScreen(
-                    ref = ref,
-                    onBack = { nav.eventDetail = false },
-                    onEdit = {
-                        nav.eventDetail = false
-                        nav.newEvent = true
-                    }
-                )
-            }
-        }
+        nav.eventDetail -> EventDetailRoute(nav)
 
         nav.invitations -> {
             BackHandler { nav.invitations = false }
@@ -83,7 +72,7 @@ fun AppNavigation(routes: NotificationRoutes = remember { NotificationRoutes() }
         else -> ShellScreen(
             ShellActions(
                 onSearch = { nav.search = true },
-                onNewEvent = { nav.newEvent = true },
+                onNewEvent = { nav.openEditor() },
                 onInvitations = { nav.invitations = true },
                 onSettings = { nav.settings = true },
                 onHelp = { nav.help = true },
@@ -91,9 +80,26 @@ fun AppNavigation(routes: NotificationRoutes = remember { NotificationRoutes() }
                     nav.detailRef = EventRef.of(it)
                     nav.eventDetail = true
                 },
-                // T20: the editor will take the tapped time; for now it opens the same placeholder.
-                onCreateAt = { nav.newEvent = true }
+                onCreateAt = { nav.openEditor(EditorRequest.New(it)) }
             )
+        )
+    }
+}
+
+/** The detail of the event in [NavState.detailRef]; edit opens the editor on the same occurrence. */
+@Composable
+private fun EventDetailRoute(nav: NavState) {
+    val ref = nav.detailRef
+    if (ref == null) {
+        nav.eventDetail = false
+    } else {
+        EventDetailScreen(
+            ref = ref,
+            onBack = { nav.eventDetail = false },
+            onEdit = {
+                nav.eventDetail = false
+                nav.openEditor(EditorRequest.Edit(ref))
+            }
         )
     }
 }
