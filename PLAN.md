@@ -29,7 +29,8 @@ Reglas: una tarea cada vez, en su rama `feat/<tarea>`, con `./gradlew check` en 
 - [ ] **T06 Repositorio y caché de lectura**: flujos por rango de fechas para las vistas, calendarios visibles, calendario por defecto, ajustes locales de calendario (nombre/color) en Room.
 
 ## Fase 2 — Lógica
-- [ ] **T07 Detector de invitaciones**: "yo" por calendario + alias; pendientes = asistente propio `NEEDS-ACTION` en eventos futuros de cualquier calendario; diferencias entre ejecuciones (nueva, cambiada, cancelada, respondida en otro sitio). **100 % de cobertura.**
+- [x] **T07 Detector de invitaciones**: "yo" por calendario + alias; pendientes = asistente propio `NEEDS-ACTION` en eventos futuros de cualquier calendario; diferencias entre ejecuciones (nueva, cambiada, cancelada, respondida en otro sitio). **100 % de cobertura.**
+  *Resultado:* `InvitationDetector(clock)` en `domain/invitations`: `scan` (pendientes + estado de cada evento) y `diff` (nueva, cambiada, cancelada, respondida en otro sitio); 100 % líneas y ramas.
 - [ ] **T08 Comprobación periódica**: WorkManager con intervalo de Ajustes, `requestSync` (según T02), ejecución al abrir/refrescar/`ContentObserver`; registro de lo ya notificado en Room.
 - [ ] **T09 Lógica de repeticiones**: editar/borrar "solo este / este y los siguientes / todos" (corte de `RRULE` con `UNTIL`, excepciones, nueva serie). Presets y personalizado copiados del editor de UltimateTasks. **100 % de cobertura en la división.**
 - [ ] **T10 Planificador de avisos de eventos**: copiar y adaptar `ReminderPlanner` (avisos por instancia, todo el día, posponer), recuperación de perdidos, latido y modo robusto. **100 % de cobertura** en planificador y recuperación.
