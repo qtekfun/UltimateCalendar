@@ -23,8 +23,10 @@ import org.junit.jupiter.api.Test
 
 class SettingsBackupTest {
     private val json = Json { encodeDefaults = true }
-    private val oldPhone = SettingsRepository(FakePreferences(), FakePreferences())
-    private val newPhone = SettingsRepository(FakePreferences(), FakePreferences())
+    private val oldPhone =
+        SettingsRepository(FakePreferences(), FakePreferences(), FakePreferences())
+    private val newPhone =
+        SettingsRepository(FakePreferences(), FakePreferences(), FakePreferences())
     private val passphrase = "correct horse".toCharArray()
 
     private val customized = AppSettings(
