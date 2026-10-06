@@ -65,14 +65,14 @@ class ProviderCalendarSource @Inject constructor(
 
     override val changes: Flow<Unit> get() = gateway.changes
 
-    override suspend fun calendars(): CalendarResult<List<CalendarInfo>> = guarded {
+    override suspend fun calendars(): CalendarResult<List<CalendarInfo>> = guarded(dispatcher) {
         store.calendars()
     }
 
     override suspend fun instances(
         range: TimeRange,
         calendarIds: Set<CalendarId>?
-    ): CalendarResult<List<EventInstance>> = guarded {
+    ): CalendarResult<List<EventInstance>> = guarded(dispatcher) {
         val query = ProviderQuery(
             table = ProviderTable.INSTANCES,
             projection = InstanceMapping.projection,
@@ -88,7 +88,7 @@ class ProviderCalendarSource @Inject constructor(
         query: String,
         calendarIds: Set<CalendarId>?,
         range: TimeRange?
-    ): CalendarResult<List<SearchableEvent>> = guarded {
+    ): CalendarResult<List<SearchableEvent>> = guarded(dispatcher) {
         val words = SearchQuery.of(query)
         if (words.isBlank || calendarIds?.isEmpty() == true) {
             emptyList()
@@ -100,11 +100,11 @@ class ProviderCalendarSource @Inject constructor(
         }
     }
 
-    override suspend fun event(id: EventId): CalendarResult<Event> = guarded {
+    override suspend fun event(id: EventId): CalendarResult<Event> = guarded(dispatcher) {
         store.event(store.eventRow(id))
     }
 
-    override suspend fun create(draft: EventDraft): CalendarResult<EventId> = guarded {
+    override suspend fun create(draft: EventDraft): CalendarResult<EventId> = guarded(dispatcher) {
         val calendar = store.calendar(draft.calendarId)
         if (!calendar.access.canCreate) abort(CalendarError.ReadOnly)
         val values = EventMapping.toValues(draft) + mapOf(
@@ -116,7 +116,7 @@ class ProviderCalendarSource @Inject constructor(
         EventId(store.insert(ops).first() ?: abort(CalendarError.SourceFailure("no event id")))
     }
 
-    override suspend fun update(event: Event): CalendarResult<Unit> = guarded {
+    override suspend fun update(event: Event): CalendarResult<Unit> = guarded(dispatcher) {
         val row = store.eventRow(event.id)
         store.editableCalendar(row)
         val stored = store.event(row)
@@ -131,7 +131,7 @@ class ProviderCalendarSource @Inject constructor(
         )
     }
 
-    override suspend fun delete(id: EventId): CalendarResult<Unit> = guarded {
+    override suspend fun delete(id: EventId): CalendarResult<Unit> = guarded(dispatcher) {
         store.editableCalendar(store.eventRow(id))
         store.write(listOf(ProviderOp.Delete(ProviderTable.EVENTS, id = id.value)))
     }
@@ -140,13 +140,13 @@ class ProviderCalendarSource @Inject constructor(
         id: EventId,
         originalStart: Instant,
         changes: EventDraft
-    ): CalendarResult<Unit> = guarded { exceptions.change(id, originalStart, changes) }
+    ): CalendarResult<Unit> = guarded(dispatcher) { exceptions.change(id, originalStart, changes) }
 
     override suspend fun cancelInstance(id: EventId, originalStart: Instant): CalendarResult<Unit> =
-        guarded { exceptions.change(id, originalStart, null) }
+        guarded(dispatcher) { exceptions.change(id, originalStart, null) }
 
     override suspend fun respond(id: EventId, status: AttendeeStatus): CalendarResult<Unit> =
-        guarded {
+        guarded(dispatcher) {
             val row = store.eventRow(id)
             val calendar = store.calendar(requireNotNull(EventMapping.calendarOf(row)))
             if (!calendar.access.canRespond) abort(CalendarError.ReadOnly)
@@ -158,19 +158,22 @@ class ProviderCalendarSource @Inject constructor(
             val attendeeId = requireNotNull(mine.long(Attendees._ID))
             store.write(listOf(ProviderOp.Update(ProviderTable.ATTENDEES, attendeeId, answer)))
         }
+}
 
-    /** Runs [block] on the IO dispatcher, turning failures into [CalendarResult.Failure]. */
-    private suspend fun <T> guarded(block: () -> T): CalendarResult<T> = withContext(dispatcher) {
-        try {
-            CalendarResult.Success(block())
-        } catch (stop: Abort) {
-            CalendarResult.Failure(stop.error)
-        } catch (_: SecurityException) {
-            CalendarResult.Failure(CalendarError.PermissionDenied)
-        } catch (failure: ProviderFailure) {
-            CalendarResult.Failure(CalendarError.SourceFailure(failure.reason))
-        } catch (_: IllegalArgumentException) {
-            CalendarResult.Failure(CalendarError.Invalid("the provider rejected the data"))
-        }
+/** Runs [block] on [dispatcher], turning failures into [CalendarResult.Failure]. */
+private suspend fun <T> guarded(
+    dispatcher: CoroutineDispatcher,
+    block: () -> T
+): CalendarResult<T> = withContext(dispatcher) {
+    try {
+        CalendarResult.Success(block())
+    } catch (stop: Abort) {
+        CalendarResult.Failure(stop.error)
+    } catch (_: SecurityException) {
+        CalendarResult.Failure(CalendarError.PermissionDenied)
+    } catch (failure: ProviderFailure) {
+        CalendarResult.Failure(CalendarError.SourceFailure(failure.reason))
+    } catch (_: IllegalArgumentException) {
+        CalendarResult.Failure(CalendarError.Invalid("the provider rejected the data"))
     }
 }

@@ -55,7 +55,8 @@ object UnavailableCalendarSource : CalendarSource {
     override suspend fun cancelInstance(id: EventId, originalStart: Instant) = unavailable()
 
     override suspend fun respond(id: EventId, status: AttendeeStatus) = unavailable()
-
-    private fun unavailable(): CalendarResult.Failure =
-        CalendarResult.Failure(CalendarError.SourceFailure("no calendar source is bound"))
 }
+
+/** The one failure every call of [UnavailableCalendarSource] reports. */
+private fun unavailable(): CalendarResult.Failure =
+    CalendarResult.Failure(CalendarError.SourceFailure("no calendar source is bound"))

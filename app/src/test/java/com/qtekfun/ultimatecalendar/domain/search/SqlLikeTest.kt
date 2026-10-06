@@ -65,7 +65,7 @@ class SqlLikeTest {
     }
 
     @Test
-    fun `the accentable letters are exactly the ones with an accented form in Latin-1 to Latin Extended-B`() {
+    fun `the accentable letters are exactly those with an accented form up to Latin Extended-B`() {
         val withVariants = ('a'..'z').filter { letter ->
             (0xC0..0x24F).any { code ->
                 val folded = Normalizer.normalize(code.toChar().toString(), Normalizer.Form.NFD)
