@@ -12,8 +12,11 @@ import com.qtekfun.ultimatecalendar.data.source.caldav.RandomUidFactory
 import com.qtekfun.ultimatecalendar.data.source.caldav.UidFactory
 import com.qtekfun.ultimatecalendar.data.source.provider.ContentResolverGateway
 import com.qtekfun.ultimatecalendar.data.source.provider.ProviderGateway
+import com.qtekfun.ultimatecalendar.data.source.subscription.SubscriptionCalendarSource
+import com.qtekfun.ultimatecalendar.data.subscriptions.SubscriptionScheduler
 import com.qtekfun.ultimatecalendar.sync.CalDavSyncScheduler
 import com.qtekfun.ultimatecalendar.sync.WorkManagerCalDavScheduler
+import com.qtekfun.ultimatecalendar.sync.WorkManagerSubscriptionScheduler
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -22,8 +25,8 @@ import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
 /**
- * The calendar source the app uses: the Android calendar provider and the app's own CalDAV
- * calendars, side by side (see [CompositeCalendarSource]).
+ * The calendar source the app uses: the Android calendar provider, the app's own CalDAV calendars
+ * and the read-only subscriptions, side by side (see [CompositeCalendarSource]).
  */
 @Module
 @InstallIn(SingletonComponent::class)
@@ -41,10 +44,16 @@ interface CalendarSourceModule {
     @Binds
     fun trigger(scheduler: WorkManagerCalDavScheduler): CalDavSyncTrigger
 
+    @Binds
+    fun subscriptionScheduler(scheduler: WorkManagerSubscriptionScheduler): SubscriptionScheduler
+
     companion object {
         @Provides
         @Singleton
-        fun source(provider: ProviderCalendarSource, caldav: CalDavCalendarSource): CalendarSource =
-            CompositeCalendarSource(provider, caldav)
+        fun source(
+            provider: ProviderCalendarSource,
+            caldav: CalDavCalendarSource,
+            subscriptions: SubscriptionCalendarSource
+        ): CalendarSource = CompositeCalendarSource(provider, caldav, subscriptions)
     }
 }

@@ -130,7 +130,7 @@
     <string name="backup_exported">Ajustes exportados</string>
     <string name="backup_failed">No se pudo guardar el archivo</string>
     <string name="backup_restored">Ajustes restaurados</string>
-    <string name="backup_restored_some_calendars">Ajustes restaurados. Algunos calendarios de la copia no están en este teléfono, así que no se aplicaron sus nombres y colores.</string>
+    <string name="backup_restored_some_calendars">Ajustes restaurados. Algunos calendarios o suscripciones de la copia no se pudieron aplicar: el calendario no está en este teléfono o la dirección no es https.</string>
     <string name="backup_wrong_passphrase">Frase incorrecta, o el archivo se ha modificado</string>
     <string name="backup_invalid">Esto no es una copia de UltimateCalendar</string>
     <string name="backup_newer_version">Esta copia viene de una versión más nueva de la app. Actualízala primero.</string>

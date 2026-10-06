@@ -197,7 +197,7 @@ private fun ColorChoices(selected: Int?, onPick: (Int?) -> Unit) {
 
 /** A 48 dp target holding a color circle; ticked when it is the current one. */
 @Composable
-private fun ColorSwatch(color: Int?, selected: Boolean, name: String, onClick: () -> Unit) {
+internal fun ColorSwatch(color: Int?, selected: Boolean, name: String, onClick: () -> Unit) {
     Box(
         Modifier
             .size(Dimens.minTouch)
