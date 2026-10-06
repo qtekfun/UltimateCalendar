@@ -6,6 +6,7 @@ package com.qtekfun.ultimatecalendar.data.calendar
 import com.qtekfun.ultimatecalendar.data.local.dao.CalendarSettingsDao
 import com.qtekfun.ultimatecalendar.data.local.entity.CalendarSettingsEntity
 import com.qtekfun.ultimatecalendar.data.source.CalendarSource
+import com.qtekfun.ultimatecalendar.data.source.ProviderAccess
 import com.qtekfun.ultimatecalendar.di.IoDispatcher
 import com.qtekfun.ultimatecalendar.domain.model.CalendarId
 import com.qtekfun.ultimatecalendar.domain.model.CalendarInfo
@@ -18,11 +19,14 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
 
 /**
@@ -36,9 +40,20 @@ class CalendarRepository @Inject constructor(
     private val dao: CalendarSettingsDao,
     @IoDispatcher private val io: CoroutineDispatcher
 ) {
+    private val refreshes = MutableStateFlow(0)
+
+    /**
+     * Whether the phone's own calendars cannot be read for want of the calendar permission. A
+     * source that cannot tell (a test double) is never denied.
+     */
+    fun providerDenied(): Flow<Boolean> = (source as? ProviderAccess)?.denied ?: flowOf(false)
+
+    /** Reads everything again, e.g. after the user grants the calendar permission. */
+    fun refresh() = refreshes.update { it + 1 }
+
     /** Every calendar, hidden ones included, with name, color and visibility overrides applied. */
     fun calendars(): Flow<CalendarResult<List<CalendarInfo>>> =
-        combine(sourceChanges(), dao.observeAll()) { _, stored ->
+        combine(sourceChanges(), dao.observeAll(), refreshes) { _, stored, _ ->
             val overrides = stored.associate { CalendarId(it.calendarId) to it.toSettings() }
             source.calendars().map { list ->
                 list.map { calendar -> overrides[calendar.id]?.applyTo(calendar) ?: calendar }

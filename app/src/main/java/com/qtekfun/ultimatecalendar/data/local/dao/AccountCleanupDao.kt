@@ -8,8 +8,9 @@ import androidx.room3.Query
 
 /**
  * What is keyed by calendar outside the account's own tables and has to go with the account
- * when it is signed out (T37): the local overrides, the overrides still waiting for the account's first sync and the invitations
- * noticed and their re-reminders. [calendarIds] are the app's calendar ids (see `CalDavIds`).
+ * when it is signed out (T37): the local overrides, the overrides still waiting for the
+ * account's first sync, and the invitations noticed and their re-reminders. [calendarIds] are the app's
+ * calendar ids (see `CalDavIds`).
  */
 @Dao
 interface AccountCleanupDao {

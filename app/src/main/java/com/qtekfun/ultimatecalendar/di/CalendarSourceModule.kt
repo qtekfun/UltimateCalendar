@@ -5,6 +5,7 @@ package com.qtekfun.ultimatecalendar.di
 
 import com.qtekfun.ultimatecalendar.data.source.CalendarSource
 import com.qtekfun.ultimatecalendar.data.source.CompositeCalendarSource
+import com.qtekfun.ultimatecalendar.data.source.ProviderAccess
 import com.qtekfun.ultimatecalendar.data.source.ProviderCalendarSource
 import com.qtekfun.ultimatecalendar.data.source.caldav.CalDavCalendarSource
 import com.qtekfun.ultimatecalendar.data.source.caldav.CalDavSyncTrigger
@@ -54,6 +55,12 @@ interface CalendarSourceModule {
             provider: ProviderCalendarSource,
             caldav: CalDavCalendarSource,
             subscriptions: SubscriptionCalendarSource
-        ): CalendarSource = CompositeCalendarSource(provider, caldav, subscriptions)
+        ): CompositeCalendarSource = CompositeCalendarSource(provider, caldav, subscriptions)
+
+        @Provides
+        fun calendarSource(composite: CompositeCalendarSource): CalendarSource = composite
+
+        @Provides
+        fun providerAccess(composite: CompositeCalendarSource): ProviderAccess = composite
     }
 }

@@ -24,6 +24,9 @@
     <string name="shell_view_month">Mes</string>
     <string name="shell_calendars">Calendarios</string>
     <string name="shell_calendars_none">Aún no hay calendarios</string>
+    <string name="shell_permission_needed">Falta el permiso de calendario para tus cuentas de Android</string>
+    <string name="shell_permission_blocked">El sistema ya no lo pide. Permite Calendario en los ajustes de la app para ver tus cuentas de Android.</string>
+    <string name="shell_permission_settings">Ajustes</string>
     <string name="shell_calendars_failed">No se pudieron leer los calendarios</string>
     <string name="shell_settings">Ajustes</string>
     <string name="cal_look_edit">Personalizar %1$s</string>

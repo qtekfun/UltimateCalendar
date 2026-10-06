@@ -16,7 +16,8 @@ import kotlinx.coroutines.withContext
  * ([missingCalendars]: overrides that found no calendar, and subscriptions refused for not being
  * https) and, if the backup carried a CalDAV sign-in, what came of signing in again ([session],
  * null when it carried none). [waitingCalendars] counts the overrides of CalDAV calendars that
- * do not exist yet and will be applied by the account's first sync. A session that fails never stops the rest of the restore.
+ * do not exist yet and will be applied by the account's first sync. A session that fails never
+ * stops the rest of the restore.
  */
 data class RestoreOutcome(
     val result: RestoreResult,

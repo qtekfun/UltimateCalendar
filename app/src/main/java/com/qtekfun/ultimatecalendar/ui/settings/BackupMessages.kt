@@ -3,19 +3,11 @@
 
 package com.qtekfun.ultimatecalendar.ui.settings
 
-import androidx.annotation.PluralsRes
 import androidx.annotation.StringRes
 import com.qtekfun.ultimatecalendar.R
 import com.qtekfun.ultimatecalendar.data.settings.backup.RestoreOutcome
 import com.qtekfun.ultimatecalendar.data.settings.backup.RestoreResult
 import com.qtekfun.ultimatecalendar.data.settings.backup.SessionRestoreResult
-
-/** A message of the backup screen: a plain string, or a plural that says how many. */
-sealed interface BackupMessage {
-    data class Text(@StringRes val id: Int) : BackupMessage
-
-    data class Count(@PluralsRes val id: Int, val count: Int) : BackupMessage
-}
 
 /**
  * What to tell the user after a restore: one message, one more if overrides of CalDAV calendars

@@ -23,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -89,6 +90,7 @@ fun BackupSection(
 @Composable
 fun RestoreBackupButton(viewModel: BackupViewModel = viewModel()) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     val waiting by viewModel.needsPassphrase.collectAsStateWithLifecycle()
     val open = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         uri?.let(viewModel::startRestore)
@@ -96,10 +98,10 @@ fun RestoreBackupButton(viewModel: BackupViewModel = viewModel()) {
     LaunchedEffect(viewModel) {
         viewModel.messages.collect { message ->
             val text = when (message) {
-                is BackupMessage.Text -> context.getString(message.id)
+                is BackupMessage.Text -> resources.getString(message.id)
 
                 is BackupMessage.Count ->
-                    context.resources.getQuantityString(message.id, message.count, message.count)
+                    resources.getQuantityString(message.id, message.count, message.count)
             }
             Toast.makeText(context, text, Toast.LENGTH_LONG).show()
         }

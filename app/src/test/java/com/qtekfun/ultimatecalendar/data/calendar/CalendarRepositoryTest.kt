@@ -8,6 +8,7 @@ import com.qtekfun.ultimatecalendar.data.local.UltimateCalendarDatabase
 import com.qtekfun.ultimatecalendar.data.local.inMemoryDatabase
 import com.qtekfun.ultimatecalendar.data.source.CalendarSource
 import com.qtekfun.ultimatecalendar.data.source.FakeCalendarSource
+import com.qtekfun.ultimatecalendar.data.source.ProviderAccess
 import com.qtekfun.ultimatecalendar.domain.model.CalendarAccess
 import com.qtekfun.ultimatecalendar.domain.model.CalendarAccount
 import com.qtekfun.ultimatecalendar.domain.model.CalendarId
@@ -20,13 +21,17 @@ import com.qtekfun.ultimatecalendar.domain.model.TimeRange
 import com.qtekfun.ultimatecalendar.domain.result.CalendarError
 import com.qtekfun.ultimatecalendar.domain.result.CalendarResult
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import java.time.Instant
 import java.time.ZoneId
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -240,6 +245,43 @@ class CalendarRepositoryTest {
 
         repository.automaticDefaultCalendar().test {
             assertEquals("Job", awaitItem().value().displayName)
+        }
+    }
+
+    @Test
+    fun `refreshing reads the calendars again even when nothing changed`() = runTest {
+        val counting = mockk<CalendarSource>()
+        every { counting.changes } returns emptyFlow()
+        coEvery { counting.calendars() } returns CalendarResult.Success(listOf(work))
+        val counted =
+            CalendarRepository(counting, database.calendarSettingsDao(), Dispatchers.Unconfined)
+
+        counted.calendars().test {
+            assertEquals(listOf(work), awaitItem().value())
+
+            counted.refresh()
+
+            assertEquals(listOf(work), awaitItem().value())
+            coVerify(exactly = 2) { counting.calendars() }
+        }
+    }
+
+    @Test
+    fun `the provider is denied only when the source says so`() = runTest {
+        assertEquals(false, repository.providerDenied().first())
+
+        val denied = MutableStateFlow(true)
+        val telling = CalendarRepository(
+            object : CalendarSource by source, ProviderAccess {
+                override val denied: StateFlow<Boolean> = denied
+            },
+            database.calendarSettingsDao(),
+            Dispatchers.Unconfined
+        )
+        telling.providerDenied().test {
+            assertEquals(true, awaitItem())
+            denied.value = false
+            assertEquals(false, awaitItem())
         }
     }
 
