@@ -73,6 +73,13 @@ class EventSpeechTest {
     }
 
     @Test
+    fun `the status word alone is null for plain events`() {
+        assertEquals(null, EventSpeech.statusWord(null, words))
+        assertEquals(null, EventSpeech.statusWord(AttendeeStatus.ACCEPTED, words))
+        assertEquals("status DECLINED", EventSpeech.statusWord(AttendeeStatus.DECLINED, words))
+    }
+
+    @Test
     fun `a blank title is read as untitled and blank extras are left out`() {
         val facts =
             EventSpeechFacts("  ", SpokenTime.Start("10:00"), place = " ", calendarName = "")

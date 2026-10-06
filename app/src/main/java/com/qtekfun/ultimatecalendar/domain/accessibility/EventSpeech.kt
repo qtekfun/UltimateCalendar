@@ -76,9 +76,13 @@ object EventSpeech {
         },
         facts.place?.trim()?.takeIf { it.isNotEmpty() },
         facts.calendarName?.trim()?.takeIf { it.isNotEmpty() }?.let(words::calendar),
-        facts.status?.takeIf { it in spokenStatuses }?.let(words::status),
+        statusWord(facts.status, words),
         facts.otherZoneTag?.let(words::otherZone)
     ).joinToString(SEPARATOR)
+
+    /** The words for the user's answer, or null when there is nothing worth saying. */
+    fun statusWord(status: AttendeeStatus?, words: SpeechWords): String? =
+        status?.takeIf { it in spokenStatuses }?.let(words::status)
 
     /** "Tuesday 6 October, 3 events": a day cell of the Month view. [date] is already written. */
     fun describeDay(date: String, isToday: Boolean, events: Int, words: SpeechWords): String {

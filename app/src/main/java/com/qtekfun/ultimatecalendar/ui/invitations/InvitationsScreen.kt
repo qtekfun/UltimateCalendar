@@ -36,6 +36,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
@@ -225,11 +228,21 @@ private fun InvitationCard(
     onOpen: () -> Unit,
     onAnswer: (InvitationAnswer) -> Unit
 ) {
+    // The answers are buttons below, and also actions of the card, so a screen reader user can
+    // answer from the actions menu without walking through the three buttons of every card.
+    val labels = InvitationAnswer.entries.associateWith { stringResource(it.label()) }
+    val actions = InvitationAnswer.entries.map { answer ->
+        CustomAccessibilityAction(labels.getValue(answer)) {
+            onAnswer(answer)
+            true
+        }
+    }
     Card(
         onClick = onOpen,
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = Dimens.minTouch),
+            .heightIn(min = Dimens.minTouch)
+            .semantics { customActions = actions },
         shape = CalendarShapes.card,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow
@@ -274,10 +287,16 @@ private fun InvitationCard(
             }
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
                 InvitationAnswer.entries.forEach { answer ->
+                    val label = labels.getValue(answer)
+                    // "Accept: Project kickoff": every card has the same three buttons.
+                    val spoken =
+                        stringResource(R.string.invitation_answer_for, label, invitation.title)
                     TextButton(
                         onClick = { onAnswer(answer) },
-                        modifier = Modifier.heightIn(min = Dimens.minTouch)
-                    ) { Text(stringResource(answer.label())) }
+                        modifier = Modifier
+                            .heightIn(min = Dimens.minTouch)
+                            .semantics { contentDescription = spoken }
+                    ) { Text(label) }
                 }
             }
         }
