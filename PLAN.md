@@ -61,8 +61,9 @@ Reglas: una tarea cada vez, en su rama `feat/<tarea>`, con `./gradlew check` en 
 - [ ] **T27 Tests de UI de flujos clave**: crear evento, responder invitación desde la notificación y desde la bandeja, editar "este y los siguientes". Corren cada noche en el emulador (`ui-tests.yml`).
 
 ## Fase 5 — Identidad y publicación
-- [ ] **T28 Icono**: icono adaptativo (primer plano, fondo y **monocromo** para iconos temáticos de Android 13+), en la línea visual de UltimateDeck/UltimateTasks; `fastlane/.../en-US/images/icon.png` 512×512.
+- [x] **T28 Icono**: icono adaptativo (primer plano, fondo y **monocromo** para iconos temáticos de Android 13+), en la línea visual de UltimateDeck/UltimateTasks; `fastlane/.../en-US/images/icon.png` 512×512.
   - *Verificación:* se ve bien en launcher redondo, cuadrado, temático y en F-Droid.
+  - *Resultado:* hecho. Calendario blanco con divisor y marca de verificación (huecos reales, así la misma capa sirve de monocromo) sobre fondo verde azulado `#0F7B6C`, para distinguirla de los azules de Tasks y Deck. `icon.png` 512×512 generado desde el mismo diseño. Comprobado en vista previa cuadrada, redonda y monocroma; **pendiente del autor** verla en su launcher con iconos temáticos.
 - [ ] **T29 Capturas generadas por test**: test instrumentado `Screenshots` con calendarios y eventos **inventados** (nunca datos reales) cargados en una cuenta local de pruebas: Agenda, Semana, Mes, detalle con asistentes, bandeja de invitaciones, notificación de invitación, modo oscuro. En inglés y español, teléfono y tablet (`phoneScreenshots`, `tenInchScreenshots`).
 - [ ] **T30 Material de tienda**: `title.txt`, `short_description.txt` (≤ 80), `full_description.txt` en en-US y es-ES; `featureGraphic.png` 1024×500; README con capturas e insignias (CI, release, licencia, F-Droid cuando exista); `PRIVACY.md` revisado con cada permiso.
 - [ ] **T31 Primera release candidata**: `Release-As: 1.0.0-rc.1`, fusionar la PR de release-please con los textos de tienda de su versionCode; probar instalación limpia y actualización desde el APK de GitHub.
