@@ -20,6 +20,7 @@ import com.qtekfun.ultimatecalendar.data.settings.AppSettings
 import com.qtekfun.ultimatecalendar.data.settings.SettingsRepository
 import com.qtekfun.ultimatecalendar.data.settings.ThemeMode
 import com.qtekfun.ultimatecalendar.di.TimeModule
+import com.qtekfun.ultimatecalendar.domain.firstrun.FirstRunFlag
 import com.qtekfun.ultimatecalendar.domain.settings.FirstDayOfWeek
 import com.qtekfun.ultimatecalendar.screenshots.AppDriver
 import com.qtekfun.ultimatecalendar.screenshots.DemoProvider
@@ -76,6 +77,9 @@ class Screenshots {
     lateinit var settings: SettingsRepository
 
     @Inject
+    lateinit var firstRun: FirstRunFlag
+
+    @Inject
     lateinit var checker: InvitationChecker
 
     @Inject
@@ -96,8 +100,7 @@ class Screenshots {
         grant(Manifest.permission.WRITE_CALENDAR)
         grant(Manifest.permission.POST_NOTIFICATIONS)
         // No first-run wizard in the pictures.
-        context.getSharedPreferences("first_run", Context.MODE_PRIVATE).edit()
-            .putBoolean("wizard_shown", true).commit()
+        firstRun.markDone()
     }
 
     @After
