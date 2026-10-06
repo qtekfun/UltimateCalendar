@@ -6,6 +6,7 @@ package com.qtekfun.ultimatecalendar.data.local
 import androidx.room3.Database
 import androidx.room3.RoomDatabase
 import androidx.room3.migration.Migration
+import com.qtekfun.ultimatecalendar.data.local.dao.AccountCleanupDao
 import com.qtekfun.ultimatecalendar.data.local.dao.CalendarSettingsDao
 import com.qtekfun.ultimatecalendar.data.local.dao.DavAccountDao
 import com.qtekfun.ultimatecalendar.data.local.dao.DavCalendarDao
@@ -53,6 +54,8 @@ abstract class UltimateCalendarDatabase : RoomDatabase() {
     abstract fun pendingOperationRetryDao(): PendingOperationRetryDao
 
     abstract fun reRemindDao(): ReRemindDao
+
+    abstract fun accountCleanupDao(): AccountCleanupDao
 
     companion object {
         const val VERSION = 5
