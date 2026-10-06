@@ -8,6 +8,7 @@ import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.rememberSaveable
 import com.qtekfun.ultimatecalendar.R
+import com.qtekfun.ultimatecalendar.ui.settings.SettingsScreen
 import com.qtekfun.ultimatecalendar.ui.shell.ShellScreen
 
 /**
@@ -28,8 +29,10 @@ fun AppNavigation() {
         // T21: the invitations tray replaces this placeholder.
         nav.invitations -> Placeholder(R.string.shell_invitations) { nav.invitations = false }
 
-        // T23: the Settings screen replaces this placeholder.
-        nav.settings -> Placeholder(R.string.shell_settings) { nav.settings = false }
+        nav.settings -> {
+            BackHandler { nav.settings = false }
+            SettingsScreen(onBack = { nav.settings = false })
+        }
 
         else -> ShellScreen(
             onSearch = { nav.search = true },
