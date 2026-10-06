@@ -1,0 +1,10 @@
+BEGIN:VCALENDAR
+PRODID:-//Example Corp//Legacy Groupware 2.1//EN
+VERSION:2.0
+BEGIN:VEVENT
+UID:legacy-0002@example.com
+DTSTAMP:20261005T071530Z
+DTSTART;TZID=Unknown Zone Without Definition:20261026T100000
+SUMMARY:Zone nobody defined
+END:VEVENT
+END:VCALENDAR

@@ -1,0 +1,18 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//UltimateCalendar//corpus//EN
+BEGIN:VEVENT
+UID:edge-unicode@ultimatecalendar
+DTSTAMP:20261005T071530Z
+DTSTART;VALUE=DATE:20261105
+DTEND;VALUE=DATE:20261106
+SUMMARY:Cumpleaños de María José\, ünïcödé 🎉 日本語のタイ
+ トル Cumpleaños de María José\, ünïcödé 🎉 日本語のタイ
+ トル Cumpleaños de María José\, ünïcödé 🎉 日本語のタイ
+ トル 
+DESCRIPTION:Línea muy larga sin saltos que debe plegarse varias veces porq
+ ue supera con mucho los setenta y cinco octetos permitidos. Línea muy lar
+ ga sin saltos que debe plegarse varias veces porque supera con mucho los s
+ etenta y cinco octetos permitidos. 
+END:VEVENT
+END:VCALENDAR
