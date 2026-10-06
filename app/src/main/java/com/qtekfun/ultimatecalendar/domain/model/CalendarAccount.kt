@@ -11,7 +11,12 @@ data class CalendarAccount(val name: String, val type: String) {
     /** The on-device account (`CalendarContract.ACCOUNT_TYPE_LOCAL`): nothing syncs it. */
     val isLocal: Boolean get() = type == LOCAL_TYPE
 
-    private companion object {
-        const val LOCAL_TYPE = "LOCAL"
+    /** The app's own CalDAV account (RF-12): not an Android account, the app syncs it itself. */
+    val isCalDav: Boolean get() = type == CALDAV_TYPE
+
+    companion object {
+        private const val LOCAL_TYPE = "LOCAL"
+
+        const val CALDAV_TYPE = "com.qtekfun.ultimatecalendar.caldav"
     }
 }

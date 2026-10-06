@@ -14,6 +14,7 @@ import com.qtekfun.ultimatecalendar.data.source.CalendarSource
 import com.qtekfun.ultimatecalendar.data.source.UnavailableCalendarSource
 import com.qtekfun.ultimatecalendar.data.sync.AccountSyncTrigger
 import com.qtekfun.ultimatecalendar.data.sync.AndroidSyncEnvironment
+import com.qtekfun.ultimatecalendar.data.sync.CompositeSyncRequester
 import com.qtekfun.ultimatecalendar.data.sync.ContentResolverSyncTrigger
 import com.qtekfun.ultimatecalendar.data.sync.PreferencesSyncRequestLog
 import com.qtekfun.ultimatecalendar.data.sync.SourceSyncRequester
@@ -29,7 +30,6 @@ import com.qtekfun.ultimatecalendar.notify.SystemInvitationNotifier
 import com.qtekfun.ultimatecalendar.sync.InvitationCheckScheduler
 import com.qtekfun.ultimatecalendar.sync.InvitationCheckSettings
 import com.qtekfun.ultimatecalendar.sync.InvitationChecker
-import com.qtekfun.ultimatecalendar.sync.ThrottledSyncRequester
 import com.qtekfun.ultimatecalendar.sync.WorkManagerInvitationScheduler
 import dagger.Binds
 import dagger.BindsOptionalOf
@@ -63,7 +63,7 @@ interface InvitationCheckBindingsModule {
     fun settings(settings: RepositoryInvitationCheckSettings): InvitationCheckSettings
 
     @Binds
-    fun syncRequester(requester: ThrottledSyncRequester): SourceSyncRequester
+    fun syncRequester(requester: CompositeSyncRequester): SourceSyncRequester
 
     @Binds
     fun syncEnvironment(environment: AndroidSyncEnvironment): SyncEnvironment

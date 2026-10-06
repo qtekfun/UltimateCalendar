@@ -11,6 +11,13 @@
     <uses-permission android:name="android.permission.WRITE_CALENDAR" />
 
     <!--
+      The network, only to reach the CalDAV server the user signs in to (RF-12), over HTTPS (the
+      network security config refuses cleartext). Nothing else is contacted: no analytics, no
+      telemetry, no other host.
+    -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!--
       Read-only state, to skip a sync request that cannot help (RF-06): the account's calendar
       sync switch, battery saver and whether there is a network. No data leaves the device.
     -->

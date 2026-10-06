@@ -46,9 +46,15 @@ class PullSync @Inject constructor(
     }
 
     private suspend fun home(dav: CalDav, account: DavAccountEntity): DavResult<String> =
-        account.calendarHome?.let { DavResult.Success(it) } ?: dav.read.discover().then { home ->
-            accounts.update(account.copy(calendarHome = home))
-            DavResult.Success(home)
+        account.calendarHome?.let { DavResult.Success(it) } ?: dav.read.profile().then { found ->
+            accounts.update(
+                account.copy(
+                    calendarHome = found.home,
+                    userAddresses = found.addresses.joinToString(","),
+                    scheduling = found.schedules
+                )
+            )
+            DavResult.Success(found.home)
         }
 
     /**

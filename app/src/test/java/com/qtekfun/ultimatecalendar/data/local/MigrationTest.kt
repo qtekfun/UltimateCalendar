@@ -121,6 +121,37 @@ class MigrationTest {
     }
 
     @Test
+    fun `an account of version 4 keeps its row, without addresses or scheduling, in version 5`(
+        @TempDir dir: File
+    ) = runTest {
+        val file = File(dir, "calendar.db")
+        createVersion(4, file)
+        val connection = BundledSQLiteDriver().open(file.path)
+        try {
+            connection.execSQL(
+                "INSERT INTO dav_account (id, serverUrl, loginName, calendarHome) " +
+                    "VALUES (5, 'https://cloud.example.com/', 'ana', '/dav/calendars/ana/')"
+            )
+        } finally {
+            connection.close()
+        }
+
+        val database = open(file)
+        try {
+            val account = requireNotNull(database.davAccountDao().get(5))
+            assertEquals("/dav/calendars/ana/", account.calendarHome)
+            assertEquals("", account.userAddresses)
+            assertEquals(false, account.scheduling)
+            database.davAccountDao().update(
+                account.copy(userAddresses = "ana@example.com", scheduling = true)
+            )
+            assertEquals("ana@example.com", database.davAccountDao().get(5)?.userAddresses)
+        } finally {
+            database.close()
+        }
+    }
+
+    @Test
     fun `version 3 data survives and the re-reminders table is created by the migration to 4`(
         @TempDir dir: File
     ) = runTest {

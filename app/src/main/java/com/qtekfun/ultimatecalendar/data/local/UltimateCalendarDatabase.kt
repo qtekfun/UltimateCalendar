@@ -55,12 +55,13 @@ abstract class UltimateCalendarDatabase : RoomDatabase() {
     abstract fun reRemindDao(): ReRemindDao
 
     companion object {
-        const val VERSION = 4
+        const val VERSION = 5
 
         /**
          * Migrations from each released version to the next. There is no destructive fallback:
          * raising [VERSION] requires adding its migration here (checked by DatabaseSchemaTest).
          */
-        val MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+        val MIGRATIONS: Array<Migration> =
+            arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
     }
 }

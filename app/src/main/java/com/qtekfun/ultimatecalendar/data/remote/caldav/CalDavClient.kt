@@ -24,6 +24,24 @@ class CalDavClient(client: OkHttpClient, server: HttpUrl, io: CoroutineDispatche
             .then { principal -> propfind(principal, "<c:calendar-home-set/>", depth = "0") }
             .then { found(DavParsers.href(it, CALDAV, "calendar-home-set")) }
 
+    /**
+     * [discover] plus who the user is for the server: the addresses and, when the server schedules
+     * invitations (RFC 6638), its scheduling outbox. Same two requests as [discover].
+     */
+    suspend fun profile(): DavResult<DavProfile> =
+        propfind(DAV_ROOT, "<d:current-user-principal/>", depth = "0")
+            .then { found(DavParsers.href(it, DAV, "current-user-principal")) }
+            .then { principal -> propfind(principal, PRINCIPAL_PROPERTIES, depth = "0") }
+            .then { answer ->
+                found(DavParsers.href(answer, CALDAV, "calendar-home-set")).map { home ->
+                    DavProfile(
+                        home,
+                        DavParsers.addresses(answer),
+                        DavParsers.href(answer, CALDAV, "schedule-outbox-URL")
+                    )
+                }
+            }
+
     /** The collections under [home] that can hold events. */
     suspend fun calendars(home: String): DavResult<List<DavCollection>> =
         propfind(home, CALENDAR_PROPERTIES, depth = "1").map(DavParsers::calendars)
@@ -54,6 +72,8 @@ class CalDavClient(client: OkHttpClient, server: HttpUrl, io: CoroutineDispatche
 
     private companion object {
         const val DAV_ROOT = "remote.php/dav/"
+        const val PRINCIPAL_PROPERTIES = "<c:calendar-home-set/><c:calendar-user-address-set/>" +
+            "<c:schedule-outbox-URL/>"
         const val CALENDAR_PROPERTIES =
             "<d:displayname/><d:resourcetype/><c:supported-calendar-component-set/>" +
                 "<a:calendar-color/><a:calendar-order/><cs:getctag/><d:sync-token/><d:current-user-privilege-set/>"

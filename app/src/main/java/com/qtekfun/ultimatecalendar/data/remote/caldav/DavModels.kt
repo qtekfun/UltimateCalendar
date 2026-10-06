@@ -24,3 +24,17 @@ data class DavChanges(
     val deleted: List<String>,
     val syncToken: String?
 )
+
+/**
+ * What discovery finds about the account: where its calendars live, the addresses the server
+ * knows the user by (`calendar-user-address-set`, `mailto:` ones, normalized) and the scheduling
+ * outbox (RFC 6638), which only servers that schedule invitations have.
+ */
+data class DavProfile(
+    val home: String,
+    val addresses: List<String>,
+    val schedulingOutbox: String?
+) {
+    /** The server sends invitations and answers for the user: needs an outbox and an address. */
+    val schedules: Boolean get() = schedulingOutbox != null && addresses.isNotEmpty()
+}

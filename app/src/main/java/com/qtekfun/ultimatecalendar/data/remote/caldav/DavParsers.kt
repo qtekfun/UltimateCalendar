@@ -7,18 +7,30 @@ import com.qtekfun.ultimatecalendar.data.remote.caldav.DavXml.APPLE
 import com.qtekfun.ultimatecalendar.data.remote.caldav.DavXml.CALDAV
 import com.qtekfun.ultimatecalendar.data.remote.caldav.DavXml.CALENDARSERVER
 import com.qtekfun.ultimatecalendar.data.remote.caldav.DavXml.DAV
+import com.qtekfun.ultimatecalendar.domain.model.Attendee
 
 /** Turns multistatus answers into the client's models. */
 internal object DavParsers {
     private val WRITE_PRIVILEGES = setOf("all", "write", "write-content")
     private val COLOR = Regex("#[0-9A-Fa-f]{6}")
     private const val GONE = 404
+    private const val MAILTO = "mailto:"
 
     /** The href inside the first `<d:href>` of [property] of the first response. */
     fun href(multistatus: Multistatus, namespace: String, property: String): String? =
         multistatus.responses.firstNotNullOfOrNull {
             it.property(namespace, property)?.child(DAV, "href")?.textContent?.trim()
         }
+
+    /** The user's `mailto:` addresses of the first response, normalized, without repeats. */
+    fun addresses(multistatus: Multistatus): List<String> = multistatus.responses
+        .firstNotNullOfOrNull { it.property(CALDAV, "calendar-user-address-set") }
+        ?.children(DAV, "href").orEmpty()
+        .map { it.textContent.trim() }
+        .filter { it.startsWith(MAILTO, ignoreCase = true) }
+        .map { Attendee.normalize(it.substring(MAILTO.length)) }
+        .filter { it.isNotEmpty() }
+        .distinct()
 
     /** Calendars that can hold events; other collections (address books, trash…) are skipped. */
     fun calendars(multistatus: Multistatus): List<DavCollection> = multistatus.responses

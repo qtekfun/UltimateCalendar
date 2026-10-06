@@ -36,6 +36,18 @@ class FakeCalDav : Dispatcher() {
 
     val home = "/remote.php/dav/calendars/ana/"
 
+    /** The addresses the principal answers with; empty for a server that does not tell. */
+    var addresses: List<String> = listOf("me@example.com")
+
+    /** Whether the principal has a scheduling outbox: the server sends invitations and answers. */
+    var scheduling = true
+
+    /**
+     * What the server's scheduling would do on each PUT: `INVITE address` for each guest of an
+     * event organized by the user and `REPLY STATUS` when the user's own answer changed.
+     */
+    val schedulingLog = mutableListOf<String>()
+
     /** Lists that answer sync-collection with 415, as Deck's do; they have a ctag instead. */
     val withoutSync = mutableSetOf<String>()
 
@@ -105,7 +117,19 @@ class FakeCalDav : Dispatcher() {
         )
 
         "/remote.php/dav/principals/users/ana/" -> multistatus(
-            response(path, "<c:calendar-home-set><d:href>$home</d:href></c:calendar-home-set>")
+            response(
+                path,
+                "<c:calendar-home-set><d:href>$home</d:href></c:calendar-home-set>" +
+                    "<c:calendar-user-address-set>" +
+                    addresses.joinToString("") { "<d:href>mailto:$it</d:href>" } +
+                    "<d:href>/remote.php/dav/principals/users/ana/</d:href>" +
+                    "</c:calendar-user-address-set>" +
+                    if (scheduling) {
+                        "<c:schedule-outbox-URL><d:href>${path}outbox/</d:href></c:schedule-outbox-URL>"
+                    } else {
+                        ""
+                    }
+            )
         )
 
         home -> multistatus(
@@ -200,6 +224,7 @@ class FakeCalDav : Dispatcher() {
         return if (refused) {
             MockResponse(412)
         } else {
+            if (scheduling) schedule(current?.ics, body)
             MockResponse(
                 if (current ==
                     null
@@ -212,6 +237,36 @@ class FakeCalDav : Dispatcher() {
             )
         }
     }
+
+    private fun unfolded(ics: String) = ics.replace(Regex("\r?\n[ \t]"), "")
+
+    private fun schedule(was: String?, now: String) {
+        val before = was?.let(::unfolded)
+        val after = unfolded(now)
+        val organizer = property("ORGANIZER", after)?.substringAfter("mailto:")?.lowercase()
+        val mine = addresses.map { it.lowercase() }
+        val guests = ATTENDEE.findAll(after).map { it.groupValues[1].lowercase() to it.value }
+        if (organizer in mine) {
+            guests.filter { (address, _) -> address != organizer }.forEach { (address, line) ->
+                val known = before?.contains("mailto:$address", ignoreCase = true) == true
+                if (!known && "NEEDS-ACTION" in line) schedulingLog += "INVITE $address"
+            }
+        } else if (organizer != null) {
+            val answer = guests.firstOrNull { it.first in mine }?.let { status(it.second) }
+            val was = before?.let { old ->
+                ATTENDEE.findAll(old).firstOrNull { it.groupValues[1].lowercase() in mine }
+                    ?.let { status(it.value) }
+            }
+            if (answer != null && answer != was) schedulingLog += "REPLY $answer"
+        }
+    }
+
+    private fun property(name: String, ics: String) = Regex(
+        "^$name[^:\\r\\n]*:(.*)$",
+        RegexOption.MULTILINE
+    ).find(ics)?.groupValues?.get(1)?.trim()
+
+    private fun status(line: String) = Regex("PARTSTAT=([A-Z-]+)").find(line)?.groupValues?.get(1)
 
     /** Every PROPPATCH body received, by calendar. */
     val proppatches = mutableListOf<Pair<String, String>>()
@@ -271,5 +326,6 @@ class FakeCalDav : Dispatcher() {
 
     private companion object {
         val DISPLAY_NAME = Regex("<d:displayname>([^<]*)</d:displayname>")
+        val ATTENDEE = Regex("^ATTENDEE[^\\r\\n]*mailto:([^\\r\\n;]+)", RegexOption.MULTILINE)
     }
 }
