@@ -6,7 +6,7 @@ package com.qtekfun.ultimatecalendar.ui.components
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import com.qtekfun.ultimatecalendar.R
 import com.qtekfun.ultimatecalendar.domain.accessibility.SpeechWords
 import com.qtekfun.ultimatecalendar.domain.model.AttendeeStatus
@@ -47,7 +47,7 @@ class EventSpeechWords(private val words: WordSource) : SpeechWords {
 /** [EventSpeechWords] in the language of the current context. */
 @Composable
 fun rememberSpeechWords(): SpeechWords {
-    val resources = LocalContext.current.resources
+    val resources = LocalResources.current
     return remember(resources) { EventSpeechWords(ResourceWords(resources)) }
 }
 

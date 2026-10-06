@@ -232,7 +232,10 @@ private fun WeekEvents(
     callbacks: MonthCallbacks,
     geometry: WeekGeometry
 ) {
-    val (cellWidth, laneHeight, lanes, dayHeader) = geometry
+    val cellWidth = geometry.cellWidth
+    val laneHeight = geometry.laneHeight
+    val lanes = geometry.lanes
+    val dayHeader = geometry.dayHeader
     val fit = remember(week, lanes) { MonthOverflow.fit(week, lanes) }
     Box(Modifier.fillMaxSize()) {
         fit.visible.forEach { bar ->

@@ -32,6 +32,7 @@ import com.qtekfun.ultimatecalendar.domain.navigation.ViewPeriods
 import com.qtekfun.ultimatecalendar.domain.navigation.WeekNumbers
 import com.qtekfun.ultimatecalendar.domain.timegrid.TimeScale
 import com.qtekfun.ultimatecalendar.ui.adaptive.WithAdaptiveGridScale
+import com.qtekfun.ultimatecalendar.ui.components.moveTo
 import com.qtekfun.ultimatecalendar.ui.shell.ShellActions
 import com.qtekfun.ultimatecalendar.ui.shell.ShellUiState
 import com.qtekfun.ultimatecalendar.ui.theme.rememberReduceMotion
@@ -117,15 +118,7 @@ internal fun TimeGridView(
                 val target = periods.pageOf(date)
                 when {
                     target == null -> anchor = date
-
-                    target != pager.currentPage ->
-                        if (reduceMotion) {
-                            pager.scrollToPage(
-                                target
-                            )
-                        } else {
-                            pager.animateScrollToPage(target)
-                        }
+                    target != pager.currentPage -> pager.moveTo(target, reduceMotion)
                 }
             }
             LaunchedEffect(pager) {

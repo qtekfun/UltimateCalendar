@@ -220,7 +220,6 @@ private fun InvitationList(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun InvitationCard(
     invitation: Invitation,
@@ -231,12 +230,7 @@ private fun InvitationCard(
     // The answers are buttons below, and also actions of the card, so a screen reader user can
     // answer from the actions menu without walking through the three buttons of every card.
     val labels = InvitationAnswer.entries.associateWith { stringResource(it.label()) }
-    val actions = InvitationAnswer.entries.map { answer ->
-        CustomAccessibilityAction(labels.getValue(answer)) {
-            onAnswer(answer)
-            true
-        }
-    }
+    val actions = answerActions(labels, onAnswer)
     Card(
         onClick = onOpen,
         modifier = Modifier
@@ -285,28 +279,9 @@ private fun InvitationCard(
                     overflow = TextOverflow.Ellipsis
                 )
             }
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.xs)) {
-                InvitationAnswer.entries.forEach { answer ->
-                    val label = labels.getValue(answer)
-                    // "Accept: Project kickoff": every card has the same three buttons.
-                    val spoken =
-                        stringResource(R.string.invitation_answer_for, label, invitation.title)
-                    TextButton(
-                        onClick = { onAnswer(answer) },
-                        modifier = Modifier
-                            .heightIn(min = Dimens.minTouch)
-                            .semantics { contentDescription = spoken }
-                    ) { Text(label) }
-                }
-            }
+            AnswerButtons(invitation.title, labels, onAnswer)
         }
     }
-}
-
-private fun InvitationAnswer.label(): Int = when (this) {
-    InvitationAnswer.ACCEPT -> R.string.invitation_accept
-    InvitationAnswer.MAYBE -> R.string.invitation_maybe
-    InvitationAnswer.DECLINE -> R.string.invitation_decline
 }
 
 private fun sample(

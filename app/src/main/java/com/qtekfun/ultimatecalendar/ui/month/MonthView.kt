@@ -19,6 +19,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.qtekfun.ultimatecalendar.domain.month.MonthPages
 import com.qtekfun.ultimatecalendar.domain.navigation.CalendarView
+import com.qtekfun.ultimatecalendar.ui.components.moveTo
 import com.qtekfun.ultimatecalendar.ui.shell.ShellActions
 import com.qtekfun.ultimatecalendar.ui.shell.ShellUiState
 import com.qtekfun.ultimatecalendar.ui.theme.rememberReduceMotion
@@ -91,15 +92,7 @@ internal fun MonthView(
             val target = pages.pageOf(date)
             when {
                 target == null -> anchor = date
-
-                target != pager.currentPage ->
-                    if (reduceMotion) {
-                        pager.scrollToPage(
-                            target
-                        )
-                    } else {
-                        pager.animateScrollToPage(target)
-                    }
+                target != pager.currentPage -> pager.moveTo(target, reduceMotion)
             }
         }
         LaunchedEffect(pager) {

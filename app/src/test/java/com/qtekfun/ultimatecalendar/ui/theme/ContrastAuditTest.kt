@@ -37,6 +37,40 @@ class ContrastAuditTest {
         }
     }
 
+    /** Every scheme with every grid color and every display state, for the checks below. */
+    private fun forEachChip(check: (Chip) -> Unit) {
+        for ((name, scheme) in schemes) {
+            for (color in colors) {
+                for (display in EventDisplay.entries) {
+                    check(
+                        Chip(
+                            name,
+                            scheme,
+                            color,
+                            display,
+                            chip(
+                                color,
+                                display,
+                                scheme,
+                                name != "light"
+                            )
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    private class Chip(
+        val theme: String,
+        val scheme: ColorScheme,
+        val color: Int,
+        val display: EventDisplay,
+        val colors: EventChipColors
+    ) {
+        val label get() = "$display $theme ${color.toUInt().toString(HEX)}"
+    }
+
     private fun contrast(a: Color, b: Color) = ColorMath.contrast(a.toArgb(), b.toArgb())
 
     private fun chip(color: Int, display: EventDisplay, scheme: ColorScheme, dark: Boolean) =
@@ -55,51 +89,38 @@ class ContrastAuditTest {
     }
 
     @Test
-    fun `event text reaches 4_5 to 1 for every color, state and theme`() {
-        schemes.forEach { (name, scheme) ->
-            val dark = name != "light"
-            colors.forEach { color ->
-                EventDisplay.entries.forEach { display ->
-                    val chip = chip(color, display, scheme, dark)
-                    val behind = if (chip.container.alpha == 0f) scheme.surface else chip.container
-                    val ratio = contrast(chip.content, behind)
-                    assertTrue(
-                        ratio >= ColorMath.TEXT_CONTRAST,
-                        "text $display $name ${color.toUInt().toString(HEX)} = $ratio"
-                    )
-                }
-            }
+    fun `event text reaches 4_5 to 1 for every color, state and theme`() = forEachChip { chip ->
+        val behind = if (chip.colors.container.alpha ==
+            0f
+        ) {
+            chip.scheme.surface
+        } else {
+            chip.colors.container
         }
+        val ratio = contrast(chip.colors.content, behind)
+        assertTrue(ratio >= ColorMath.TEXT_CONTRAST, "text ${chip.label} = $ratio")
     }
 
     @Test
-    fun `outlines of tentative and pending events reach 3 to 1 against the surface`() {
-        schemes.forEach { (name, scheme) ->
-            val dark = name != "light"
-            colors.forEach { color ->
-                listOf(EventDisplay.TENTATIVE, EventDisplay.PENDING).forEach { display ->
-                    val border = requireNotNull(chip(color, display, scheme, dark).border)
-                    val ratio = contrast(border, scheme.surface)
-                    assertTrue(
-                        ratio >= ColorMath.GRAPHIC_CONTRAST,
-                        "border $display $name ${color.toUInt().toString(HEX)} = $ratio"
-                    )
-                }
+    fun `outlines of tentative and pending events reach 3 to 1 against the surface`() =
+        forEachChip { chip ->
+            if (chip.display == EventDisplay.TENTATIVE || chip.display == EventDisplay.PENDING) {
+                val border = requireNotNull(chip.colors.border)
+                val ratio = contrast(border, chip.scheme.surface)
+                assertTrue(ratio >= ColorMath.GRAPHIC_CONTRAST, "border ${chip.label} = $ratio")
             }
         }
-    }
 
     @Test
-    fun `a pending event is outlined and a declined one struck, never only recolored`() {
-        schemes.forEach { (name, scheme) ->
-            val dark = name != "light"
-            colors.forEach { color ->
-                assertTrue(chip(color, EventDisplay.PENDING, scheme, dark).border != null)
-                assertTrue(chip(color, EventDisplay.DECLINED, scheme, dark).strikeThrough)
-                assertEquals(null, chip(color, EventDisplay.CONFIRMED, scheme, dark).border)
+    fun `a pending event is outlined and a declined one struck, never only recolored`() =
+        forEachChip { chip ->
+            when (chip.display) {
+                EventDisplay.PENDING -> assertTrue(chip.colors.border != null, chip.label)
+                EventDisplay.DECLINED -> assertTrue(chip.colors.strikeThrough, chip.label)
+                EventDisplay.CONFIRMED -> assertEquals(null, chip.colors.border, chip.label)
+                EventDisplay.TENTATIVE -> assertTrue(chip.colors.border != null, chip.label)
             }
         }
-    }
 
     @Test
     fun `the dot of a month event reaches 3 to 1 against the surface`() {
