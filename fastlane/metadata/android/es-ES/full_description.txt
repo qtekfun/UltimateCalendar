@@ -1,0 +1,35 @@
+UltimateCalendar es un calendario libre para Android con el aspecto de Google Calendar y la bandeja de invitaciones de Apple Calendar. Funciona con todos los calendarios que ya tienes en el móvil, sin Google Play Services y sin rastreo.
+
+Todos tus calendarios
+• Lee y escribe los calendarios de cada cuenta del teléfono: Google, DAVx5 (Nextcloud y cualquier servidor CalDAV) y más.
+• Un cajón con tus calendarios agrupados por cuenta y con sus colores. Muestra u oculta cada uno.
+• Todo funciona sin conexión. La app no tiene servidores propios.
+
+Las vistas de siempre
+• Agenda, día, 3 días, semana y mes.
+• Desliza entre periodos, vuelve a hoy, elige cualquier fecha.
+• Eventos de todo el día arriba, eventos solapados en columnas, la hora actual marcada.
+• Arrastra un evento para moverlo o cambiar su duración.
+
+Una bandeja para todas las invitaciones
+• Todas las invitaciones sin responder, de todas las cuentas, en una lista con contador.
+• Acepta, quizá o rechaza desde la lista o directamente desde la notificación. Tu cuenta envía la respuesta al organizador.
+• Avisos opcionales cuando un evento al que vas se mueve o se cancela.
+
+Avisos que llegan
+• Muchos móviles duermen las apps y descartan sus alarmas. UltimateCalendar programa alarmas exactas, las reprograma tras reiniciar, actualizar o cambiar de zona horaria, y muestra en cuanto puede cualquier aviso que no llegó.
+• Un asistente te guía por los ajustes de batería e inicio automático de OPPO, vivo, Xiaomi, Honor y Samsung.
+• Pospón o descarta desde la notificación.
+
+Crea y edita
+• Título, lugar, descripción, calendario, zona horaria, color y varios avisos.
+• Eventos repetidos con opciones predefinidas y reglas personalizadas. Al cambiar uno, elige solo este evento, este y los siguientes, o todos.
+• Invita a gente por correo; tu cuenta de calendario envía las invitaciones.
+
+Hecho a tu medida
+• Temas claro, oscuro y AMOLED negro puro, con colores dinámicos en Android 12 y posteriores.
+• Inglés y español. Fuentes grandes y TalkBack.
+• Copia de seguridad cifrada de tus ajustes, protegida con una contraseña que eliges.
+
+Software libre
+UltimateCalendar tiene licencia GPL-3.0-or-later. Sin anuncios, sin analíticas, sin telemetría, sin librerías propietarias. Forma parte de la familia Ultimate, con UltimateTasks y UltimateDeck.

@@ -3,7 +3,8 @@
   SPDX-FileCopyrightText: 2026 UltimateCalendar contributors
   SPDX-License-Identifier: GPL-3.0-or-later
 -->
-<!-- Provisional icon (the final one comes in T28): a calendar page with a ticked day. -->
+<!-- A calendar page with a ticked day. Only opaque white shapes with real holes, so the same
+     drawable also works as the monochrome layer of themed icons. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
@@ -11,19 +12,12 @@
     android:viewportHeight="108">
     <path
         android:fillColor="#FFFFFFFF"
-        android:pathData="M32,36h44a4,4 0,0 1,4 4v32a4,4 0,0 1,-4 4h-44a4,4 0,0 1,-4 -4v-32a4,4 0,0 1,4 -4z" />
+        android:fillType="evenOdd"
+        android:pathData="M34,32h40a4,4 0,0 1,4 4v36a4,4 0,0 1,-4 4h-40a4,4 0,0 1,-4 -4v-36a4,4 0,0 1,4 -4z M36,47h36v3h-36z M42.7,64.3 L51,72.7 L66.3,57.3 L62.7,53.7 L51,65.3 L46.3,60.7z" />
     <path
-        android:fillColor="#FF0B63CE"
-        android:pathData="M28,46h52v-6a4,4 0,0 0,-4 -4h-44a4,4 0,0 0,-4 4z" />
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M40,25h5a2.5,2.5 0,0 1,2.5 2.5v7a2.5,2.5 0,0 1,-2.5 2.5h-5a2.5,2.5 0,0 1,-2.5 -2.5v-7a2.5,2.5 0,0 1,2.5 -2.5z" />
     <path
-        android:pathData="M42,61l6,6l12,-13"
-        android:strokeWidth="4"
-        android:strokeColor="#FF0B63CE"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round" />
-    <path
-        android:pathData="M40,30v10M68,30v10"
-        android:strokeWidth="4"
-        android:strokeColor="#FFFFFFFF"
-        android:strokeLineCap="round" />
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M63,25h5a2.5,2.5 0,0 1,2.5 2.5v7a2.5,2.5 0,0 1,-2.5 2.5h-5a2.5,2.5 0,0 1,-2.5 -2.5v-7a2.5,2.5 0,0 1,2.5 -2.5z" />
 </vector>

@@ -16,11 +16,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.qtekfun.ultimatecalendar.R
+import com.qtekfun.ultimatecalendar.domain.firstrun.FirstRunFlag
+import com.qtekfun.ultimatecalendar.ui.firstrun.FirstRunHost
 import com.qtekfun.ultimatecalendar.ui.theme.UltimateCalendarTheme
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @Inject
+    lateinit var firstRun: FirstRunFlag
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -30,8 +36,10 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Text(stringResource(R.string.app_name))
+                    FirstRunHost(firstRun) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Text(stringResource(R.string.app_name))
+                        }
                     }
                 }
             }
