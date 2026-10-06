@@ -22,6 +22,9 @@ interface AccountCleanupDao {
     @Query("DELETE FROM notified_invitations WHERE calendarId IN (:calendarIds)")
     suspend fun clearNotified(calendarIds: List<Long>)
 
+    @Query("DELETE FROM attended_events WHERE calendarId IN (:calendarIds)")
+    suspend fun clearAttended(calendarIds: List<Long>)
+
     @Query("DELETE FROM invitation_re_reminders WHERE calendarId IN (:calendarIds)")
     suspend fun clearReReminders(calendarIds: List<Long>)
 }

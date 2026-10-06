@@ -159,6 +159,7 @@ class CalDavAccountRepository @Inject constructor(
                     cleanup.clearSettings(ids)
                     cleanup.clearDefaultCalendar(ids)
                     cleanup.clearNotified(ids)
+                    cleanup.clearAttended(ids)
                     cleanup.clearReReminders(ids)
                 }
                 // Calendars, events and the queue go with the account (foreign keys).
