@@ -5,7 +5,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 # Privacy
 
-UltimateCalendar has no servers, no analytics, no ads and no telemetry. Your calendars stay on your phone and on the servers of the accounts you already use (Google, your CalDAV server through DAVx⁵…). The app only talks to the network in the future built-in CalDAV mode, and only to the server you configure.
+UltimateCalendar has no servers, no analytics, no ads and no telemetry. Your calendars stay on your phone and on the servers of the accounts you already use (Google, your CalDAV server through DAVx⁵…). The app only talks to the network in the future built-in CalDAV mode, and only to the server you configure, always over HTTPS (plain HTTP is refused). The building blocks of that mode (CalDAV client, iCalendar reader and Nextcloud Login Flow v2) are already in the code, but nothing uses them yet and the app does not declare the `INTERNET` permission until the mode ships. When it does, the app password of your account will be kept encrypted with a key that never leaves the Android Keystore, excluded from Android backups, and never written to logs.
 
 ## Permissions
 

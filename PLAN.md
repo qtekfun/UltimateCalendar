@@ -89,7 +89,8 @@ Reglas: una tarea cada vez, en su rama `feat/<tarea>`, con `./gradlew check` en 
 - [ ] **T32 1.0 y F-Droid**: release 1.0.0; rellenar `fdroid/com.qtekfun.ultimatecalendar.yml` (`commit`, `AllowedAPKSigningKeys`) y enviar la receta a fdroiddata; comprobar que el build de F-Droid coincide con el APK publicado (reproducible).
 
 ## Fase 6 — CalDAV propio (RF-12)
-- [ ] **T33 Copiar de UltimateTasks** el cliente CalDAV, lector/escritor iCalendar (con su corpus de ida y vuelta, ampliado con `VEVENT` de Google, Nextcloud, Outlook y Apple) y Login Flow v2 + Keystore.
+- [x] **T33 Copiar de UltimateTasks** el cliente CalDAV, lector/escritor iCalendar (con su corpus de ida y vuelta, ampliado con `VEVENT` de Google, Nextcloud, Outlook y Apple) y Login Flow v2 + Keystore.
+  *Resultado:* piezas sueltas, sin UI ni `CalDavCalendarSource`. El lector/escritor pasa de `VTODO` a `VEVENT` (`VeventMapper`, `IcsEvents` ↔ `EventSeries`/`OccurrenceKey`) y conserva byte a byte lo que no toca; el corpus nuevo (23 archivos) sustituye al de tareas. Zonas: IANA, Windows (`IcsZones`) y `VTIMEZONE` privadas. La sesión (`AccountSession`, `CredentialStore`) usa SharedPreferences cifradas con Keystore en vez de la tabla de cuentas de Room (T34). Dependencias nuevas: retrofit, okhttp y converter-kotlinx-serialization (Apache-2.0), mockwebserver en tests; `network_security_config` exige HTTPS; sin permiso `INTERNET` hasta T36.
 - [ ] **T34 Room como fuente de verdad, cola y resolutor** (copiados). **100 % de cobertura.**
 - [x] **T35 Motor de recurrencia de eventos** (`RRULE`, `EXDATE`, `RDATE`, `RECURRENCE-ID`, zonas horarias). **100 % de cobertura.**
   *Resultado:* `RecurrenceEngine.expand(EventSeries, TimeRange, zone)` devuelve `Expansion` (`Complete`, `LimitReached`, `Unsupported`); sin dependencias nuevas y con `RecurrenceRule` intacta. Cobertura 100 % de líneas y ramas en `domain.recurrence`.
