@@ -6,6 +6,7 @@ package com.qtekfun.ultimatecalendar.sync
 import com.qtekfun.ultimatecalendar.data.invitations.NotifiedInvitations
 import com.qtekfun.ultimatecalendar.data.source.CalendarSource
 import com.qtekfun.ultimatecalendar.data.sync.SourceSyncRequester
+import com.qtekfun.ultimatecalendar.data.sync.SyncReason
 import com.qtekfun.ultimatecalendar.domain.invitations.Invitation
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationDetector
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationNotifier
@@ -59,18 +60,20 @@ class InvitationChecker(
     /**
      * Runs a check. [requestSync] first asks every account to sync (the periodic job, the app
      * opening, pull to refresh); a check caused by the provider changing must not, or syncing
-     * would trigger itself.
+     * would trigger itself. Only a [manual] check (the user's pull to refresh) asks urgently and
+     * without limit; the others are rate limited (`SyncRequestPolicy`).
      */
-    suspend fun check(requestSync: Boolean): InvitationCheckOutcome = running.withLock {
-        withContext(io) {
-            try {
-                run(requestSync)
-            } catch (_: SecurityException) {
-                // The calendar permission was revoked while the check ran.
-                InvitationCheckOutcome.Failed(CalendarError.PermissionDenied)
+    suspend fun check(requestSync: Boolean, manual: Boolean = false): InvitationCheckOutcome =
+        running.withLock {
+            withContext(io) {
+                try {
+                    run(requestSync, if (manual) SyncReason.MANUAL else SyncReason.BACKGROUND)
+                } catch (_: SecurityException) {
+                    // The calendar permission was revoked while the check ran.
+                    InvitationCheckOutcome.Failed(CalendarError.PermissionDenied)
+                }
             }
         }
-    }
 
     /**
      * The invitations pending right now, soonest first, read without notifying or recording
@@ -93,18 +96,19 @@ class InvitationChecker(
         }
     }
 
-    private suspend fun run(requestSync: Boolean): InvitationCheckOutcome =
+    private suspend fun run(requestSync: Boolean, reason: SyncReason): InvitationCheckOutcome =
         when (val calendars = source.calendars()) {
             is CalendarResult.Failure -> InvitationCheckOutcome.Failed(calendars.error)
-            is CalendarResult.Success -> runIn(calendars.value, requestSync)
+            is CalendarResult.Success -> runIn(calendars.value, requestSync, reason)
         }
 
     private suspend fun runIn(
         calendars: List<CalendarInfo>,
-        requestSync: Boolean
+        requestSync: Boolean,
+        reason: SyncReason
     ): InvitationCheckOutcome {
         // The request is not awaited: whatever the sync brings arrives as a provider change.
-        if (requestSync) syncRequester.requestSync(calendars.map { it.account }.toSet())
+        if (requestSync) syncRequester.requestSync(calendars.map { it.account }.toSet(), reason)
 
         val previous = notified.load()
         val aliases = settings.aliases()

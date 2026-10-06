@@ -174,7 +174,9 @@ val coveredPackages = listOf(
 val criticalPackages = listOf(
     "com.qtekfun.ultimatecalendar.domain.invitations",
     "com.qtekfun.ultimatecalendar.domain.reminders",
-    "com.qtekfun.ultimatecalendar.domain.recurrence"
+    "com.qtekfun.ultimatecalendar.domain.recurrence",
+    "com.qtekfun.ultimatecalendar.sync.queue",
+    "com.qtekfun.ultimatecalendar.sync.conflict"
 )
 
 /**
@@ -237,7 +239,7 @@ kover {
                 }
             }
             verify {
-                rule("invitations, reminders and recurrence") {
+                rule("invitations, reminders, recurrence, queue and resolver") {
                     minBound(100, CoverageUnit.LINE)
                     minBound(100, CoverageUnit.BRANCH)
                 }

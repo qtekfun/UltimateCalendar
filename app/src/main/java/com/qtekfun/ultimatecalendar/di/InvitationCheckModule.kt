@@ -3,6 +3,8 @@
 
 package com.qtekfun.ultimatecalendar.di
 
+import android.content.Context
+import android.content.SharedPreferences
 import com.qtekfun.ultimatecalendar.data.invitations.InvitationResponses
 import com.qtekfun.ultimatecalendar.data.invitations.NotifiedInvitations
 import com.qtekfun.ultimatecalendar.data.invitations.SourceInvitationResponses
@@ -11,31 +13,34 @@ import com.qtekfun.ultimatecalendar.data.settings.SettingsRepository
 import com.qtekfun.ultimatecalendar.data.source.CalendarSource
 import com.qtekfun.ultimatecalendar.data.source.UnavailableCalendarSource
 import com.qtekfun.ultimatecalendar.data.sync.AccountSyncTrigger
+import com.qtekfun.ultimatecalendar.data.sync.AndroidSyncEnvironment
 import com.qtekfun.ultimatecalendar.data.sync.ContentResolverSyncTrigger
-import com.qtekfun.ultimatecalendar.data.sync.ProviderSyncRequester
+import com.qtekfun.ultimatecalendar.data.sync.PreferencesSyncRequestLog
 import com.qtekfun.ultimatecalendar.data.sync.SourceSyncRequester
+import com.qtekfun.ultimatecalendar.data.sync.SyncEnvironment
+import com.qtekfun.ultimatecalendar.data.sync.SyncRequestLog
 import com.qtekfun.ultimatecalendar.domain.invitations.ChangeNotifications
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationNotifier
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationReReminders
 import com.qtekfun.ultimatecalendar.notify.AndroidInvitationNotifications
-import com.qtekfun.ultimatecalendar.notify.AndroidInvitationReReminderAlarms
 import com.qtekfun.ultimatecalendar.notify.ChangeNotificationSettings
 import com.qtekfun.ultimatecalendar.notify.InvitationNotificationSurface
-import com.qtekfun.ultimatecalendar.notify.InvitationReReminderAlarms
-import com.qtekfun.ultimatecalendar.notify.ReRemindCoordinator
 import com.qtekfun.ultimatecalendar.notify.SystemInvitationNotifier
 import com.qtekfun.ultimatecalendar.sync.InvitationCheckScheduler
 import com.qtekfun.ultimatecalendar.sync.InvitationCheckSettings
 import com.qtekfun.ultimatecalendar.sync.InvitationChecker
+import com.qtekfun.ultimatecalendar.sync.ThrottledSyncRequester
 import com.qtekfun.ultimatecalendar.sync.WorkManagerInvitationScheduler
 import dagger.Binds
 import dagger.BindsOptionalOf
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import java.time.Clock
 import java.util.Optional
+import javax.inject.Named
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
 
@@ -52,19 +57,19 @@ interface InvitationCheckBindingsModule {
     fun notifications(notifications: AndroidInvitationNotifications): InvitationNotificationSurface
 
     @Binds
-    fun reReminders(coordinator: ReRemindCoordinator): InvitationReReminders
-
-    @Binds
-    fun reReminderAlarms(alarms: AndroidInvitationReReminderAlarms): InvitationReReminderAlarms
-
-    @Binds
     fun responses(responses: SourceInvitationResponses): InvitationResponses
 
     @Binds
     fun settings(settings: RepositoryInvitationCheckSettings): InvitationCheckSettings
 
     @Binds
-    fun syncRequester(requester: ProviderSyncRequester): SourceSyncRequester
+    fun syncRequester(requester: ThrottledSyncRequester): SourceSyncRequester
+
+    @Binds
+    fun syncEnvironment(environment: AndroidSyncEnvironment): SyncEnvironment
+
+    @Binds
+    fun syncRequestLog(log: PreferencesSyncRequestLog): SyncRequestLog
 
     @Binds
     fun syncTrigger(trigger: ContentResolverSyncTrigger): AccountSyncTrigger
@@ -84,6 +89,12 @@ interface InvitationCheckBindingsModule {
 @Module
 @InstallIn(SingletonComponent::class)
 object InvitationCheckModule {
+    /** Where the time of the last sync request per account is kept. */
+    @Provides
+    @Named(PreferencesSyncRequestLog.FILE)
+    fun syncRequestPreferences(@ApplicationContext context: Context): SharedPreferences =
+        context.getSharedPreferences(PreferencesSyncRequestLog.FILE, Context.MODE_PRIVATE)
+
     /** The optional notifications of Settings (RF-07), read when a check notifies. */
     @Provides
     fun changeNotificationSettings(settings: SettingsRepository) = ChangeNotificationSettings {

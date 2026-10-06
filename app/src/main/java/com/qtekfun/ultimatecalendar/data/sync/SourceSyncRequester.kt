@@ -5,8 +5,8 @@ package com.qtekfun.ultimatecalendar.data.sync
 
 import com.qtekfun.ultimatecalendar.domain.model.CalendarAccount
 
-/** How many sync requests the system took and how many it refused. */
-data class SyncRequests(val requested: Int, val failed: Int)
+/** How many sync requests the system took, how many it refused and how many were not made. */
+data class SyncRequests(val requested: Int, val failed: Int, val skipped: Int = 0)
 
 /**
  * Asks the sources to fetch what is new before a check looks at them (RF-06). Best-effort: the
@@ -15,5 +15,5 @@ data class SyncRequests(val requested: Int, val failed: Int)
  * app through the source's change notifications, which run another check.
  */
 interface SourceSyncRequester {
-    suspend fun requestSync(accounts: Set<CalendarAccount>): SyncRequests
+    suspend fun requestSync(accounts: Set<CalendarAccount>, reason: SyncReason): SyncRequests
 }

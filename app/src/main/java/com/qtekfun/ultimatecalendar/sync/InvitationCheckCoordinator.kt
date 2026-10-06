@@ -48,8 +48,9 @@ class InvitationCheckCoordinator @Inject constructor(
         opened.tryEmit(Unit)
     }
 
-    /** Pull to refresh: checks now, after asking the accounts to sync, and tells how it went. */
-    suspend fun checkNow(): InvitationCheckOutcome = checker.check(true)
+    /** Pull to refresh: checks now, after asking the accounts to sync urgently, and tells how it went. */
+    suspend fun checkNow(): InvitationCheckOutcome =
+        checker.check(requestSync = true, manual = true)
 
     private companion object {
         const val CHANGES_DEBOUNCE_MS = 5_000L

@@ -6,6 +6,7 @@ package com.qtekfun.ultimatecalendar.sync
 import com.qtekfun.ultimatecalendar.data.local.dao.NotifiedInvitationDao
 import com.qtekfun.ultimatecalendar.data.local.entity.NotifiedInvitationEntity
 import com.qtekfun.ultimatecalendar.data.sync.SourceSyncRequester
+import com.qtekfun.ultimatecalendar.data.sync.SyncReason
 import com.qtekfun.ultimatecalendar.data.sync.SyncRequests
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationChanges
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationNotifier
@@ -45,9 +46,14 @@ class RecordingNotifier : InvitationNotifier {
 
 class RecordingSyncRequester : SourceSyncRequester {
     val requests = mutableListOf<Set<CalendarAccount>>()
+    val reasons = mutableListOf<SyncReason>()
 
-    override suspend fun requestSync(accounts: Set<CalendarAccount>): SyncRequests {
+    override suspend fun requestSync(
+        accounts: Set<CalendarAccount>,
+        reason: SyncReason
+    ): SyncRequests {
         requests += accounts
+        reasons += reason
         return SyncRequests(accounts.size, 0)
     }
 }
