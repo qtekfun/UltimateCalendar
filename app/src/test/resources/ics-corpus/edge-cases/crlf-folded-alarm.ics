@@ -1,0 +1,30 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//UltimateCalendar//corpus//EN
+BEGIN:VTIMEZONE
+TZID:Europe/Madrid
+BEGIN:STANDARD
+DTSTART:19701025T030000
+RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU
+TZOFFSETFROM:+0200
+TZOFFSETTO:+0100
+END:STANDARD
+END:VTIMEZONE
+BEGIN:VEVENT
+UID:edge-1@ultimatecalendar
+SUMMARY:Call María\, revisar el presupuesto\; y enviar el informe largo con acentos áéíóú y ünïcödé 🎉 para que se pliegue
+  a mitad
+DESCRIPTION;LANGUAGE=es:Primera línea\nSegunda línea
+DTSTART;TZID=Europe/Madrid:20261005T093000
+DTEND;TZID=Europe/Madrid:20261005T103000
+CATEGORIES:Casa,Urgente
+X-APPLE-SORT-ORDER:123456
+ATTACH;FMTTYPE=image/png;FILENAME=/Calendar/foto.png;X-NC-FILE-TYPE=file:https://cloud.example.com/f/42
+X-CUSTOM;X-PARAM="a;b:c,d":valor
+BEGIN:VALARM
+ACTION:DISPLAY
+TRIGGER;RELATED=START:-PT15M
+DESCRIPTION:Default
+END:VALARM
+END:VEVENT
+END:VCALENDAR
