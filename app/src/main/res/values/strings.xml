@@ -109,6 +109,12 @@
     <string name="settings_remove_email">Remove address: %1$s</string>
     <string name="settings_notify_changes">Notify of changes</string>
     <string name="settings_notify_cancellations">Notify of cancellations</string>
+    <string name="settings_re_remind">Remind me again about invitations I have not answered</string>
+    <string name="settings_re_remind_hint">A notification with Accept, Maybe and Decline, as long as the event is still to come.</string>
+    <string name="re_remind_off">Never</string>
+    <string name="re_remind_day_before">One day before</string>
+    <string name="re_remind_hour_before">One hour before</string>
+    <string name="re_remind_both">One day and one hour before</string>
     <string name="settings_backup">Backup</string>
     <string name="settings_backup_hint">Settings are saved to a file encrypted with a passphrase, to bring the same setup to another phone.</string>
     <string name="backup_export">Export settings</string>

@@ -6,9 +6,11 @@ package com.qtekfun.ultimatecalendar.sync
 import com.qtekfun.ultimatecalendar.data.invitations.NotifiedInvitations
 import com.qtekfun.ultimatecalendar.data.source.CalendarSource
 import com.qtekfun.ultimatecalendar.data.sync.SourceSyncRequester
+import com.qtekfun.ultimatecalendar.data.sync.SyncReason
 import com.qtekfun.ultimatecalendar.domain.invitations.Invitation
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationDetector
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationNotifier
+import com.qtekfun.ultimatecalendar.domain.invitations.InvitationReReminders
 import com.qtekfun.ultimatecalendar.domain.model.CalendarInfo
 import com.qtekfun.ultimatecalendar.domain.model.Event
 import com.qtekfun.ultimatecalendar.domain.model.EventId
@@ -34,7 +36,8 @@ import kotlinx.coroutines.withContext
  * the notifier has been called. A check that is killed or fails halfway records nothing, so the
  * next one starts from the same point and notifies whatever is still pending (RF-08). Checks
  * from different triggers (the periodic job, the app opening, a provider change) run one at a
- * time. Built by `InvitationCheckModule`.
+ * time. Built by `InvitationCheckModule`. After recording, it hands the invitations still pending
+ * to [InvitationReReminders].
  */
 // Every part is a separate port (source, sync, record, notifier, settings, time, threads).
 @Suppress("LongParameterList")
@@ -45,7 +48,8 @@ class InvitationChecker(
     private val notifier: InvitationNotifier,
     private val settings: InvitationCheckSettings,
     private val clock: Clock,
-    private val io: CoroutineDispatcher
+    private val io: CoroutineDispatcher,
+    private val reReminders: InvitationReReminders = InvitationReReminders { }
 ) {
     private val running = Mutex()
     private val detector = InvitationDetector(clock)
@@ -56,18 +60,20 @@ class InvitationChecker(
     /**
      * Runs a check. [requestSync] first asks every account to sync (the periodic job, the app
      * opening, pull to refresh); a check caused by the provider changing must not, or syncing
-     * would trigger itself.
+     * would trigger itself. Only a [manual] check (the user's pull to refresh) asks urgently and
+     * without limit; the others are rate limited (`SyncRequestPolicy`).
      */
-    suspend fun check(requestSync: Boolean): InvitationCheckOutcome = running.withLock {
-        withContext(io) {
-            try {
-                run(requestSync)
-            } catch (_: SecurityException) {
-                // The calendar permission was revoked while the check ran.
-                InvitationCheckOutcome.Failed(CalendarError.PermissionDenied)
+    suspend fun check(requestSync: Boolean, manual: Boolean = false): InvitationCheckOutcome =
+        running.withLock {
+            withContext(io) {
+                try {
+                    run(requestSync, if (manual) SyncReason.MANUAL else SyncReason.BACKGROUND)
+                } catch (_: SecurityException) {
+                    // The calendar permission was revoked while the check ran.
+                    InvitationCheckOutcome.Failed(CalendarError.PermissionDenied)
+                }
             }
         }
-    }
 
     /**
      * The invitations pending right now, soonest first, read without notifying or recording
@@ -90,18 +96,19 @@ class InvitationChecker(
         }
     }
 
-    private suspend fun run(requestSync: Boolean): InvitationCheckOutcome =
+    private suspend fun run(requestSync: Boolean, reason: SyncReason): InvitationCheckOutcome =
         when (val calendars = source.calendars()) {
             is CalendarResult.Failure -> InvitationCheckOutcome.Failed(calendars.error)
-            is CalendarResult.Success -> runIn(calendars.value, requestSync)
+            is CalendarResult.Success -> runIn(calendars.value, requestSync, reason)
         }
 
     private suspend fun runIn(
         calendars: List<CalendarInfo>,
-        requestSync: Boolean
+        requestSync: Boolean,
+        reason: SyncReason
     ): InvitationCheckOutcome {
         // The request is not awaited: whatever the sync brings arrives as a provider change.
-        if (requestSync) syncRequester.requestSync(calendars.map { it.account }.toSet())
+        if (requestSync) syncRequester.requestSync(calendars.map { it.account }.toSet(), reason)
 
         val previous = notified.load()
         val aliases = settings.aliases()
@@ -122,6 +129,9 @@ class InvitationChecker(
         val changes = detector.diff(previous, scan)
         if (!changes.isEmpty) notifier.notify(changes)
         if (scan.pending.toSet() != previous.toSet()) notified.replaceAll(scan.pending)
+        // What is still pending decides which extra reminders exist (T40); an answered,
+        // cancelled or moved invitation loses its own.
+        reReminders.reconcile(scan.pending)
         return InvitationCheckOutcome.Done(changes, scan.pending.size)
     }
 

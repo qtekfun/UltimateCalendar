@@ -7,20 +7,18 @@ import androidx.room3.migration.Migration
 import androidx.sqlite.SQLiteConnection
 import androidx.sqlite.execSQL
 
-private const val FROM_VERSION = 3
-private const val TO_VERSION = 4
+private const val FROM = 3
+private const val TO = 4
 
-/**
- * Version 4 (T36) keeps what discovery learns about the CalDAV account: the user's calendar
- * addresses (to know which attendee is "me") and whether the server schedules invitations.
- */
-val MIGRATION_3_4: Migration = object : Migration(FROM_VERSION, TO_VERSION) {
+/** Version 4 (T40) adds the re-reminders of unanswered invitations; nothing existing changes. */
+val MIGRATION_3_4: Migration = object : Migration(FROM, TO) {
     override suspend fun migrate(connection: SQLiteConnection) {
         connection.execSQL(
-            "ALTER TABLE `dav_account` ADD COLUMN `userAddresses` TEXT NOT NULL DEFAULT ''"
-        )
-        connection.execSQL(
-            "ALTER TABLE `dav_account` ADD COLUMN `scheduling` INTEGER NOT NULL DEFAULT 0"
+            "CREATE TABLE IF NOT EXISTS `invitation_re_reminders` (" +
+                "`calendarId` INTEGER NOT NULL, `eventId` INTEGER NOT NULL, " +
+                "`moment` TEXT NOT NULL, `start` INTEGER NOT NULL, `at` INTEGER NOT NULL, " +
+                "`settled` INTEGER NOT NULL, " +
+                "PRIMARY KEY(`calendarId`, `eventId`, `moment`, `start`))"
         )
     }
 }

@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 4,
-    "identityHash": "754c7152266d70c85cf25373238f3d45",
+    "identityHash": "8ca43564b99e23cc52a77e71dcd34b3d",
     "entities": [
       {
         "tableName": "calendar_settings",
@@ -127,7 +127,7 @@
       },
       {
         "tableName": "dav_account",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `serverUrl` TEXT NOT NULL, `loginName` TEXT NOT NULL, `calendarHome` TEXT, `userAddresses` TEXT NOT NULL DEFAULT '', `scheduling` INTEGER NOT NULL DEFAULT 0)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `serverUrl` TEXT NOT NULL, `loginName` TEXT NOT NULL, `calendarHome` TEXT)",
         "fields": [
           {
             "fieldPath": "id",
@@ -151,20 +151,6 @@
             "fieldPath": "calendarHome",
             "columnName": "calendarHome",
             "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "userAddresses",
-            "columnName": "userAddresses",
-            "affinity": "TEXT",
-            "notNull": true,
-            "defaultValue": "''"
-          },
-          {
-            "fieldPath": "scheduling",
-            "columnName": "scheduling",
-            "affinity": "INTEGER",
-            "notNull": true,
-            "defaultValue": "0"
           }
         ],
         "primaryKey": {
@@ -651,11 +637,62 @@
             ]
           }
         ]
+      },
+      {
+        "tableName": "invitation_re_reminders",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`calendarId` INTEGER NOT NULL, `eventId` INTEGER NOT NULL, `moment` TEXT NOT NULL, `start` INTEGER NOT NULL, `at` INTEGER NOT NULL, `settled` INTEGER NOT NULL, PRIMARY KEY(`calendarId`, `eventId`, `moment`, `start`))",
+        "fields": [
+          {
+            "fieldPath": "calendarId",
+            "columnName": "calendarId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "eventId",
+            "columnName": "eventId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "moment",
+            "columnName": "moment",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "start",
+            "columnName": "start",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "at",
+            "columnName": "at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "settled",
+            "columnName": "settled",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "calendarId",
+            "eventId",
+            "moment",
+            "start"
+          ]
+        }
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '754c7152266d70c85cf25373238f3d45')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '8ca43564b99e23cc52a77e71dcd34b3d')"
     ]
   }
 }

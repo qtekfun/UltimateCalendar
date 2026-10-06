@@ -18,6 +18,13 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <!--
+      Read-only state, to skip a sync request that cannot help (RF-06): the account's calendar
+      sync switch, battery saver and whether there is a network. No data leaves the device.
+    -->
+    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!--
       Optional (RF-05): asked only when the user taps to suggest guests from their contacts;
       without it the guests field works with typed addresses. Never uploaded, never stored.
     -->
@@ -100,6 +107,9 @@
             android:exported="false" />
         <receiver
             android:name=".notify.InvitationActionReceiver"
+            android:exported="false" />
+        <receiver
+            android:name=".notify.InvitationReReminderReceiver"
             android:exported="false" />
         <receiver
             android:name=".notify.HeartbeatReceiver"

@@ -45,6 +45,11 @@ class CalDavSync @Inject constructor(
         }
     }
 
+    /** The user opened the app: sync soon, if there is an account. */
+    fun onAppOpened() {
+        if (session.activeAccount.value != null) scheduler.syncSoon()
+    }
+
     /** Syncs now, in the caller's coroutine, and tells how it went ("check now" buttons). */
     suspend fun syncNow(): SyncOutcome = engine.sync()
 }

@@ -8,6 +8,7 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import com.qtekfun.ultimatecalendar.R
 import com.qtekfun.ultimatecalendar.data.settings.ThemeMode
+import com.qtekfun.ultimatecalendar.domain.invitations.ReRemindOption
 import com.qtekfun.ultimatecalendar.domain.settings.FirstDayOfWeek
 import com.qtekfun.ultimatecalendar.domain.settings.InitialView
 import com.qtekfun.ultimatecalendar.domain.settings.InviteCheckInterval
@@ -51,6 +52,16 @@ internal fun viewName(view: InitialView): String = stringResource(
 internal fun inviteCheckName(interval: InviteCheckInterval): String =
     interval.minutes?.let { pluralStringResource(R.plurals.invite_check_every, it, it) }
         ?: stringResource(R.string.invite_check_manual)
+
+@Composable
+internal fun reRemindName(option: ReRemindOption): String = stringResource(
+    when (option) {
+        ReRemindOption.OFF -> R.string.re_remind_off
+        ReRemindOption.DAY_BEFORE -> R.string.re_remind_day_before
+        ReRemindOption.HOUR_BEFORE -> R.string.re_remind_hour_before
+        ReRemindOption.BOTH -> R.string.re_remind_both
+    }
+)
 
 @Composable
 internal fun durationName(minutes: Int): String =

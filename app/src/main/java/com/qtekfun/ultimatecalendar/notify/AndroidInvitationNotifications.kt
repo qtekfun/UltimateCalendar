@@ -40,10 +40,11 @@ class AndroidInvitationNotifications @Inject constructor(
         val tag = NotificationTags.invitation(invitation.key)
         val silent = when (alert) {
             InvitationAlert.NEW -> isShown(tag)
-            InvitationAlert.CHANGED -> false
+            InvitationAlert.CHANGED, InvitationAlert.REMINDER -> false
             InvitationAlert.SILENT -> true
         }
-        post(tag, builders.invitation(invitation, silent, failed = false))
+        val reminder = alert == InvitationAlert.REMINDER
+        post(tag, builders.invitation(invitation, silent, failed = false, reminder = reminder))
     }
 
     override fun showAnswerFailed(invitation: Invitation) = post(

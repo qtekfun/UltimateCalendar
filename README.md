@@ -19,6 +19,16 @@ A beautiful, free calendar for Android: the look of Google Calendar, the invitat
 - Recurring events, attendees, time zones, dark and AMOLED themes, English and Spanish.
 - Free software (GPL-3.0-or-later), no ads, no tracking.
 
+<p align="center">
+<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1_agenda.png" alt="The agenda: a week of events from several calendars" width="19%">
+<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2_week.png" alt="The week view with a repeating event and overlapping events" width="19%">
+<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/4_event_detail.png" alt="An event with its attendees and the Accept, Maybe and Decline buttons" width="19%">
+<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/5_invitations.png" alt="The invitations inbox with two pending invitations" width="19%">
+<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/7_day_dark.png" alt="The day view in dark mode" width="19%">
+</p>
+
+<sub>All the images come from the `Screenshots` UI test, which draws invented calendars and events: nothing in them is real data. They are made by `tools/take-screenshots.sh` on an emulator.</sub>
+
 Part of the Ultimate family with [UltimateTasks](https://github.com/qtekfun/UltimateTasks) and [UltimateDeck](https://github.com/qtekfun/UltimateDeck).
 
 > Status: in development. See [SPEC.md](SPEC.md) and [PLAN.md](PLAN.md).

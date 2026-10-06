@@ -8,6 +8,7 @@ import com.qtekfun.ultimatecalendar.data.local.UltimateCalendarDatabase
 import com.qtekfun.ultimatecalendar.data.local.inMemoryDatabase
 import com.qtekfun.ultimatecalendar.data.source.CalendarSource
 import com.qtekfun.ultimatecalendar.data.source.FakeCalendarSource
+import com.qtekfun.ultimatecalendar.data.sync.SyncReason
 import com.qtekfun.ultimatecalendar.domain.model.AttendeeStatus
 import com.qtekfun.ultimatecalendar.domain.model.CalendarId
 import com.qtekfun.ultimatecalendar.domain.model.CalendarInfo
@@ -202,6 +203,14 @@ class InvitationCheckerTest {
 
         checker().check(requestSync = true)
         assertEquals(listOf(setOf(CheckFixtures.account)), syncs.requests)
+    }
+
+    @Test
+    fun `only a manual check asks for an urgent sync, the others are background`() = runTest {
+        checker().check(requestSync = true)
+        checker().check(requestSync = true, manual = true)
+
+        assertEquals(listOf(SyncReason.BACKGROUND, SyncReason.MANUAL), syncs.reasons)
     }
 
     @Test

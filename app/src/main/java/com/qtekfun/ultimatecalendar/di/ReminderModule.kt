@@ -4,9 +4,13 @@
 package com.qtekfun.ultimatecalendar.di
 
 import com.qtekfun.ultimatecalendar.data.settings.RepositoryReminderSettings
+import com.qtekfun.ultimatecalendar.domain.invitations.InvitationReReminders
 import com.qtekfun.ultimatecalendar.domain.reminders.ReminderEventSource
+import com.qtekfun.ultimatecalendar.notify.AndroidInvitationReReminderAlarms
+import com.qtekfun.ultimatecalendar.notify.InvitationReReminderAlarms
 import com.qtekfun.ultimatecalendar.notify.PreferencesShownReminders
 import com.qtekfun.ultimatecalendar.notify.PreferencesSnoozedReminders
+import com.qtekfun.ultimatecalendar.notify.ReRemindCoordinator
 import com.qtekfun.ultimatecalendar.notify.ReminderBeat
 import com.qtekfun.ultimatecalendar.notify.ReminderHeartbeat
 import com.qtekfun.ultimatecalendar.notify.ReminderSettingsSource
@@ -24,6 +28,12 @@ import kotlinx.coroutines.flow.flowOf
 @Module
 @InstallIn(SingletonComponent::class)
 interface ReminderBindingsModule {
+    @Binds
+    fun reReminders(coordinator: ReRemindCoordinator): InvitationReReminders
+
+    @Binds
+    fun reReminderAlarms(alarms: AndroidInvitationReReminderAlarms): InvitationReReminderAlarms
+
     @Binds
     fun beat(heartbeat: ReminderHeartbeat): ReminderBeat
 

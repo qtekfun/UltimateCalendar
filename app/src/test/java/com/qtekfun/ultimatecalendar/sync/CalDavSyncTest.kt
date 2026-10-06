@@ -7,7 +7,7 @@ import androidx.work.ListenableWorker
 import com.qtekfun.ultimatecalendar.data.auth.AccountSession
 import com.qtekfun.ultimatecalendar.data.auth.SignedInAccount
 import com.qtekfun.ultimatecalendar.data.sync.CompositeSyncRequester
-import com.qtekfun.ultimatecalendar.data.sync.ProviderSyncRequester
+import com.qtekfun.ultimatecalendar.data.sync.SyncReason
 import com.qtekfun.ultimatecalendar.data.sync.SyncRequests
 import com.qtekfun.ultimatecalendar.domain.model.CalendarAccount
 import com.qtekfun.ultimatecalendar.sync.engine.SyncEngine
@@ -127,6 +127,16 @@ class CalDavSyncStartTest {
     }
 
     @Test
+    fun `opening the app syncs soon only with an account`() = runTest {
+        sync.onAppOpened()
+        assertEquals(emptyList<String>(), scheduler.calls)
+
+        account.value = signedIn
+        sync.onAppOpened()
+        assertEquals(listOf("soon"), scheduler.calls)
+    }
+
+    @Test
     fun `syncing now is the engine's sync and its outcome is kept`() = runTest {
         coEvery { engine.sync() } returns SyncOutcome.Offline
         every { engine.lastOutcome } returns MutableStateFlow(SyncOutcome.Offline)
@@ -139,27 +149,44 @@ class CalDavSyncStartTest {
 class CompositeSyncRequesterTest {
     private val google = CalendarAccount("me@gmail.com", "com.google")
     private val cloud = CalendarAccount("ana@cloud.example.com", CalendarAccount.CALDAV_TYPE)
-    private val provider = mockk<ProviderSyncRequester>()
+    private val provider = mockk<ThrottledSyncRequester>()
     private val scheduler = RecordingCalDavScheduler()
     private val requester = CompositeSyncRequester(provider, scheduler)
 
     @Test
-    fun `android accounts go to the system, the CalDAV account to its own sync`() = runTest {
-        coEvery { provider.requestSync(setOf(google)) } returns SyncRequests(1, 0)
+    fun `android accounts go to the system, the CalDAV account syncs when the user asks`() =
+        runTest {
+            coEvery { provider.requestSync(setOf(google), SyncReason.MANUAL) } returns
+                SyncRequests(1, 0)
 
-        val result = requester.requestSync(setOf(google, cloud))
+            val result = requester.requestSync(setOf(google, cloud), SyncReason.MANUAL)
 
-        assertEquals(SyncRequests(2, 0), result)
-        assertEquals(listOf("now"), scheduler.calls)
+            assertEquals(SyncRequests(2, 0), result)
+            assertEquals(listOf("now"), scheduler.calls)
+        }
+
+    @Test
+    fun `a background check leaves the CalDAV account to its own periodic sync`() = runTest {
+        coEvery { provider.requestSync(setOf(google), SyncReason.BACKGROUND) } returns
+            SyncRequests(1, 0)
+
+        val result = requester.requestSync(setOf(google, cloud), SyncReason.BACKGROUND)
+
+        assertEquals(SyncRequests(1, 0), result)
+        assertEquals(emptyList<String>(), scheduler.calls)
     }
 
     @Test
     fun `without a CalDAV account the provider's answer is the answer and no sync is scheduled`() =
         runTest {
-            coEvery { provider.requestSync(setOf(google)) } returns SyncRequests(1, 2)
+            coEvery { provider.requestSync(setOf(google), SyncReason.MANUAL) } returns
+                SyncRequests(1, 2, skipped = 3)
 
-            assertEquals(SyncRequests(1, 2), requester.requestSync(setOf(google)))
+            assertEquals(
+                SyncRequests(1, 2, skipped = 3),
+                requester.requestSync(setOf(google), SyncReason.MANUAL)
+            )
             assertEquals(emptyList<String>(), scheduler.calls)
-            coVerify(exactly = 1) { provider.requestSync(any()) }
+            coVerify(exactly = 1) { provider.requestSync(any(), any()) }
         }
 }

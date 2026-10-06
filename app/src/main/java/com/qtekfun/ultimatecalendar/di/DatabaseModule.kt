@@ -9,6 +9,7 @@ import androidx.sqlite.driver.AndroidSQLiteDriver
 import com.qtekfun.ultimatecalendar.data.local.UltimateCalendarDatabase
 import com.qtekfun.ultimatecalendar.data.local.dao.CalendarSettingsDao
 import com.qtekfun.ultimatecalendar.data.local.dao.NotifiedInvitationDao
+import com.qtekfun.ultimatecalendar.data.local.dao.ReRemindDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -45,4 +46,7 @@ object DatabaseModule {
     @Provides
     fun notifiedInvitationDao(database: UltimateCalendarDatabase): NotifiedInvitationDao =
         database.notifiedInvitationDao()
+
+    @Provides
+    fun reRemindDao(database: UltimateCalendarDatabase): ReRemindDao = database.reRemindDao()
 }

@@ -11,6 +11,9 @@ enum class InvitationAlert {
     /** The organizer changed it: it alerts again, with the new details. */
     CHANGED,
 
+    /** An unanswered invitation reminds again (T40): it alerts, with the details unchanged. */
+    REMINDER,
+
     /** Updated in place, without sound or vibration. */
     SILENT
 }

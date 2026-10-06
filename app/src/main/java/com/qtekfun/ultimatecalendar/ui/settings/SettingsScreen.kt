@@ -32,6 +32,7 @@ import com.qtekfun.ultimatecalendar.BuildConfig
 import com.qtekfun.ultimatecalendar.R
 import com.qtekfun.ultimatecalendar.data.settings.AppSettings
 import com.qtekfun.ultimatecalendar.data.settings.ThemeMode
+import com.qtekfun.ultimatecalendar.domain.invitations.ReRemindOption
 import com.qtekfun.ultimatecalendar.domain.model.CalendarInfo
 import com.qtekfun.ultimatecalendar.domain.settings.FirstDayOfWeek
 import com.qtekfun.ultimatecalendar.domain.settings.InitialView
@@ -222,6 +223,14 @@ private fun InvitationsSection(settings: AppSettings, viewModel: SettingsViewMod
             null,
             settings.notifyCancellations
         ) { on -> viewModel.update { it.copy(notifyCancellations = on) } }
+        HorizontalDivider()
+        ChoiceRow(
+            stringResource(R.string.settings_re_remind),
+            reRemindName(settings.reRemind),
+            ReRemindOption.entries,
+            { reRemindName(it) },
+            hint = stringResource(R.string.settings_re_remind_hint)
+        ) { picked -> viewModel.update { it.copy(reRemind = picked) } }
         HorizontalDivider()
         OwnEmailsEditor(
             settings.ownEmails,

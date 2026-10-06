@@ -31,11 +31,15 @@ class BootReceiver : BroadcastReceiver() {
     lateinit var coordinator: ReminderCoordinator
 
     @Inject
+    lateinit var reReminders: ReRemindCoordinator
+
+    @Inject
     lateinit var keepAlive: KeepAliveController
 
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action !in BootActions.ALL) return
         coordinator.refresh()
+        reReminders.refresh()
         // Android lets apps start a foreground service from these two broadcasts only.
         if (intent.action in BootActions.SERVICE) {
             val result = goAsync()
