@@ -140,13 +140,13 @@ class Screenshots {
 
     private fun lightViews(locale: StoreLocale, week: DemoWeek, driver: AppDriver) {
         driver.switchTo(R.string.shell_view_agenda)
-        driver.waitForText(week.firstInvitationTitle)
+        driver.waitForText(week.earlyTitle)
         snap(locale, "1_agenda", driver.capture())
         driver.switchTo(R.string.shell_view_week)
-        driver.waitForText(week.detailTitle)
+        driver.waitForText(week.earlyTitle)
         snap(locale, "2_week", driver.capture())
         driver.switchTo(R.string.shell_view_month)
-        driver.waitForText(week.detailTitle)
+        driver.waitForText(week.earlyTitle)
         snap(locale, "3_month", driver.capture())
         driver.switchTo(R.string.shell_view_agenda)
         driver.openEvent(week.detailTitle)

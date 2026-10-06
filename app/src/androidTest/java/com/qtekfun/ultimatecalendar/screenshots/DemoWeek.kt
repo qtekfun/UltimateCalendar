@@ -35,6 +35,9 @@ class DemoWeek(private val monday: LocalDate, private val spanish: Boolean) {
     /** The title of the event whose detail (with attendees) is shown. */
     val detailTitle = t("Product demo", "Demo del producto")
 
+    /** An event near the top of every view, to know that one has loaded. */
+    val earlyTitle = t("1:1 with Sam", "1:1 con Sam")
+
     /** Titles of the two invitations, in the order they are loaded. */
     val firstInvitationTitle = t("Roadmap workshop", "Taller de hoja de ruta")
     val secondInvitationTitle = t("Board game night", "Noche de juegos de mesa")
@@ -75,7 +78,7 @@ class DemoWeek(private val monday: LocalDate, private val spanish: Boolean) {
     )
 
     private fun tuesday() = listOf(
-        DemoEvent(WORK, t("1:1 with Sam", "1:1 con Sam"), at(1, 11), 30),
+        DemoEvent(WORK, earlyTitle, at(1, 11), 30),
         DemoEvent(
             PERSONAL,
             t("Yoga class", "Clase de yoga"),
