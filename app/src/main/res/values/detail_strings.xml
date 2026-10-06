@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 UltimateCalendar contributors
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<resources>
+    <string name="detail_edit">Edit event</string>
+    <string name="detail_delete">Delete event</string>
+    <string name="detail_share">Share event</string>
+    <string name="detail_no_title">(No title)</string>
+    <string name="detail_loading">Loading event</string>
+    <string name="detail_not_found">This event no longer exists.</string>
+    <string name="detail_load_failed">The event could not be read.</string>
+    <string name="detail_retry">Try again</string>
+    <string name="detail_deleted">Event deleted</string>
+    <string name="detail_all_day">All day</string>
+    <string name="detail_range">%1$s – %2$s</string>
+    <string name="detail_zone_line">%1$s: %2$s</string>
+    <string name="detail_series_note">One occurrence of a repeating event</string>
+    <string name="detail_open_map">Open in maps</string>
+    <string name="detail_open_link">Open link</string>
+    <string name="detail_join">Join video call</string>
+    <string name="detail_cannot_open">No app can open this.</string>
+    <string name="detail_calendar_line">%1$s (%2$s)</string>
+    <string name="detail_reminder_email">%1$s, by email</string>
+    <string name="detail_reminder_sms">%1$s, by text message</string>
+    <string name="detail_reminder_all_day_same_day">On the day, at %1$s</string>
+    <plurals name="detail_reminder_all_day">
+        <item quantity="one">%1$d day before, at %2$s</item>
+        <item quantity="many">%1$d de days before, at %2$s</item>
+        <item quantity="other">%1$d days before, at %2$s</item>
+    </plurals>
+    <string name="detail_description">Description</string>
+    <string name="detail_attendees">Attendees (%1$d)</string>
+    <string name="detail_organizer">Organizer</string>
+    <string name="detail_you">You</string>
+    <string name="detail_group_accepted">Accepted (%1$d)</string>
+    <string name="detail_group_maybe">Maybe (%1$d)</string>
+    <string name="detail_group_declined">Declined (%1$d)</string>
+    <string name="detail_group_no_answer">No answer (%1$d)</string>
+    <string name="detail_status_accepted">Accepted</string>
+    <string name="detail_status_maybe">Maybe</string>
+    <string name="detail_status_declined">Declined</string>
+    <string name="detail_status_no_answer">No answer</string>
+    <string name="detail_attendee_description">%1$s, %2$s, %3$s</string>
+    <string name="detail_going">Going?</string>
+    <string name="detail_accept">Accept</string>
+    <string name="detail_maybe">Maybe</string>
+    <string name="detail_decline">Decline</string>
+    <string name="detail_sending_answer">Sending your answer</string>
+    <string name="detail_selected">Selected</string>
+    <string name="detail_respond_failed">Your answer could not be sent. It was not changed.</string>
+    <string name="detail_delete_failed">The event could not be deleted.</string>
+    <string name="detail_undo_failed">The event could not be restored.</string>
+    <string name="detail_error_read_only">This calendar does not allow that change.</string>
+    <string name="detail_error_permission">Calendar permission is missing.</string>
+    <string name="detail_delete_title">Delete this event?</string>
+    <string name="detail_delete_text">It will be removed from its calendar.</string>
+    <string name="detail_delete_attendees_text">It will be removed from its calendar, and the people invited will be told.</string>
+    <string name="detail_delete_series_title">Delete a repeating event</string>
+    <string name="detail_scope_this">This event</string>
+    <string name="detail_scope_following">This and following events</string>
+    <string name="detail_scope_all">All events</string>
+    <string name="detail_delete_confirm">Delete</string>
+    <string name="detail_cancel">Cancel</string>
+    <string name="detail_share_chooser">Share event</string>
+
+    <plurals name="repeat_daily">
+        <item quantity="one">Daily</item>
+        <item quantity="many">Every %d de days</item>
+        <item quantity="other">Every %d days</item>
+    </plurals>
+    <plurals name="repeat_weekly">
+        <item quantity="one">Weekly</item>
+        <item quantity="many">Every %d de weeks</item>
+        <item quantity="other">Every %d weeks</item>
+    </plurals>
+    <plurals name="repeat_monthly">
+        <item quantity="one">Monthly</item>
+        <item quantity="many">Every %d de months</item>
+        <item quantity="other">Every %d months</item>
+    </plurals>
+    <plurals name="repeat_yearly">
+        <item quantity="one">Yearly</item>
+        <item quantity="many">Every %d de years</item>
+        <item quantity="other">Every %d years</item>
+    </plurals>
+    <string name="repeat_every_weekday">Every weekday</string>
+    <string name="repeat_on_weekdays">on %1$s</string>
+    <string name="repeat_on_month_days">on day %1$s</string>
+    <string name="repeat_on_last_day">on the last day</string>
+    <string name="repeat_last">last</string>
+    <string name="repeat_on_ordinal">on the %1$s %2$s</string>
+    <string name="repeat_ordinal_1">first</string>
+    <string name="repeat_ordinal_2">second</string>
+    <string name="repeat_ordinal_3">third</string>
+    <string name="repeat_ordinal_4">fourth</string>
+    <string name="repeat_ordinal_5">fifth</string>
+    <string name="repeat_ordinal_last">last</string>
+    <string name="repeat_on_date">on %1$s %2$d</string>
+    <string name="repeat_in_months">in %1$s</string>
+    <string name="repeat_ordinal_of_month">on the %1$s %2$s of %3$s</string>
+    <plurals name="repeat_times">
+        <item quantity="one">once</item>
+        <item quantity="many">%d de times</item>
+        <item quantity="other">%d times</item>
+    </plurals>
+    <string name="repeat_until">until %1$s</string>
+    <string name="repeat_custom">Custom repetition</string>
+    <string name="repeat_and">%1$s and %2$s</string>
+</resources>
