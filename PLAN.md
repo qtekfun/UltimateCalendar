@@ -74,7 +74,8 @@ Reglas: una tarea cada vez, en su rama `feat/<tarea>`, con `./gradlew check` en 
 ## Fase 6 — CalDAV propio (RF-12)
 - [ ] **T33 Copiar de UltimateTasks** el cliente CalDAV, lector/escritor iCalendar (con su corpus de ida y vuelta, ampliado con `VEVENT` de Google, Nextcloud, Outlook y Apple) y Login Flow v2 + Keystore.
 - [ ] **T34 Room como fuente de verdad, cola y resolutor** (copiados). **100 % de cobertura.**
-- [ ] **T35 Motor de recurrencia de eventos** (`RRULE`, `EXDATE`, `RDATE`, `RECURRENCE-ID`, zonas horarias). **100 % de cobertura.**
+- [x] **T35 Motor de recurrencia de eventos** (`RRULE`, `EXDATE`, `RDATE`, `RECURRENCE-ID`, zonas horarias). **100 % de cobertura.**
+  *Resultado:* `RecurrenceEngine.expand(EventSeries, TimeRange, zone)` devuelve `Expansion` (`Complete`, `LimitReached`, `Unsupported`); sin dependencias nuevas y con `RecurrenceRule` intacta. Cobertura 100 % de líneas y ramas en `domain.recurrence`.
 - [ ] **T36 `CalDavCalendarSource`**: la suite de contrato pasa con MockWebServer; planificación en el servidor para invitar y responder.
 - [ ] **T37 Login y gestión de la cuenta CalDAV** en la UI; la copia de seguridad incluye la sesión opcional.
 
