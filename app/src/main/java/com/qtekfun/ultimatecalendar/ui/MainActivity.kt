@@ -11,12 +11,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import com.qtekfun.ultimatecalendar.domain.firstrun.FirstRunFlag
+import com.qtekfun.ultimatecalendar.ui.firstrun.FirstRunHost
 import com.qtekfun.ultimatecalendar.ui.navigation.AppNavigation
 import com.qtekfun.ultimatecalendar.ui.theme.UltimateCalendarTheme
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @Inject
+    lateinit var firstRun: FirstRunFlag
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -26,7 +32,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    AppNavigation()
+                    FirstRunHost(firstRun) { AppNavigation() }
                 }
             }
         }
