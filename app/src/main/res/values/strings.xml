@@ -6,6 +6,15 @@
 <resources>
     <string name="app_name" translatable="false">UltimateCalendar</string>
     <string name="reminder_channel">Event reminders</string>
+    <string name="invitations_channel">New invitations</string>
+    <string name="changes_channel">Event changes</string>
+    <string name="reminder_action_join">Join</string>
+    <string name="reminder_action_map">Map</string>
+    <string name="reminder_action_snooze">Snooze</string>
+    <string name="reminder_action_dismiss">Dismiss</string>
+    <string name="reminder_snooze_5">5 min</string>
+    <string name="reminder_snooze_15">15 min</string>
+    <string name="reminder_snooze_60">1 hour</string>
     <string name="reminder_text_timed">Starts %1$s</string>
     <string name="reminder_text_all_day">All day</string>
     <string name="reminder_missed_text">%1$s · missed at %2$s</string>
