@@ -35,7 +35,8 @@ import com.qtekfun.ultimatecalendar.domain.model.EventInstance
 import com.qtekfun.ultimatecalendar.domain.model.EventTime
 import com.qtekfun.ultimatecalendar.domain.month.MonthBar
 import com.qtekfun.ultimatecalendar.domain.month.MonthBarStyle
-import com.qtekfun.ultimatecalendar.ui.components.statusLabel
+import com.qtekfun.ultimatecalendar.ui.components.eventSpeech
+import com.qtekfun.ultimatecalendar.ui.components.spokenTimeOf
 import com.qtekfun.ultimatecalendar.ui.theme.ColorMath
 import com.qtekfun.ultimatecalendar.ui.theme.Dimens
 import com.qtekfun.ultimatecalendar.ui.theme.EventDisplay
@@ -112,8 +113,7 @@ internal fun MonthEventChip(
     val display = EventDisplay.of(bar.instance.selfStatus)
     val colors = rememberEventChipColors(bar.argb(), display)
     val title = bar.instance.displayTitle()
-    val spoken = listOfNotNull(title, timeDetail(bar.instance, zone), display.statusLabel())
-        .joinToString(", ")
+    val spoken = eventSpeech(bar.instance, spokenTimeOf(bar.instance.time, zone))
     val open = stringResource(R.string.month_open_event)
     val strike = if (colors.strikeThrough) TextDecoration.LineThrough else null
     val click = Modifier

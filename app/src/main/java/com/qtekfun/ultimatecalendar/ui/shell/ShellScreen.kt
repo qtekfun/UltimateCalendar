@@ -49,6 +49,7 @@ import com.qtekfun.ultimatecalendar.ui.agenda.AgendaScreen
 import com.qtekfun.ultimatecalendar.ui.components.AnimatedPeriod
 import com.qtekfun.ultimatecalendar.ui.components.CalendarSnackbarHost
 import com.qtekfun.ultimatecalendar.ui.components.CreateFab
+import com.qtekfun.ultimatecalendar.ui.components.LocalCalendarNames
 import com.qtekfun.ultimatecalendar.ui.components.LocalSnackbarHost
 import com.qtekfun.ultimatecalendar.ui.components.PeriodKey
 import com.qtekfun.ultimatecalendar.ui.components.rememberFabScrollState
@@ -107,15 +108,9 @@ fun ShellContent(
     startWithDrawerOpen: Boolean = false,
     detailPane: DetailPane? = null,
     content: @Composable (PeriodKey, PaddingValues) -> Unit = { period, padding ->
-        // While a view fades out, it is still drawn with its own view and days, not the new ones.
-        val shown = if (period.view == state.view) {
-            state
-        } else {
-            state.copy(
-                view = period.view,
-                range = ViewPeriods.range(period.view, state.date, state.firstDayOfWeek)
-            )
-        }
+        // While a view fades into another both are drawn: each gets its own view in the state, or
+        // a week grid told it is the agenda would fail (it only pages whole days).
+        val shown = if (period.view == state.view) state else state.copy(view = period.view)
         ShellView(period.view, shown, actions, detailPane, Modifier.fillMaxSize().padding(padding))
     }
 ) {
@@ -154,7 +149,13 @@ fun ShellContent(
             content = content
         )
     }
-    CompositionLocalProvider(LocalSnackbarHost provides snackbarHost) {
+    val names = remember(state.accounts) {
+        state.accounts.flatMap { it.calendars }.associate { it.id to it.displayName }
+    }
+    CompositionLocalProvider(
+        LocalSnackbarHost provides snackbarHost,
+        LocalCalendarNames provides names
+    ) {
         when (layout.navigation) {
             NavigationStyle.PERMANENT_DRAWER -> PermanentNavigationDrawer(
                 drawerContent = { drawerContent(true) },

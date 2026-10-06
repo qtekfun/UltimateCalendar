@@ -98,7 +98,17 @@ android {
     }
 
     testOptions {
-        unitTests.all { it.useJUnitPlatform() }
+        // The key-flow UI tests wait on idling, not on timers: no animation may be running.
+        animationsDisabled = true
+        unitTests.all {
+            // The T25 micro-benchmarks carry the "benchmark" tag; -PskipBenchmarks leaves them out
+            // should they ever flake on a loaded machine.
+            if (project.hasProperty("skipBenchmarks")) {
+                it.useJUnitPlatform { excludeTags("benchmark") }
+            } else {
+                it.useJUnitPlatform()
+            }
+        }
     }
 
     // FakeCalendarSource and the CalendarSourceContract suite run in the unit tests (against the

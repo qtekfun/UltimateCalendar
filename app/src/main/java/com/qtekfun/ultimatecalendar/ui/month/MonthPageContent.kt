@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import com.qtekfun.ultimatecalendar.R
+import com.qtekfun.ultimatecalendar.domain.accessibility.EventSpeech
 import com.qtekfun.ultimatecalendar.domain.model.EventInstance
 import com.qtekfun.ultimatecalendar.domain.month.MonthBar
 import com.qtekfun.ultimatecalendar.domain.month.MonthDensity
@@ -52,7 +53,8 @@ import com.qtekfun.ultimatecalendar.domain.month.MonthWeek
 import com.qtekfun.ultimatecalendar.domain.navigation.WeekNumbers
 import com.qtekfun.ultimatecalendar.ui.components.DayBadge
 import com.qtekfun.ultimatecalendar.ui.components.DayBadgeState
-import com.qtekfun.ultimatecalendar.ui.theme.Dimens
+import com.qtekfun.ultimatecalendar.ui.components.rememberDayBadgeSize
+import com.qtekfun.ultimatecalendar.ui.components.rememberSpeechWords
 import com.qtekfun.ultimatecalendar.ui.theme.Spacing
 import com.qtekfun.ultimatecalendar.ui.theme.calendarType
 import java.time.DayOfWeek
@@ -63,7 +65,6 @@ import java.time.format.FormatStyle
 import java.time.format.TextStyle
 
 private val WEEK_NUMBER_WIDTH = 28.dp
-private val DAY_HEADER = Dimens.dayBadge + Spacing.xs
 private val LANE_PADDING = Spacing.xs + Spacing.xxs
 private const val MAX_DOTS = 4
 private const val LARGE_FONT_SCALE = 1.3f
@@ -185,7 +186,8 @@ private fun WeekCells(
     size: DpSize
 ) {
     val laneHeight = rememberLaneHeight()
-    val lanes = MonthDensity.lanes(size.height.value, DAY_HEADER.value, laneHeight.value)
+    val dayHeader = rememberDayBadgeSize() + Spacing.xs
+    val lanes = MonthDensity.lanes(size.height.value, dayHeader.value, laneHeight.value)
     val compact = MonthDensity.isCompact(lanes)
     val columns = remember(week) { List(week.days.size) { week.barsOn(it) } }
     Box(Modifier.fillMaxSize()) {
@@ -207,14 +209,19 @@ private fun WeekCells(
             }
         }
         if (!compact) {
-            val geometry = WeekGeometry(size.width / week.days.size, laneHeight, lanes)
+            val geometry = WeekGeometry(size.width / week.days.size, laneHeight, lanes, dayHeader)
             WeekEvents(week, columns, context.zone, callbacks, geometry)
         }
     }
 }
 
 /** The size of a column of the row, and how many lanes of [laneHeight] fit under a day number. */
-private data class WeekGeometry(val cellWidth: Dp, val laneHeight: Dp, val lanes: Int)
+private data class WeekGeometry(
+    val cellWidth: Dp,
+    val laneHeight: Dp,
+    val lanes: Int,
+    val dayHeader: Dp
+)
 
 /** The bars that fit and a "+N" in the last lane of each column that has more. */
 @Composable
@@ -225,7 +232,10 @@ private fun WeekEvents(
     callbacks: MonthCallbacks,
     geometry: WeekGeometry
 ) {
-    val (cellWidth, laneHeight, lanes) = geometry
+    val cellWidth = geometry.cellWidth
+    val laneHeight = geometry.laneHeight
+    val lanes = geometry.lanes
+    val dayHeader = geometry.dayHeader
     val fit = remember(week, lanes) { MonthOverflow.fit(week, lanes) }
     Box(Modifier.fillMaxSize()) {
         fit.visible.forEach { bar ->
@@ -238,7 +248,7 @@ private fun WeekEvents(
                 modifier = Modifier
                     .offset(
                         cellWidth * bar.firstCol + left,
-                        DAY_HEADER + laneHeight * bar.lane
+                        dayHeader + laneHeight * bar.lane
                     )
                     .width(cellWidth * (bar.lastCol - bar.firstCol + 1) - left - right)
                     .height(laneHeight - Spacing.xxs)
@@ -250,7 +260,7 @@ private fun WeekEvents(
                     count,
                     onClick = { callbacks.onShowDay(DaySheet(week.days[col], columns[col])) },
                     modifier = Modifier
-                        .offset(cellWidth * col, DAY_HEADER + laneHeight * (lanes - 1))
+                        .offset(cellWidth * col, dayHeader + laneHeight * (lanes - 1))
                         .width(cellWidth)
                         .height(laneHeight - Spacing.xxs)
                 )
@@ -317,7 +327,7 @@ private fun DayCell(
             ),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        DayBadge(day, Modifier.padding(top = Spacing.xxs), state)
+        DayBadge(day, Modifier.padding(top = Spacing.xxs), state, announce = false)
         if (compact && bars.isNotEmpty()) {
             Row(horizontalArrangement = Arrangement.spacedBy(Spacing.xxs)) {
                 bars.take(MAX_DOTS).forEach { EventDot(it) }
@@ -331,11 +341,5 @@ private fun DayCell(
 private fun dayDescription(day: LocalDate, isToday: Boolean, events: Int): String {
     val formatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL)
         .withLocale(Locale.current.platformLocale)
-    val full = day.format(formatter)
-    val date = if (isToday) stringResource(R.string.cal_day_today, full) else full
-    return if (events == 0) {
-        stringResource(R.string.month_day_no_events, date)
-    } else {
-        pluralStringResource(R.plurals.month_day_events, events, date, events)
-    }
+    return EventSpeech.describeDay(day.format(formatter), isToday, events, rememberSpeechWords())
 }

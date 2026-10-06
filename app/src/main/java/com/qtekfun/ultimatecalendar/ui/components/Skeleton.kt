@@ -28,7 +28,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import com.qtekfun.ultimatecalendar.R
 import com.qtekfun.ultimatecalendar.ui.theme.CalendarShapes
@@ -74,7 +76,10 @@ fun EventListSkeleton(modifier: Modifier = Modifier, days: Int = 3) {
     Column(
         modifier
             .skeletonPulse()
-            .semantics { contentDescription = loading }
+            .semantics {
+                contentDescription = loading
+                liveRegion = LiveRegionMode.Polite
+            }
             .padding(horizontal = Spacing.l, vertical = Spacing.s),
         verticalArrangement = Arrangement.spacedBy(Spacing.l)
     ) {
