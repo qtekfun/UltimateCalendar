@@ -7,10 +7,12 @@ import com.qtekfun.ultimatecalendar.data.source.CalendarSourceContract
 import com.qtekfun.ultimatecalendar.data.source.CompositeCalendarSource
 import com.qtekfun.ultimatecalendar.data.source.FakeCalendarSource
 import com.qtekfun.ultimatecalendar.data.source.SourceUnderTest
+import com.qtekfun.ultimatecalendar.data.source.subscription.SubscriptionCalendarSource
 import com.qtekfun.ultimatecalendar.domain.model.CalendarAccess
 import com.qtekfun.ultimatecalendar.domain.model.CalendarAccount
 import com.qtekfun.ultimatecalendar.domain.model.CalendarId
 import com.qtekfun.ultimatecalendar.domain.model.CalendarInfo
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import mockwebserver3.MockWebServer
 import mockwebserver3.junit5.StartStop
@@ -36,6 +38,10 @@ class CalDavCalendarSourceContractTest {
         access,
         ownerEmail = "me@example.com"
     )
+
+    /** The subscriptions beside them, over the same database: none, but in the composite. */
+    private fun subscriptions(rig: CalDavRig) =
+        SubscriptionCalendarSource(rig.env.db, Dispatchers.Unconfined)
 
     private fun run(
         scenario: com.qtekfun.ultimatecalendar.data.source.Scenario,
@@ -69,7 +75,7 @@ class CalDavCalendarSourceContractTest {
                     )
                     val under = rig.underTest()
                     SourceUnderTest(
-                        CompositeCalendarSource(calendars, rig.source),
+                        CompositeCalendarSource(calendars, rig.source, subscriptions(rig)),
                         under.writable,
                         under.readOnly
                     )
@@ -88,7 +94,8 @@ class CalDavCalendarSourceContractTest {
                     SourceUnderTest(
                         CompositeCalendarSource(
                             FakeCalendarSource(listOf(writable, readOnly)),
-                            rig.source
+                            rig.source,
+                            subscriptions(rig)
                         ),
                         writable,
                         readOnly
