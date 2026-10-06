@@ -5,20 +5,17 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 # Releasing
 
-Releases are automatic with [release-please](https://github.com/googleapis/release-please). Nobody bumps versions, edits `CHANGELOG.md` or creates tags by hand.
+Releases are manual and tag-driven, the same way as UltimateDeck: nothing opens release PRs for you and no extra token is needed.
 
 ## Versions
 
-- The version lives in `appVersion` in `gradle.properties` (SemVer, or `X.Y.Z-rc.N` for a release candidate), between `x-release-please-start-version` / `x-release-please-end` markers. release-please updates it together with `.release-please-manifest.json` and `CHANGELOG.md`.
-- The next version comes from the Conventional Commits merged into `master` (PRs are squash-merged, so it is the **PR title**, validated by `pr-title.yml`):
-  - `feat:` → minor (before 1.0.0, also minor), `fix:` / `perf:` → patch, `feat!:` or a `BREAKING CHANGE:` footer → major (minor before 1.0.0).
-  - `docs`, `test`, `build`, `ci`, `chore`, `refactor` do not create a release and are hidden from the changelog.
-  - To force a version (e.g. a release candidate), merge a commit with the footer `Release-As: 1.0.0-rc.1`.
-- The Android version code is derived from `appVersion`, never set by hand: `(MAJOR*10000 + MINOR*100 + PATCH) * 100 + N`, with `N = 99` for a final release. `1.0.0-rc.1` → `1000001`, `1.0.0` → `1000099`: a final always sorts after its release candidates, and nothing depends on dates or the machine (reproducible builds).
+- The version lives in one place: `appVersion` in `gradle.properties`, as SemVer (`1.2.3`), or `1.2.3-rc.N` for a release candidate.
+- The Android version code is derived from it, never set by hand: `(MAJOR*10000 + MINOR*100 + PATCH) * 100 + N`, with `N = 99` for a final release. So `1.0.0-rc.1` is `1000001` and `1.0.0` is `1000099`: a final version always sorts after its release candidates, and nothing depends on dates or the machine (reproducible builds).
+- Before 1.0.0 the app is `0.x`.
 
 ## Signing (one time)
 
-Releases are signed with the project's own key, and builds are reproducible: F-Droid builds the same source, checks that its APK matches the one published on GitHub and then ships ours, so users can update from either.
+Releases are signed with the project's own key, and the builds are reproducible: F-Droid builds the same source, checks that its APK matches the one published on GitHub and then ships ours, so users can update from either.
 
 1. Create the key and keep the file and passwords somewhere safe and **backed up** (if it is lost, users must uninstall to update):
    ```sh
@@ -28,7 +25,6 @@ Releases are signed with the project's own key, and builds are reproducible: F-D
 2. Repository secrets (Settings → Secrets and variables → Actions):
    - `UC_KEYSTORE_BASE64`: `base64 -w0 ultimatecalendar-release.jks`
    - `UC_KEYSTORE_PASSWORD`, `UC_KEY_ALIAS` (`ultimatecalendar`), `UC_KEY_PASSWORD`
-   - `RELEASE_PLEASE_TOKEN`: a fine-grained personal access token (or GitHub App token) for this repository only, with *Contents* and *Pull requests* read/write. With the default `GITHUB_TOKEN` the release PR would not trigger CI and could never be merged under the ruleset.
 3. For F-Droid, the certificate fingerprint (`AllowedAPKSigningKeys`):
    ```sh
    keytool -list -v -keystore ultimatecalendar-release.jks -alias ultimatecalendar | grep SHA256
@@ -36,18 +32,25 @@ Releases are signed with the project's own key, and builds are reproducible: F-D
 
 Without the `UC_*` variables, `./gradlew assembleRelease` builds an unsigned APK, which is what F-Droid does before comparing.
 
-## How a release happens
+## Making a release
 
-1. Every push to `master` runs **Release** (`release-please.yml`), which opens or updates the PR `chore: release X.Y.Z` with the new `appVersion`, manifest and `CHANGELOG.md`.
-2. On that PR, add the store summaries for its version code (CI's `store-texts` check fails until they exist):
-   `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt` and `es-ES/changelogs/<versionCode>.txt`, at most 500 characters, written for users.
-3. Merge the PR when you want to release. release-please tags `vX.Y.Z` and creates the GitHub Release with the changelog; the same workflow then checks the tag against `appVersion`, runs `./gradlew check`, builds the signed APK and attaches `UltimateCalendar-X.Y.Z.apk` and its SHA-256. `-rc.N` versions are marked as pre-releases.
-4. F-Droid picks up final tags by itself (`UpdateCheckMode: Tags`, final versions only).
+1. Create the branch `release/X.Y.Z` from `master`.
+2. Move the `[Unreleased]` notes in `CHANGELOG.md` under `## [X.Y.Z] - YYYY-MM-DD`.
+3. Set `appVersion=X.Y.Z` in `gradle.properties`.
+4. Add the store summaries for the new version code, written for users and at most 500 characters each: `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt` and `es-ES/changelogs/<versionCode>.txt`. CI's `store-texts` check requires them on `release/*` branches.
+5. Open the PR `chore: release X.Y.Z` and merge it (squash) once the checks pass.
+6. Tag the merge commit and push the tag (only the author does this):
+   ```sh
+   git switch master && git pull
+   git tag vX.Y.Z && git push origin vX.Y.Z
+   ```
+7. The **Release** workflow checks that the tag matches `appVersion`, runs `./gradlew check`, builds the signed APK and publishes a GitHub Release with the notes of that version, the APK `UltimateCalendar-X.Y.Z.apk` and its SHA-256. Release candidates (`-rc.N`) are marked as pre-releases.
+8. F-Droid picks up final tags by itself (`UpdateCheckMode: Tags`, final versions only).
 
 ## Screenshots and store assets
 
-`fastlane/.../images/` come from the `Screenshots` UI test with made-up calendars (PLAN T29), never from real data. The icon and feature graphic are produced in T28/T30.
+`fastlane/.../images/` come from the `Screenshots` UI test with made-up calendars (PLAN T29), never from real data.
 
 ## F-Droid
 
-`fdroid/com.qtekfun.ultimatecalendar.yml` is the metadata to submit to [fdroiddata](https://gitlab.com/fdroid/fdroiddata) after 1.0.0 (PLAN T32). It has no comments because fdroiddata's tools remove them. Before submitting, fill in `commit` (full hash of the release commit) and `AllowedAPKSigningKeys`.
+`fdroid/com.qtekfun.ultimatecalendar.yml` is the metadata to submit to [fdroiddata](https://gitlab.com/fdroid/fdroiddata) after 1.0.0 (PLAN T32). It has no comments because fdroiddata's tools remove them. Before submitting, fill in `commit` (full hash of the release commit); `AllowedAPKSigningKeys` already has the fingerprint of the release key.

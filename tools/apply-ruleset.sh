@@ -17,7 +17,7 @@ else
   gh api -X POST "repos/$repo/rulesets" --input .github/rulesets/master.json >/dev/null
   echo "Created ruleset on $repo"
 fi
-# Squash commits take the PR title, which pr-title.yml validates for release-please.
+# Squash commits take the PR title, which pr-title.yml validates (Conventional Commits).
 gh api -X PATCH "repos/$repo" -f squash_merge_commit_title=PR_TITLE -f squash_merge_commit_message=PR_BODY \
   -F allow_merge_commit=false -F allow_rebase_merge=false -F allow_squash_merge=true \
   -F delete_branch_on_merge=true >/dev/null

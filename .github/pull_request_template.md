@@ -2,8 +2,7 @@
 SPDX-FileCopyrightText: 2026 UltimateCalendar contributors
 SPDX-License-Identifier: GPL-3.0-or-later
 
-The PR title must be a Conventional Commit (feat: …, fix: …): it becomes the squash commit
-that release-please reads.
+The PR title must be a Conventional Commit (feat: …, fix: …): it becomes the squash commit.
 -->
 
 ## What

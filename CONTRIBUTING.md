@@ -17,9 +17,9 @@ Thanks for helping! A few rules keep UltimateCalendar free, reliable and easy to
 ## Workflow
 
 1. One task or fix per branch (`feat/…`, `fix/…`), started from `master`. `master` is protected: changes only land through pull requests with green checks, squash-merged.
-2. The **PR title** must be a [Conventional Commit](https://www.conventionalcommits.org) (`feat: …`, `fix: …`): it becomes the commit that release-please uses for the version and the changelog.
+2. The **PR title** must be a [Conventional Commit](https://www.conventionalcommits.org) (`feat: …`, `fix: …`): it becomes the squash commit.
 3. `./gradlew check` must pass before you push: unit tests, detekt, ktlint, Android Lint (warnings are errors), Kover, dependency verification and the forbidden-dependency check.
-4. Do not edit `CHANGELOG.md`, `appVersion` or `.release-please-manifest.json`: see RELEASING.md.
+4. `appVersion` and `CHANGELOG.md` change only in a release PR: see RELEASING.md.
 
 ## Code
 

@@ -62,15 +62,15 @@ Lee siempre `SPEC.md` (qué construir) y `PLAN.md` (en qué orden) antes de empe
 ## Flujo de trabajo
 - Trabaja **una tarea de `PLAN.md` cada vez**, en una rama `feat/<tarea>` (o `fix/…`) desde `master`.
 - Empieza en modo plan: propón el enfoque y espera confirmación antes de tocar código.
-- Commits siguiendo **Conventional Commits** (`feat:`, `fix:`, `perf:`, `test:`, `refactor:`, `docs:`, `build:`, `ci:`, `chore:`), pequeños y atómicos. **El título de la PR también**, porque se fusiona con squash y release-please calcula la versión y el CHANGELOG a partir de él: `feat` sube minor, `fix`/`perf` suben patch, `!` o `BREAKING CHANGE:` sube major.
+- Commits siguiendo **Conventional Commits** (`feat:`, `fix:`, `perf:`, `test:`, `refactor:`, `docs:`, `build:`, `ci:`, `chore:`), pequeños y atómicos. **El título de la PR también**, porque se fusiona con squash y ese es el commit que queda en `master`.
 - No hagas `git push --force`, no reescribas historia compartida, no hagas commit ni push a `master`. Los hooks de `.claude/` lo bloquean; no intentes saltártelos.
 - Abre la PR con `gh pr create` rellenando la plantilla; espera la CI y arregla lo que falle. Cuando todos los checks pasen, fusiona tú con `gh pr merge --squash` (decisión del usuario, 2026-10-06); si algo falla, no fusiones.
 - Al terminar cada tarea: resume en 2-3 líneas qué se hizo y qué queda; marca la tarea en `PLAN.md` (con `*Resultado:*` si algo cambió respecto al plan) y anota decisiones en `SPEC.md` §9 con fecha y tarea.
 - Si la spec es ambigua o falta información: **pregunta**, no inventes.
 
 ## Versiones y releases
-- **No toques** `appVersion` en `gradle.properties`, `CHANGELOG.md` ni `.release-please-manifest.json`: los gestiona release-please.
-- En la PR de release que abre release-please, añade los textos de tienda `fastlane/metadata/android/{en-US,es-ES}/changelogs/<versionCode>.txt` (≤ 500 caracteres); la CI no deja fusionarla sin ellos. Ver `RELEASING.md`.
+- Las releases son manuales, como en UltimateDeck (ver `RELEASING.md`): `appVersion` y `CHANGELOG.md` solo cambian en una PR de release (`chore: release X.Y.Z`, rama `release/X.Y.Z`), que además lleva los textos de tienda `fastlane/metadata/android/{en-US,es-ES}/changelogs/<versionCode>.txt` (≤ 500 caracteres; la CI los exige en esas ramas). En el resto de PRs no se toca `appVersion`.
+- El tag `vX.Y.Z` lo crea y sube el autor; el workflow `Release` construye y publica el APK firmado.
 
 ## Convenciones de código
 - Un archivo por clase pública relevante; paquetes por feature dentro de cada capa.
