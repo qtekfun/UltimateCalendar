@@ -1,0 +1,16 @@
+# SPDX-FileCopyrightText: 2026 UltimateCalendar contributors
+# SPDX-License-Identifier: GPL-3.0-or-later
+*.iml
+.gradle/
+/local.properties
+/.idea/
+.DS_Store
+build/
+/captures
+.externalNativeBuild/
+.cxx/
+*.jks
+*.keystore
+__pycache__/
+*.pyc
+.claude/settings.local.json
