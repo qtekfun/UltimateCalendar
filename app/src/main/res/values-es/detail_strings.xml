@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 UltimateCalendar contributors
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<resources>
+    <string name="detail_edit">Editar evento</string>
+    <string name="detail_delete">Eliminar evento</string>
+    <string name="detail_share">Compartir evento</string>
+    <string name="detail_no_title">(Sin título)</string>
+    <string name="detail_loading">Cargando evento</string>
+    <string name="detail_not_found">Este evento ya no existe.</string>
+    <string name="detail_load_failed">No se pudo leer el evento.</string>
+    <string name="detail_retry">Reintentar</string>
+    <string name="detail_deleted">Evento eliminado</string>
+    <string name="detail_all_day">Todo el día</string>
+    <string name="detail_range">%1$s – %2$s</string>
+    <string name="detail_zone_line">%1$s: %2$s</string>
+    <string name="detail_series_note">Una ocurrencia de un evento repetido</string>
+    <string name="detail_open_map">Abrir en mapas</string>
+    <string name="detail_open_link">Abrir enlace</string>
+    <string name="detail_join">Unirse a la videollamada</string>
+    <string name="detail_cannot_open">Ninguna app puede abrir esto.</string>
+    <string name="detail_calendar_line">%1$s (%2$s)</string>
+    <string name="detail_reminder_email">%1$s, por correo</string>
+    <string name="detail_reminder_sms">%1$s, por mensaje de texto</string>
+    <string name="detail_reminder_all_day_same_day">El mismo día, a las %1$s</string>
+    <plurals name="detail_reminder_all_day">
+        <item quantity="one">%1$d día antes, a las %2$s</item>
+        <item quantity="many">%1$d de días antes, a las %2$s</item>
+        <item quantity="other">%1$d días antes, a las %2$s</item>
+    </plurals>
+    <string name="detail_description">Descripción</string>
+    <string name="detail_attendees">Asistentes (%1$d)</string>
+    <string name="detail_organizer">Organizador</string>
+    <string name="detail_you">Tú</string>
+    <string name="detail_group_accepted">Han aceptado (%1$d)</string>
+    <string name="detail_group_maybe">Quizá (%1$d)</string>
+    <string name="detail_group_declined">Han rechazado (%1$d)</string>
+    <string name="detail_group_no_answer">Sin responder (%1$d)</string>
+    <string name="detail_status_accepted">Aceptado</string>
+    <string name="detail_status_maybe">Quizá</string>
+    <string name="detail_status_declined">Rechazado</string>
+    <string name="detail_status_no_answer">Sin responder</string>
+    <string name="detail_attendee_description">%1$s, %2$s, %3$s</string>
+    <string name="detail_going">¿Vas a ir?</string>
+    <string name="detail_accept">Aceptar</string>
+    <string name="detail_maybe">Quizá</string>
+    <string name="detail_decline">Rechazar</string>
+    <string name="detail_sending_answer">Enviando tu respuesta</string>
+    <string name="detail_selected">Seleccionado</string>
+    <string name="detail_respond_failed">No se pudo enviar tu respuesta. No se ha cambiado.</string>
+    <string name="detail_delete_failed">No se pudo eliminar el evento.</string>
+    <string name="detail_undo_failed">No se pudo recuperar el evento.</string>
+    <string name="detail_error_read_only">Este calendario no permite ese cambio.</string>
+    <string name="detail_error_permission">Falta el permiso de calendario.</string>
+    <string name="detail_delete_title">¿Eliminar este evento?</string>
+    <string name="detail_delete_text">Se quitará de su calendario.</string>
+    <string name="detail_delete_attendees_text">Se quitará de su calendario y se avisará a los invitados.</string>
+    <string name="detail_delete_series_title">Eliminar un evento repetido</string>
+    <string name="detail_scope_this">Solo este evento</string>
+    <string name="detail_scope_following">Este y los siguientes</string>
+    <string name="detail_scope_all">Todos los eventos</string>
+    <string name="detail_delete_confirm">Eliminar</string>
+    <string name="detail_cancel">Cancelar</string>
+    <string name="detail_share_chooser">Compartir evento</string>
+
+    <plurals name="repeat_daily">
+        <item quantity="one">Diariamente</item>
+        <item quantity="many">Cada %d de días</item>
+        <item quantity="other">Cada %d días</item>
+    </plurals>
+    <plurals name="repeat_weekly">
+        <item quantity="one">Semanalmente</item>
+        <item quantity="many">Cada %d de semanas</item>
+        <item quantity="other">Cada %d semanas</item>
+    </plurals>
+    <plurals name="repeat_monthly">
+        <item quantity="one">Mensualmente</item>
+        <item quantity="many">Cada %d de meses</item>
+        <item quantity="other">Cada %d meses</item>
+    </plurals>
+    <plurals name="repeat_yearly">
+        <item quantity="one">Anualmente</item>
+        <item quantity="many">Cada %d de años</item>
+        <item quantity="other">Cada %d años</item>
+    </plurals>
+    <string name="repeat_every_weekday">Todos los días laborables</string>
+    <string name="repeat_on_weekdays">los %1$s</string>
+    <string name="repeat_on_month_days">el día %1$s</string>
+    <string name="repeat_on_last_day">el último día</string>
+    <string name="repeat_last">último</string>
+    <string name="repeat_on_ordinal">el %1$s %2$s</string>
+    <string name="repeat_ordinal_1">primer</string>
+    <string name="repeat_ordinal_2">segundo</string>
+    <string name="repeat_ordinal_3">tercer</string>
+    <string name="repeat_ordinal_4">cuarto</string>
+    <string name="repeat_ordinal_5">quinto</string>
+    <string name="repeat_ordinal_last">último</string>
+    <string name="repeat_on_date">el %2$d de %1$s</string>
+    <string name="repeat_in_months">en %1$s</string>
+    <string name="repeat_ordinal_of_month">el %1$s %2$s de %3$s</string>
+    <plurals name="repeat_times">
+        <item quantity="one">una vez</item>
+        <item quantity="many">%d de veces</item>
+        <item quantity="other">%d veces</item>
+    </plurals>
+    <string name="repeat_until">hasta el %1$s</string>
+    <string name="repeat_custom">Repetición personalizada</string>
+    <string name="repeat_and">%1$s y %2$s</string>
+</resources>

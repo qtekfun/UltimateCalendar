@@ -22,10 +22,18 @@ object ReminderLinks {
         "whereby.com"
     )
 
+    /** A web link found in a text: where it is ([start] inclusive, [end] exclusive) and its [url]. */
+    data class Link(val start: Int, val end: Int, val url: String)
+
+    /** The web links of [text], in order, without the punctuation that ends a sentence. */
+    fun links(text: String?): List<Link> = URL.findAll(text.orEmpty()).map { match ->
+        val url = match.value.trimEnd { c -> c in TRAILING }
+        Link(match.range.first, match.range.first + url.length, url)
+    }.toList()
+
     /** The first video-call link in [texts], in order, or null. */
     fun videoCall(vararg texts: String?): String? = texts.asSequence()
-        .filterNotNull()
-        .flatMap { text -> URL.findAll(text).map { it.value.trimEnd { c -> c in TRAILING } } }
+        .flatMap { text -> links(text).asSequence().map { it.url } }
         .firstOrNull(::isCall)
 
     private fun isCall(url: String): Boolean {

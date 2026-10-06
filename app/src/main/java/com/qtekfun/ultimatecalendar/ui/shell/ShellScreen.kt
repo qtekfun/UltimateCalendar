@@ -161,7 +161,12 @@ fun ShellContent(
 }
 
 /** Views that move through their own days: the shell only fades when they are chosen. */
-private val PAGED_VIEWS = setOf(CalendarView.DAY, CalendarView.THREE_DAYS, CalendarView.AGENDA)
+private val PAGED_VIEWS = setOf(
+    CalendarView.DAY,
+    CalendarView.THREE_DAYS,
+    CalendarView.WEEK,
+    CalendarView.AGENDA
+)
 
 private const val BACK_SLIDE_PX = 48f
 private const val BACK_FADE = 0.3f

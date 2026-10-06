@@ -8,6 +8,8 @@ import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.saveable.rememberSaveable
 import com.qtekfun.ultimatecalendar.R
+import com.qtekfun.ultimatecalendar.domain.detail.EventRef
+import com.qtekfun.ultimatecalendar.ui.detail.EventDetailScreen
 import com.qtekfun.ultimatecalendar.ui.settings.SettingsScreen
 import com.qtekfun.ultimatecalendar.ui.shell.ShellActions
 import com.qtekfun.ultimatecalendar.ui.shell.ShellScreen
@@ -35,8 +37,22 @@ fun AppNavigation() {
             SettingsScreen(onBack = { nav.settings = false })
         }
 
-        // T19: the event detail replaces this placeholder.
-        nav.eventDetail -> Placeholder(R.string.timegrid_event_detail) { nav.eventDetail = false }
+        nav.eventDetail -> {
+            val ref = nav.detailRef
+            if (ref == null) {
+                nav.eventDetail = false
+            } else {
+                // T20: the editor replaces this placeholder; it will take the occurrence.
+                EventDetailScreen(
+                    ref = ref,
+                    onBack = { nav.eventDetail = false },
+                    onEdit = {
+                        nav.eventDetail = false
+                        nav.newEvent = true
+                    }
+                )
+            }
+        }
 
         // Help: a later task fills this in.
         nav.help -> Placeholder(R.string.shell_help) { nav.help = false }
@@ -48,7 +64,10 @@ fun AppNavigation() {
                 onInvitations = { nav.invitations = true },
                 onSettings = { nav.settings = true },
                 onHelp = { nav.help = true },
-                onOpenEvent = { nav.eventDetail = true },
+                onOpenEvent = {
+                    nav.detailRef = EventRef.of(it)
+                    nav.eventDetail = true
+                },
                 // T20: the editor will take the tapped time; for now it opens the same placeholder.
                 onCreateAt = { nav.newEvent = true }
             )
