@@ -12,6 +12,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 
 /** Builds the form for a new event, or for an existing one. */
@@ -45,8 +46,11 @@ object EventForms {
         at: LocalDateTime? = null,
         allDay: Boolean = false
     ): EventForm {
-        val start = existing(roundUpToSlot(at ?: LocalDateTime.now(clock.withZone(zone))), zone)
-        val end = existing(start.atZone(zone).plus(defaults.duration).toLocalDateTime(), zone)
+        val start = ZonedDateTime.of(
+            roundUpToSlot(at ?: LocalDateTime.now(clock.withZone(zone))),
+            zone
+        )
+        val end = start.plus(defaults.duration)
         return EventForm(
             allDay = allDay,
             start = start,
@@ -72,11 +76,10 @@ object EventForms {
     ): EventForm {
         val zone = (occurrence as? EventTime.Timed)?.zone ?: deviceZone
         val (start, end) = when (occurrence) {
-            is EventTime.Timed -> occurrence.start.atZone(zone).toLocalDateTime() to
-                occurrence.end.atZone(zone).toLocalDateTime()
+            is EventTime.Timed -> occurrence.start.atZone(zone) to occurrence.end.atZone(zone)
 
-            is EventTime.AllDay -> occurrence.startDate.atTime(DEFAULT_TIME) to
-                occurrence.lastDate.atTime(DEFAULT_TIME)
+            is EventTime.AllDay -> occurrence.startDate.atTime(DEFAULT_TIME).atZone(zone) to
+                occurrence.lastDate.atTime(DEFAULT_TIME).atZone(zone)
         }
         val anchor: LocalDate = start.toLocalDate()
         return EventForm(

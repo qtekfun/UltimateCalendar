@@ -12,8 +12,8 @@ import com.qtekfun.ultimatecalendar.domain.recurrence.RepeatEnd
 import com.qtekfun.ultimatecalendar.domain.settings.SettingsRules
 import java.time.Duration
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 
 /** Why a form cannot be saved yet. */
@@ -47,16 +47,18 @@ data class EditorDefaults(
 /**
  * What the editor screen is editing (RF-05), as plain values the user typed or picked.
  *
- * [start] and [end] are wall-clock times in [zone], whatever the event is: an all-day event only
- * uses their dates, and [end]'s date is the last day shown (inclusive), as Google Calendar
- * shows it. Keeping the times while an event is all-day lets the switch go back without losing
- * them. Every change is a function that returns a new form, so the screen only draws.
+ * [start] and [end] are times in [zone], whatever the event is: an all-day event only uses
+ * their dates, and [end]'s date is the last day shown (inclusive), as Google Calendar shows it.
+ * Keeping the times while an event is all-day lets the switch go back without losing them. They
+ * are zoned, not bare wall-clock times, so that the second pass of an hour that clocks repeat
+ * stays the second pass. Every change is a function that returns a new form, so the screen only
+ * draws.
  */
 data class EventForm(
     val title: String = "",
     val allDay: Boolean = false,
-    val start: LocalDateTime,
-    val end: LocalDateTime,
+    val start: ZonedDateTime,
+    val end: ZonedDateTime,
     val zone: ZoneId,
     val location: String = "",
     val description: String = "",
@@ -86,14 +88,11 @@ data class EventForm(
 
     val isValid: Boolean get() = issues.isEmpty()
 
-    /** The moment [wall] is in [zone]; a time skipped by a clock change moves forward. */
-    fun instantOf(wall: LocalDateTime) = wall.atZone(zone).toInstant()
-
     /** How long the event lasts, or null when it ends before it starts. */
     fun length(): Duration? = if (allDay) {
         Duration.ofDays(ChronoUnit.DAYS.between(startDate, endDate)).takeIf { !it.isNegative }
     } else {
-        Duration.between(instantOf(start), instantOf(end)).takeIf { !it.isNegative }
+        Duration.between(start, end).takeIf { !it.isNegative }
     }
 
     val startDate: LocalDate get() = start.toLocalDate()
@@ -105,7 +104,7 @@ data class EventForm(
     fun toEventTime(): EventTime? = when {
         endsBeforeStart() -> null
         allDay -> EventTime.AllDay(startDate, endDate.plusDays(1))
-        else -> EventTime.Timed(instantOf(start), instantOf(end), zone)
+        else -> EventTime.Timed(start.toInstant(), end.toInstant(), zone)
     }
 
     /** The rule to store: all-day events write the end date as a date, timed ones as UTC. */

@@ -23,7 +23,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 /**
  * An in-memory [CalendarSource] for unit tests. It must behave like the real provider as the
  * `CalendarSourceContract` defines it; when they differ, the fake is wrong. It expands daily and
- * weekly repetitions with COUNT (the contract needs nothing more) and rejects other rules.
+ * weekly repetitions that end (COUNT or UNTIL) and rejects other rules.
  */
 class FakeCalendarSource(calendars: List<CalendarInfo> = emptyList()) : CalendarSource {
     private val calendarsById = calendars.associateBy { it.id }.toMutableMap()
@@ -146,7 +146,7 @@ class FakeCalendarSource(calendars: List<CalendarInfo> = emptyList()) : Calendar
     private fun invalidRule(rrule: String?): CalendarError? {
         val rule = rrule?.let { RecurrenceRules.parse(it) }
         val usable = rule != null && rule.frequency in FakeOccurrences.supported &&
-            rule.count != null && rule.until == null
+            (rule.count != null || rule.until != null)
         return if (rrule == null || usable) null else CalendarError.Invalid("rule")
     }
 

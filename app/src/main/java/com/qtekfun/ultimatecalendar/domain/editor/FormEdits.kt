@@ -7,55 +7,50 @@ import com.qtekfun.ultimatecalendar.domain.model.CalendarInfo
 import com.qtekfun.ultimatecalendar.domain.model.Reminder
 import com.qtekfun.ultimatecalendar.domain.settings.SettingsRules
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 
 private const val MINUTES_PER_DAY = 24 * 60
 
 /**
- * A wall-clock time that exists in [zone]: one skipped by a clock change moves forward by the
- * gap, as the platform does, so the form never shows a time the event cannot have.
- */
-internal fun existing(wall: LocalDateTime, zone: ZoneId): LocalDateTime =
-    wall.atZone(zone).toLocalDateTime()
-
-/**
- * Moves the start to [newStart] and the end with it, so the event keeps its length (as Google
+ * Moves the start to [moved] and the end with it, so the event keeps its length (as Google
  * Calendar does): timed events keep their elapsed time, which a clock change in between does
  * not alter; all-day events keep their number of days. A form that ends before it starts keeps
  * its end, so the user can mend it by moving the start.
  */
-private fun EventForm.moveStart(newStart: LocalDateTime): EventForm {
-    val moved = existing(newStart, zone)
+private fun EventForm.moveStart(moved: ZonedDateTime): EventForm {
     val length = length() ?: return copy(start = moved)
     val newEnd = if (allDay) {
         val days = ChronoUnit.DAYS.between(startDate, endDate)
-        moved.toLocalDate().plusDays(days).atTime(end.toLocalTime())
+        end.with(moved.toLocalDate().plusDays(days))
     } else {
-        instantOf(moved).plus(length).atZone(zone).toLocalDateTime()
+        moved.plus(length)
     }
     return copy(start = moved, end = newEnd)
 }
 
-fun EventForm.withStartDate(date: LocalDate): EventForm =
-    moveStart(date.atTime(start.toLocalTime()))
+/**
+ * Changing a date or a time keeps the other half and the offset the time had, so the second
+ * pass of an hour that the clocks repeat stays the second pass; a time that a clock change
+ * skips moves forward by the gap, so the form never shows a time the event cannot have.
+ */
+fun EventForm.withStartDate(date: LocalDate): EventForm = moveStart(start.with(date))
 
-fun EventForm.withStartTime(time: LocalTime): EventForm = moveStart(startDate.atTime(time))
+fun EventForm.withStartTime(time: LocalTime): EventForm = moveStart(start.with(time))
 
 /** The end is set as given; an end before the start is reported by [EventForm.issues]. */
-fun EventForm.withEndDate(date: LocalDate): EventForm =
-    copy(end = existing(date.atTime(end.toLocalTime()), zone))
+fun EventForm.withEndDate(date: LocalDate): EventForm = copy(end = end.with(date))
 
-fun EventForm.withEndTime(time: LocalTime): EventForm =
-    copy(end = existing(endDate.atTime(time), zone))
+fun EventForm.withEndTime(time: LocalTime): EventForm = copy(end = end.with(time))
 
 /**
  * Switches between a timed and an all-day event. Going all-day, an event that ends at midnight
  * ends the day before; going back, an event that would end at or before its start gets the
- * default length. Reminders that are still the defaults become the other kind's defaults; others go to
- * whole days (a reminder "30 minutes before" a day has no meaning) or stay as they are.
+ * default length. Reminders that are still the defaults become the other kind's defaults;
+ * others go to whole days (a reminder "30 minutes before" a day has no meaning) or stay as
+ * they are.
  */
 fun EventForm.withAllDay(value: Boolean): EventForm {
     if (value == allDay) return this
@@ -63,13 +58,11 @@ fun EventForm.withAllDay(value: Boolean): EventForm {
     return if (value) {
         val midnight = end.toLocalTime() == LocalTime.MIDNIGHT && endDate.isAfter(startDate)
         val last = if (midnight) endDate.minusDays(1) else endDate
-        copy(allDay = true, end = last.atTime(end.toLocalTime()), reminders = reminders)
+        copy(allDay = true, end = end.with(last), reminders = reminders)
     } else {
         val timed = copy(allDay = false, reminders = reminders)
         if (timed.length()?.isZero != false) {
-            timed.copy(
-                end = timed.instantOf(start).plus(defaults.duration).atZone(zone).toLocalDateTime()
-            )
+            timed.copy(end = timed.start.plus(defaults.duration))
         } else {
             timed
         }
@@ -92,8 +85,8 @@ private fun wholeDays(minutes: Int): Int = (minutes + MINUTES_PER_DAY - 1) / MIN
  */
 fun EventForm.withZone(newZone: ZoneId): EventForm = copy(
     zone = newZone,
-    start = existing(start, newZone),
-    end = existing(end, newZone)
+    start = ZonedDateTime.of(start.toLocalDateTime(), newZone),
+    end = ZonedDateTime.of(end.toLocalDateTime(), newZone)
 )
 
 /** Moves the event to [calendar]; a color it cannot keep there goes back to the calendar's. */

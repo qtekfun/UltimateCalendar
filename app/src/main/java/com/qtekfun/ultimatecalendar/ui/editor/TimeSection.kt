@@ -103,7 +103,7 @@ internal fun TimeSection(
         Picker.ZONE -> ZonePicker(
             current = form.zone,
             device = device,
-            at = form.instantOf(form.start),
+            at = form.start.toInstant(),
             onPick = { zone -> onChange { it.withZone(zone) } },
             onDismiss = { picker = null }
         )
