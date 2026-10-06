@@ -12,12 +12,15 @@ import android.net.Uri
 import android.os.ParcelFileDescriptor
 import android.provider.CalendarContract
 import android.provider.CalendarContract.Calendars
+import android.provider.CalendarContract.Events
 import androidx.test.platform.app.InstrumentationRegistry
 import com.qtekfun.ultimatecalendar.data.source.provider.ContentResolverGateway
 import com.qtekfun.ultimatecalendar.domain.model.CalendarAccess
 import com.qtekfun.ultimatecalendar.domain.model.CalendarAccount
 import com.qtekfun.ultimatecalendar.domain.model.CalendarId
 import com.qtekfun.ultimatecalendar.domain.model.CalendarInfo
+import com.qtekfun.ultimatecalendar.domain.model.EventDraft
+import com.qtekfun.ultimatecalendar.domain.model.EventId
 import com.qtekfun.ultimatecalendar.domain.model.EventInstance
 import com.qtekfun.ultimatecalendar.domain.model.TimeRange
 import com.qtekfun.ultimatecalendar.domain.result.CalendarResult
@@ -48,7 +51,7 @@ class ProviderCalendarSourceContractTest(private val scenario: Scenario) {
         val readOnly = createCalendar("Holidays", Calendars.CAL_ACCESS_READ, CalendarAccess.READ)
         val source = ProviderCalendarSource(ContentResolverGateway(context), Dispatchers.IO)
         underTest = SourceUnderTest(
-            ScopedSource(source, setOf(writable.id, readOnly.id)),
+            ScopedSource(source, setOf(writable.id, readOnly.id), ::markAsSynced),
             writable,
             readOnly
         )
@@ -115,11 +118,27 @@ class ProviderCalendarSourceContractTest(private val scenario: Scenario) {
         .appendQueryParameter(Calendars.ACCOUNT_TYPE, CalendarContract.ACCOUNT_TYPE_LOCAL)
         .build()
 
+    /**
+     * Gives an event the `_SYNC_ID` that every event of a synced account (Google, DAVx5) has. The
+     * provider matches the exceptions of a series to it: without one (only possible in a LOCAL
+     * account) a series loses all its instances as soon as one occurrence is changed or cancelled
+     * (seen on API 26 and 36). Test setup only: the app never writes sync columns.
+     */
+    private fun markAsSynced(id: EventId) {
+        val uri = ContentUris.withAppendedId(Events.CONTENT_URI, id.value)
+        val values = ContentValues().apply { put(Events._SYNC_ID, "contract-${id.value}") }
+        context.contentResolver.update(asSyncAdapter(uri), values, null, null)
+    }
+
     /** Keeps "all calendars" to the two test calendars, so other calendars cannot disturb a scenario. */
     private class ScopedSource(
         private val inner: CalendarSource,
-        private val ids: Set<CalendarId>
+        private val ids: Set<CalendarId>,
+        private val onCreated: (EventId) -> Unit
     ) : CalendarSource by inner {
+        override suspend fun create(draft: EventDraft): CalendarResult<EventId> =
+            inner.create(draft).also { result -> result.getOrNull()?.let(onCreated) }
+
         override suspend fun instances(
             range: TimeRange,
             calendarIds: Set<CalendarId>?
