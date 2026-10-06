@@ -85,7 +85,8 @@ class InvitationDetector(private val clock: Clock) {
 
     private fun hasEnded(rrule: String): Boolean {
         val until = RecurrenceRules.parse(rrule)?.until
-        return until != null && until.isBefore(clock.instant().atZone(clock.zone).toLocalDate())
+        return until != null &&
+            until.lastDay(clock.zone).isBefore(clock.instant().atZone(clock.zone).toLocalDate())
     }
 
     private fun hasMoved(old: Invitation, current: Invitation): Boolean =
