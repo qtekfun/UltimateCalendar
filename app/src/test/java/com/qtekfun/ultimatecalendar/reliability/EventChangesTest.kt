@@ -186,7 +186,9 @@ class EventChangesTest {
                         moved.toInstant(),
                         moved.toInstant().plusSeconds(900),
                         zone
-                    )
+                    ),
+                    // The editor sends the occurrence with all its fields, reminders included.
+                    reminders = listOf(Reminder(15))
                 )
             )
 

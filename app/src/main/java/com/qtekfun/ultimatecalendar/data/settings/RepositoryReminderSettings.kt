@@ -27,5 +27,7 @@ internal fun AppSettings.toReminderSettings() = ReminderSettings(
     missedWindowHours = missedWindowHours,
     alarmClock = alarmClock,
     robustMode = robustMode,
-    reRemind = reRemind
+    reRemind = reRemind,
+    defaultReminders = defaultReminders,
+    defaultAllDayReminders = defaultAllDayReminders
 )

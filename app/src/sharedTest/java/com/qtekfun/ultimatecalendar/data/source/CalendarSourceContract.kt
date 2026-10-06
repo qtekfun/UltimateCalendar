@@ -9,6 +9,7 @@ import com.qtekfun.ultimatecalendar.domain.model.CalendarInfo
 import com.qtekfun.ultimatecalendar.domain.model.EventDraft
 import com.qtekfun.ultimatecalendar.domain.model.EventTime
 import com.qtekfun.ultimatecalendar.domain.model.Reminder
+import com.qtekfun.ultimatecalendar.domain.model.ReminderMethod
 import com.qtekfun.ultimatecalendar.domain.model.TimeRange
 import com.qtekfun.ultimatecalendar.domain.result.CalendarError
 import com.qtekfun.ultimatecalendar.domain.result.CalendarResult
@@ -323,6 +324,118 @@ object CalendarSourceContract {
             ).value()
             expectEquals(emptyList(), source.titlesFor("moved"), "changed occurrence alone")
             expectEquals(listOf("Stand"), source.titlesFor("stand"), "the series")
+        },
+        Scenario("instances with reminders carry the reminders and notes of their event") {
+            val dates = EventTime.AllDay(LocalDate.of(2026, 10, 7), LocalDate.of(2026, 10, 8))
+            source.create(
+                draft("Call").copy(
+                    location = "Room 1",
+                    description = "https://meet.example.com/abc",
+                    reminders = listOf(Reminder(10), Reminder(60, ReminderMethod.EMAIL))
+                )
+            ).value()
+            source.create(draft("Holiday").copy(time = dates, reminders = listOf(Reminder(0))))
+                .value()
+            source.create(draft("Plain", noon.plusSeconds(2 * HOUR))).value()
+            val found = source.instancesWithReminders(month).value().associateBy {
+                it.instance.title
+            }
+            expectEquals(
+                setOf(Reminder(10), Reminder(60, ReminderMethod.EMAIL)),
+                found.getValue("Call").reminders.toSet(),
+                "reminders with their methods"
+            )
+            expectEquals(
+                "https://meet.example.com/abc",
+                found.getValue("Call").description,
+                "notes"
+            )
+            expectEquals("Room 1", found.getValue("Call").instance.location, "location")
+            expect(!found.getValue("Call").usesDefaults, "no defaults asked for")
+            expectEquals(dates, found.getValue("Holiday").instance.time, "all-day dates")
+            expectEquals(
+                listOf(Reminder(0)),
+                found.getValue("Holiday").reminders,
+                "all-day reminder"
+            )
+            expectEquals(emptyList(), found.getValue("Plain").reminders, "no reminders")
+            expectEquals(null, found.getValue("Plain").description, "no notes")
+        },
+        Scenario("instances with reminders are the same occurrences as instances") {
+            val series = source.create(draft("Series", rrule = "FREQ=DAILY;COUNT=4")).value()
+            source.cancelInstance(series, noon.plusSeconds(DAY)).value()
+            source.create(draft("Later", noon.plusSeconds(3 * HOUR))).value()
+            source.create(draft("Next month", noon.plusSeconds(40 * DAY))).value()
+            source.delete(source.create(draft("Gone")).value()).value()
+            source.create(draft("Overnight", Instant.parse("2026-10-05T23:30:00Z"))).value()
+            for (range in listOf(day, month)) {
+                expectEquals(
+                    source.instances(range).value(),
+                    source.instancesWithReminders(range).value().map { it.instance },
+                    "same occurrences in the range"
+                )
+            }
+            expectEquals(
+                source.instances(month, setOf(readOnly.id)).value(),
+                source.instancesWithReminders(month, setOf(readOnly.id)).value()
+                    .map { it.instance },
+                "same occurrences in another calendar"
+            )
+            expectEquals(
+                0,
+                source.instancesWithReminders(month, emptySet()).value().size,
+                "no calendars"
+            )
+        },
+        Scenario("the reminders follow an update, and every occurrence of a series has them") {
+            val id = source.create(
+                draft(
+                    "Standup",
+                    rrule = "FREQ=DAILY;COUNT=3"
+                ).copy(reminders = listOf(Reminder(15)))
+            ).value()
+            val all = source.instancesWithReminders(month).value()
+            expectEquals(3, all.size, "occurrences")
+            expect(all.all { it.reminders == listOf(Reminder(15)) }, "the same reminder in each")
+            source.update(source.event(id).value().copy(reminders = listOf(Reminder(5))))
+                .value()
+            expect(
+                source.instancesWithReminders(month).value()
+                    .all { it.reminders == listOf(Reminder(5)) },
+                "the new reminder in each"
+            )
+            source.update(source.event(id).value().copy(reminders = emptyList())).value()
+            expect(
+                source.instancesWithReminders(month).value().all { it.reminders.isEmpty() },
+                "no reminders left"
+            )
+        },
+        Scenario("a changed occurrence is read with the reminders it was changed with") {
+            val id = source.create(
+                draft(rrule = "FREQ=DAILY;COUNT=3").copy(reminders = listOf(Reminder(15)))
+            ).value()
+            val second = noon.plusSeconds(DAY)
+            // The provider may also copy the series' reminders into a changed occurrence, so the
+            // scenario only needs the ones it asked for to be there.
+            source.editInstance(
+                id,
+                second,
+                draft("Moved", second.plusSeconds(HOUR)).copy(reminders = listOf(Reminder(5)))
+            ).value()
+            val found = source.instancesWithReminders(month).value()
+            expectEquals(
+                listOf("Lunch", "Moved", "Lunch"),
+                found.map { it.instance.title },
+                "titles"
+            )
+            expectEquals(
+                listOf(noon, second.plusSeconds(HOUR), noon.plusSeconds(2 * DAY)),
+                found.map { it.instance.time.startIn(ZoneOffset.UTC) },
+                "starts"
+            )
+            expectEquals(setOf(Reminder(15)), found[0].reminders.toSet(), "first keeps its own")
+            expect(Reminder(5) in found[1].reminders, "the changed one has the new reminder")
+            expectEquals(setOf(Reminder(15)), found[2].reminders.toSet(), "last keeps its own")
         },
         Scenario("changes are announced") {
             coroutineScope {

@@ -11,6 +11,7 @@ import com.qtekfun.ultimatecalendar.domain.model.EventDraft
 import com.qtekfun.ultimatecalendar.domain.model.EventId
 import com.qtekfun.ultimatecalendar.domain.model.EventInstance
 import com.qtekfun.ultimatecalendar.domain.model.TimeRange
+import com.qtekfun.ultimatecalendar.domain.reminders.EventReminders
 import com.qtekfun.ultimatecalendar.domain.result.CalendarResult
 import com.qtekfun.ultimatecalendar.domain.search.SearchableEvent
 import java.time.Instant
@@ -25,6 +26,7 @@ import kotlinx.coroutines.flow.Flow
  * Splitting a series ("this and following") is domain logic built from [update],
  * [editInstance], [cancelInstance] and [create]; a source only offers those primitives.
  */
+@Suppress("TooManyFunctions")
 interface CalendarSource {
     /** Emits whenever calendars, events or attendees may have changed (provider observer). */
     val changes: Flow<Unit>
@@ -40,6 +42,18 @@ interface CalendarSource {
         range: TimeRange,
         calendarIds: Set<CalendarId>? = null
     ): CalendarResult<List<EventInstance>>
+
+    /**
+     * The same occurrences as [instances], each with what a reminder needs, read in bulk (RF-08):
+     * the reminders of its event (every method; [EventReminders.usesDefaults] when it asks for
+     * the calendar's defaults, which are not in the list), its description and its instance.
+     * For a changed occurrence the reminders are its own. One query per table whatever the
+     * number of events, so it can be asked for a month of the whole phone at every change.
+     */
+    suspend fun instancesWithReminders(
+        range: TimeRange,
+        calendarIds: Set<CalendarId>? = null
+    ): CalendarResult<List<EventReminders>>
 
     /**
      * The events that match [query] (RF-09), each series once: every word of the query (see

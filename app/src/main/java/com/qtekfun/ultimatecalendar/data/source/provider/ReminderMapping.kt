@@ -35,6 +35,9 @@ internal object ReminderMapping {
         }?.let { Reminder(it, methodOf(row.int(Reminders.METHOD))) }
     }
 
+    /** Whether [row] is "the calendar's default" (`MINUTES_DEFAULT`), which [toReminder] skips. */
+    fun isDefault(row: ProviderRow): Boolean = (row.int(Reminders.MINUTES) ?: 0) < 0
+
     /** The row to insert for [reminder]; [eventId] is null when a batch back reference sets it. */
     fun toValues(reminder: Reminder, eventId: Long?): ProviderRow = buildMap {
         eventId?.let { put(Reminders.EVENT_ID, it) }

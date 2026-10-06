@@ -13,6 +13,7 @@ import com.qtekfun.ultimatecalendar.domain.model.EventInstance
 import com.qtekfun.ultimatecalendar.domain.model.EventTime
 import com.qtekfun.ultimatecalendar.domain.model.TimeRange
 import com.qtekfun.ultimatecalendar.domain.recurrence.RecurrenceRules
+import com.qtekfun.ultimatecalendar.domain.reminders.EventReminders
 import com.qtekfun.ultimatecalendar.domain.result.CalendarError
 import com.qtekfun.ultimatecalendar.domain.result.CalendarResult
 import com.qtekfun.ultimatecalendar.domain.search.SearchMatcher
@@ -32,10 +33,20 @@ class FakeCalendarSource(calendars: List<CalendarInfo> = emptyList()) : Calendar
     private val calendarsById = calendars.associateBy { it.id }.toMutableMap()
     private val events = linkedMapOf<EventId, Event>()
     private val exceptions = mutableMapOf<EventId, MutableMap<Instant, Exception>>()
+    private val withDefaults = mutableSetOf<EventId>()
     private var lastId = 0L
     private val changed = MutableSharedFlow<Unit>(extraBufferCapacity = CHANGES_BUFFER)
 
     override val changes: Flow<Unit> get() = changed
+
+    /**
+     * Makes [id] ask for "the calendar's default reminders", as an event of the provider does with
+     * `MINUTES_DEFAULT`, which no write of the API can produce.
+     */
+    fun useDefaultReminders(id: EventId) {
+        withDefaults += id
+        changed.tryEmit(Unit)
+    }
 
     fun addCalendar(calendar: CalendarInfo) {
         calendarsById[calendar.id] = calendar
@@ -47,13 +58,22 @@ class FakeCalendarSource(calendars: List<CalendarInfo> = emptyList()) : Calendar
     override suspend fun instances(
         range: TimeRange,
         calendarIds: Set<CalendarId>?
-    ): CalendarResult<List<EventInstance>> {
-        val found = events.values
-            .filter { calendarIds == null || it.calendarId in calendarIds }
-            .flatMap { instancesOf(it, range) }
-            .sortedBy { it.time.startIn(ZoneOffset.UTC) }
-        return CalendarResult.Success(found)
-    }
+    ): CalendarResult<List<EventInstance>> = CalendarResult.Success(
+        occurrences(range, calendarIds).map {
+            it.instance
+        }
+    )
+
+    override suspend fun instancesWithReminders(
+        range: TimeRange,
+        calendarIds: Set<CalendarId>?
+    ): CalendarResult<List<EventReminders>> =
+        CalendarResult.Success(occurrences(range, calendarIds))
+
+    private fun occurrences(range: TimeRange, calendarIds: Set<CalendarId>?) = events.values
+        .filter { calendarIds == null || it.calendarId in calendarIds }
+        .flatMap { instancesOf(it, range) }
+        .sortedBy { it.instance.time.startIn(ZoneOffset.UTC) }
 
     override suspend fun search(
         query: String,
@@ -167,7 +187,7 @@ class FakeCalendarSource(calendars: List<CalendarInfo> = emptyList()) : Calendar
         return if (rrule == null || usable) null else CalendarError.Invalid("rule")
     }
 
-    private fun instancesOf(event: Event, range: TimeRange): List<EventInstance> {
+    private fun instancesOf(event: Event, range: TimeRange): List<EventReminders> {
         val me = listOfNotNull(calendarsById.getValue(event.calendarId).ownerEmail)
         val self = event.attendees.firstOrNull { it.isOneOf(me) }?.status
         return FakeOccurrences.of(event, range.end).mapNotNull { occurrence ->
@@ -176,19 +196,26 @@ class FakeCalendarSource(calendars: List<CalendarInfo> = emptyList()) : Calendar
             if (exception == Exception.Cancelled) {
                 null
             } else {
-                EventInstance(
-                    eventId = event.id,
-                    calendarId = event.calendarId,
-                    title = edit?.title ?: event.title,
-                    time = edit?.time ?: occurrence.time,
-                    location = edit?.location ?: event.location,
-                    color = edit?.color ?: event.color,
-                    isRecurring = event.isRecurring,
-                    selfStatus = self,
-                    hasAttendees = event.attendees.isNotEmpty()
+                EventReminders(
+                    instance = EventInstance(
+                        eventId = event.id,
+                        calendarId = event.calendarId,
+                        title = edit?.title ?: event.title,
+                        time = edit?.time ?: occurrence.time,
+                        location = edit?.location ?: event.location,
+                        color = edit?.color ?: event.color,
+                        isRecurring = event.isRecurring,
+                        selfStatus = self,
+                        hasAttendees = event.attendees.isNotEmpty()
+                    ),
+                    // A changed occurrence is an event of its own in the provider: it has the
+                    // reminders and the notes it was changed with.
+                    reminders = edit?.reminders ?: event.reminders,
+                    description = (edit?.description ?: event.description)?.ifEmpty { null },
+                    usesDefaults = event.id in withDefaults
                 )
             }
-        }.filter { overlaps(it.time, range) }
+        }.filter { overlaps(it.instance.time, range) }
     }
 
     private fun overlaps(time: EventTime, range: TimeRange): Boolean {

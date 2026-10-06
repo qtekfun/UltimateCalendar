@@ -3,16 +3,14 @@
 
 package com.qtekfun.ultimatecalendar.reliability
 
+import com.qtekfun.ultimatecalendar.data.reminders.CalendarReminderEventSource
 import com.qtekfun.ultimatecalendar.data.source.FakeCalendarSource
 import com.qtekfun.ultimatecalendar.domain.model.CalendarId
 import com.qtekfun.ultimatecalendar.domain.model.EventDraft
 import com.qtekfun.ultimatecalendar.domain.model.EventId
 import com.qtekfun.ultimatecalendar.domain.model.EventTime
 import com.qtekfun.ultimatecalendar.domain.model.Reminder
-import com.qtekfun.ultimatecalendar.domain.model.TimeRange
-import com.qtekfun.ultimatecalendar.domain.reminders.EventReminders
 import com.qtekfun.ultimatecalendar.domain.reminders.PlannedReminder
-import com.qtekfun.ultimatecalendar.domain.reminders.ReminderEventSource
 import com.qtekfun.ultimatecalendar.domain.reminders.ShownReminder
 import com.qtekfun.ultimatecalendar.domain.reminders.SnoozeOption
 import com.qtekfun.ultimatecalendar.domain.reminders.Snoozes
@@ -42,8 +40,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 
@@ -132,15 +128,9 @@ class ReminderRig(
     private lateinit var coordinator: ReminderCoordinator
     private lateinit var heartbeat: ReminderHeartbeat
 
-    private val events = ReminderEventSource { from, to ->
-        source.changes.onStart { emit(Unit) }.map {
-            val range = TimeRange(from, to)
-            (source.instances(range) as CalendarResult.Success).value.map { instance ->
-                val event = (source.event(instance.eventId) as CalendarResult.Success).value
-                EventReminders(instance, event.reminders)
-            }
-        }
-    }
+    // The app's own source of reminders over the fake calendar source, without the debounce so
+    // that every change is planned as soon as it is made.
+    private val events = CalendarReminderEventSource(source, settings, debounceMs = 0)
 
     private val notifier = mockk<ReminderNotifier> {
         every { show(any(), any(), any()) } answers {

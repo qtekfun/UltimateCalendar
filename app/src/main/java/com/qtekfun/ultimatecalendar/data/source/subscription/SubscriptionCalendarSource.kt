@@ -22,6 +22,7 @@ import com.qtekfun.ultimatecalendar.domain.model.EventDraft
 import com.qtekfun.ultimatecalendar.domain.model.EventId
 import com.qtekfun.ultimatecalendar.domain.model.EventInstance
 import com.qtekfun.ultimatecalendar.domain.model.TimeRange
+import com.qtekfun.ultimatecalendar.domain.reminders.EventReminders
 import com.qtekfun.ultimatecalendar.domain.result.CalendarError
 import com.qtekfun.ultimatecalendar.domain.result.CalendarResult
 import com.qtekfun.ultimatecalendar.domain.search.SearchMatcher
@@ -77,6 +78,20 @@ class SubscriptionCalendarSource @Inject constructor(
                     .map(SubscriptionMapping::instance)
             }
             .sortedWith(compareBy({ it.time.startIn(ZoneOffset.UTC) }, { it.eventId.value }))
+    }
+
+    /** A subscription never reminds: its instances come without reminders. */
+    override suspend fun instancesWithReminders(
+        range: TimeRange,
+        calendarIds: Set<CalendarId>?
+    ): CalendarResult<List<EventReminders>> = when (val found = instances(range, calendarIds)) {
+        is CalendarResult.Success -> CalendarResult.Success(
+            found.value.map {
+                EventReminders(it, emptyList())
+            }
+        )
+
+        is CalendarResult.Failure -> found
     }
 
     override suspend fun search(

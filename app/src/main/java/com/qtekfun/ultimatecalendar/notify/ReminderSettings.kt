@@ -4,6 +4,7 @@
 package com.qtekfun.ultimatecalendar.notify
 
 import com.qtekfun.ultimatecalendar.domain.invitations.ReRemindOption
+import com.qtekfun.ultimatecalendar.domain.settings.SettingsRules
 import java.time.LocalTime
 
 /**
@@ -17,7 +18,10 @@ data class ReminderSettings(
     val alarmClock: Boolean = false,
     val robustMode: Boolean = false,
     /** When unanswered invitations remind again (T40); off by default. */
-    val reRemind: ReRemindOption = ReRemindOption.OFF
+    val reRemind: ReRemindOption = ReRemindOption.OFF,
+    /** What events that use "the calendar's default reminders" get (see `DefaultReminders`). */
+    val defaultReminders: List<Int> = SettingsRules.DEFAULT_REMINDERS,
+    val defaultAllDayReminders: List<Int> = SettingsRules.DEFAULT_ALL_DAY_REMINDERS
 ) {
     private companion object {
         const val DEFAULT_ALL_DAY_HOUR = 9

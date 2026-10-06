@@ -75,6 +75,8 @@ class UltimateCalendarApp :
         widgets.start(scope)
         registerActivityLifecycleCallbacks(
             OnActivityStarted {
+                // Calendar access may have just been granted: plan the reminders again.
+                reminders.refresh()
                 invitationChecks.onAppOpened()
                 caldavSync.onAppOpened()
                 scope.launch { widgets.refreshAll() }

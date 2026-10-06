@@ -13,7 +13,12 @@ import com.qtekfun.ultimatecalendar.domain.model.Reminder
 data class EventReminders(
     val instance: EventInstance,
     val reminders: List<Reminder>,
-    val description: String? = null
+    val description: String? = null,
+    /**
+     * The event asks for "the calendar's default reminders" (`Reminders.MINUTES_DEFAULT`), which
+     * only the source knows to be so; [DefaultReminders.resolve] turns them into real ones.
+     */
+    val usesDefaults: Boolean = false
 ) {
     /** The video call of the event, found in its location or description. */
     val joinUrl: String? get() = ReminderLinks.videoCall(instance.location, description)
