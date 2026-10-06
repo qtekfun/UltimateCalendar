@@ -15,8 +15,10 @@
     <string name="widget_empty">Nothing planned. Tap to open the app.</string>
     <string name="widget_no_permission">The app cannot read your calendars. Tap to open it and grant access.</string>
     <string name="widget_failed">Events could not be read. Tap to open the app.</string>
-    <string name="widget_more_events">+%1$d more events</string>
-    <string name="widget_open_day">%1$s, open the day</string>
+    <plurals name="widget_more_events">
+        <item quantity="one">+%1$d more event</item>
+        <item quantity="other">+%1$d more events</item>
+    </plurals>
     <string name="widget_preview_today">Tue, 6 Oct</string>
     <string name="widget_preview_event_1">9:00  Team meeting</string>
     <string name="widget_preview_event_2">13:30  Lunch with Sam</string>

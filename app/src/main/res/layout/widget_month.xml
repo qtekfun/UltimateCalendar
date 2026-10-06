@@ -3,7 +3,10 @@
   SPDX-FileCopyrightText: 2026 UltimateCalendar contributors
   SPDX-License-Identifier: GPL-3.0-or-later
 -->
+<!-- A 6 x 7 grid of cells with weights: RemoteViews has no grid layout, and a GridView would need a service. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="NestedWeights,TooManyViews"
     android:id="@+id/widget_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -25,6 +28,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:baselineAligned="false"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
@@ -61,6 +65,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:baselineAligned="false"
             android:orientation="horizontal">
 
         <TextView
@@ -138,6 +143,7 @@
             android:id="@+id/week_row_0"
             android:layout_width="match_parent"
             android:layout_height="0dp"
+            android:baselineAligned="false"
             android:layout_weight="1"
             android:orientation="horizontal">
 
@@ -148,6 +154,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -189,7 +196,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -197,7 +204,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -205,7 +212,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -213,7 +220,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -225,6 +232,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -266,7 +274,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -274,7 +282,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -282,7 +290,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -290,7 +298,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -302,6 +310,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -343,7 +352,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -351,7 +360,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -359,7 +368,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -367,7 +376,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -379,6 +388,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -420,7 +430,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -428,7 +438,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -436,7 +446,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -444,7 +454,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -456,6 +466,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -497,7 +508,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -505,7 +516,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -513,7 +524,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -521,7 +532,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -533,6 +544,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -574,7 +586,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -582,7 +594,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -590,7 +602,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -598,7 +610,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -610,6 +622,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -651,7 +664,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -659,7 +672,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -667,7 +680,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -675,7 +688,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -685,6 +698,7 @@
             android:id="@+id/week_row_1"
             android:layout_width="match_parent"
             android:layout_height="0dp"
+            android:baselineAligned="false"
             android:layout_weight="1"
             android:orientation="horizontal">
 
@@ -695,6 +709,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -736,7 +751,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -744,7 +759,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -752,7 +767,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -760,7 +775,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -772,6 +787,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -813,7 +829,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -821,7 +837,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -829,7 +845,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -837,7 +853,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -849,6 +865,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -890,7 +907,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -898,7 +915,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -906,7 +923,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -914,7 +931,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -926,6 +943,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -967,7 +985,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -975,7 +993,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -983,7 +1001,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -991,7 +1009,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -1003,6 +1021,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -1044,7 +1063,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -1052,7 +1071,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -1060,7 +1079,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -1068,7 +1087,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -1080,6 +1099,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -1121,7 +1141,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -1129,7 +1149,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -1137,7 +1157,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -1145,7 +1165,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -1157,6 +1177,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -1198,7 +1219,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -1206,7 +1227,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -1214,7 +1235,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -1222,7 +1243,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -1232,6 +1253,7 @@
             android:id="@+id/week_row_2"
             android:layout_width="match_parent"
             android:layout_height="0dp"
+            android:baselineAligned="false"
             android:layout_weight="1"
             android:orientation="horizontal">
 
@@ -1242,6 +1264,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -1283,7 +1306,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -1291,7 +1314,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -1299,7 +1322,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -1307,7 +1330,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -1319,6 +1342,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -1360,7 +1384,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -1368,7 +1392,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -1376,7 +1400,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -1384,7 +1408,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -1396,6 +1420,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -1437,7 +1462,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -1445,7 +1470,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -1453,7 +1478,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -1461,7 +1486,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -1473,6 +1498,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -1514,7 +1540,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -1522,7 +1548,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -1530,7 +1556,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -1538,7 +1564,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -1550,6 +1576,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -1591,7 +1618,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -1599,7 +1626,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -1607,7 +1634,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -1615,7 +1642,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -1627,6 +1654,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -1668,7 +1696,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -1676,7 +1704,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -1684,7 +1712,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -1692,7 +1720,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -1704,6 +1732,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -1745,7 +1774,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -1753,7 +1782,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -1761,7 +1790,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -1769,7 +1798,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -1779,6 +1808,7 @@
             android:id="@+id/week_row_3"
             android:layout_width="match_parent"
             android:layout_height="0dp"
+            android:baselineAligned="false"
             android:layout_weight="1"
             android:orientation="horizontal">
 
@@ -1789,6 +1819,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -1830,7 +1861,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -1838,7 +1869,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -1846,7 +1877,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -1854,7 +1885,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -1866,6 +1897,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -1907,7 +1939,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -1915,7 +1947,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -1923,7 +1955,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -1931,7 +1963,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -1943,6 +1975,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -1984,7 +2017,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -1992,7 +2025,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -2000,7 +2033,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -2008,7 +2041,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -2020,6 +2053,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -2061,7 +2095,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -2069,7 +2103,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -2077,7 +2111,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -2085,7 +2119,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -2097,6 +2131,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -2138,7 +2173,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -2146,7 +2181,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -2154,7 +2189,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -2162,7 +2197,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -2174,6 +2209,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -2215,7 +2251,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -2223,7 +2259,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -2231,7 +2267,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -2239,7 +2275,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -2251,6 +2287,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -2292,7 +2329,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -2300,7 +2337,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -2308,7 +2345,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -2316,7 +2353,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -2326,6 +2363,7 @@
             android:id="@+id/week_row_4"
             android:layout_width="match_parent"
             android:layout_height="0dp"
+            android:baselineAligned="false"
             android:layout_weight="1"
             android:orientation="horizontal">
 
@@ -2336,6 +2374,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -2377,7 +2416,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -2385,7 +2424,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -2393,7 +2432,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -2401,7 +2440,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -2413,6 +2452,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -2454,7 +2494,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -2462,7 +2502,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -2470,7 +2510,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -2478,7 +2518,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -2490,6 +2530,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -2531,7 +2572,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -2539,7 +2580,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -2547,7 +2588,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -2555,7 +2596,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -2567,6 +2608,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -2608,7 +2650,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -2616,7 +2658,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -2624,7 +2666,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -2632,7 +2674,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -2644,6 +2686,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -2685,7 +2728,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -2693,7 +2736,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -2701,7 +2744,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -2709,7 +2752,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -2721,6 +2764,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -2762,7 +2806,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -2770,7 +2814,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -2778,7 +2822,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -2786,7 +2830,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -2798,6 +2842,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -2839,7 +2884,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -2847,7 +2892,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -2855,7 +2900,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -2863,7 +2908,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -2873,6 +2918,7 @@
             android:id="@+id/week_row_5"
             android:layout_width="match_parent"
             android:layout_height="0dp"
+            android:baselineAligned="false"
             android:layout_weight="1"
             android:orientation="horizontal">
 
@@ -2883,6 +2929,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -2924,7 +2971,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -2932,7 +2979,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -2940,7 +2987,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -2948,7 +2995,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -2960,6 +3007,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -3001,7 +3049,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -3009,7 +3057,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -3017,7 +3065,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -3025,7 +3073,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -3037,6 +3085,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -3078,7 +3127,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -3086,7 +3135,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -3094,7 +3143,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -3102,7 +3151,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -3114,6 +3163,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -3155,7 +3205,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -3163,7 +3213,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -3171,7 +3221,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -3179,7 +3229,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -3191,6 +3241,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -3232,7 +3283,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -3240,7 +3291,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -3248,7 +3299,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -3256,7 +3307,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -3268,6 +3319,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -3309,7 +3361,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -3317,7 +3369,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -3325,7 +3377,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -3333,7 +3385,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>
@@ -3345,6 +3397,7 @@
                 android:layout_weight="1"
                 android:background="?android:attr/selectableItemBackground"
                 android:gravity="center_horizontal"
+                android:baselineAligned="false"
                 android:orientation="vertical"
                 android:padding="1dp">
 
@@ -3386,7 +3439,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -3394,7 +3447,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -3402,7 +3455,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
 
                     <TextView
@@ -3410,7 +3463,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        android:textSize="8sp"
+                        android:textSize="11sp"
                         android:visibility="gone" />
                 </LinearLayout>
             </LinearLayout>

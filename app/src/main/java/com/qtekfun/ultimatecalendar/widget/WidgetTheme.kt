@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.res.Configuration
 import android.os.Build
 import android.widget.RemoteViews
+import androidx.annotation.RequiresApi
 import com.qtekfun.ultimatecalendar.R
 import com.qtekfun.ultimatecalendar.data.settings.AppSettings
 import com.qtekfun.ultimatecalendar.data.settings.ThemeMode
@@ -32,6 +33,7 @@ internal object WidgetTheme {
     }
 
     /** The system's tonal colors; they exist from Android 12, where the caller checked. */
+    @RequiresApi(Build.VERSION_CODES.S)
     private fun tonesOf(context: Context): DynamicTones = DynamicTones(
         neutral10 = context.getColor(android.R.color.system_neutral1_10),
         neutral100 = context.getColor(android.R.color.system_neutral1_100),

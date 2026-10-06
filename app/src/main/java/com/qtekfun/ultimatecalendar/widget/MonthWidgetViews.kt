@@ -56,9 +56,15 @@ internal object MonthWidgetViews {
         MonthWidgetIds.weekRows.forEachIndexed { row, id ->
             views.setViewVisibility(id, if (row < model.weeks.size) View.VISIBLE else View.GONE)
         }
+        val style = Style(context, palette, formats)
         model.weeks.forEachIndexed { row, week ->
             week.forEachIndexed { column, cell ->
-                cell(context, views, MonthWidgetIds.cells[row][column], cell, palette, formats)
+                cell(
+                    views,
+                    MonthWidgetIds.cells[row][column],
+                    cell,
+                    Style(context, palette, formats)
+                )
             }
         }
         return views
@@ -76,14 +82,17 @@ internal object MonthWidgetViews {
             )
         }
 
-    private fun cell(
-        context: Context,
-        views: RemoteViews,
-        ids: MonthCellIds,
-        cell: MonthWidgetCell,
-        palette: WidgetPalette,
-        formats: WidgetFormats
-    ) {
+    /** What drawing a cell needs besides the cell. */
+    private class Style(
+        val context: Context,
+        val palette: WidgetPalette,
+        val formats: WidgetFormats
+    )
+
+    private fun cell(views: RemoteViews, ids: MonthCellIds, cell: MonthWidgetCell, style: Style) {
+        val palette = style.palette
+        val context = style.context
+        val formats = style.formats
         views.setTextViewText(ids.day, cell.date.dayOfMonth.toString())
         views.setTextColor(
             ids.day,

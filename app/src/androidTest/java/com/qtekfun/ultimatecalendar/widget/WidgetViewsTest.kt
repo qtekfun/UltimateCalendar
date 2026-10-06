@@ -44,8 +44,7 @@ class WidgetViewsTest {
     private val light = WidgetPalette.of(dark = false, amoled = false, tones = null)
     private val amoled = WidgetPalette.of(dark = true, amoled = true, tones = null)
 
-    private fun apply(views: RemoteViews): View =
-        views.apply(context, FrameLayout(context))
+    private fun apply(views: RemoteViews): View = views.apply(context, FrameLayout(context))
 
     private fun View.texts(): List<String> {
         val found = mutableListOf<String>()
@@ -118,14 +117,23 @@ class WidgetViewsTest {
     fun theAgendaRowsInflateWithTheirTexts() {
         val entry = AgendaEntry(
             instance("Standup", AttendeeStatus.NEEDS_ACTION),
-            AgendaSlot.Span(Instant.parse("2026-10-06T14:00:00Z"), Instant.parse("2026-10-06T15:00:00Z")),
+            AgendaSlot.Span(
+                Instant.parse("2026-10-06T14:00:00Z"),
+                Instant.parse("2026-10-06T15:00:00Z")
+            ),
             0xFF2E7D32.toInt(),
             null
         )
 
-        val event = apply(AgendaWidgetViews.event(context, AgendaWidgetRow.Event(entry), light, formats))
+        val event =
+            apply(AgendaWidgetViews.event(context, AgendaWidgetRow.Event(entry), light, formats))
         val day = apply(
-            AgendaWidgetViews.day(context, AgendaWidgetRow.Day(today, isToday = true, isTomorrow = false), light, formats)
+            AgendaWidgetViews.day(
+                context,
+                AgendaWidgetRow.Day(today, isToday = true, isTomorrow = false),
+                light,
+                formats
+            )
         )
         val message = apply(AgendaWidgetViews.message(context, "Nothing", amoled))
 
@@ -133,7 +141,11 @@ class WidgetViewsTest {
         assertTrue(event.texts().any { it.contains("Room 4") })
         assertEquals(View.VISIBLE, event.findViewById<View>(R.id.event_marker_pending).visibility)
         assertEquals(View.GONE, event.findViewById<View>(R.id.event_marker).visibility)
-        assertTrue(event.findViewById<View>(R.id.event_root).contentDescription.toString().contains("Standup"))
+        assertTrue(
+            event.findViewById<View>(
+                R.id.event_root
+            ).contentDescription.toString().contains("Standup")
+        )
         assertTrue(day.texts().single().contains("6"))
         assertEquals(listOf("Nothing"), message.texts())
     }

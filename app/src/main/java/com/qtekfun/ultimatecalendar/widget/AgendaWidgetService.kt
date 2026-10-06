@@ -77,7 +77,11 @@ private class AgendaViewsFactory(private val context: Context) :
 
                 is AgendaWidgetRow.More -> AgendaWidgetViews.message(
                     context,
-                    context.getString(R.string.widget_more_events, row.count),
+                    context.resources.getQuantityString(
+                        R.plurals.widget_more_events,
+                        row.count,
+                        row.count
+                    ),
                     palette
                 )
             }
