@@ -107,7 +107,10 @@ fun ShellContent(
     startWithDrawerOpen: Boolean = false,
     detailPane: DetailPane? = null,
     content: @Composable (PeriodKey, PaddingValues) -> Unit = { period, padding ->
-        ShellView(period.view, state, actions, detailPane, Modifier.fillMaxSize().padding(padding))
+        // While a view fades into another both are drawn: each gets its own view in the state, or
+        // a week grid told it is the agenda would fail (it only pages whole days).
+        val shown = if (period.view == state.view) state else state.copy(view = period.view)
+        ShellView(period.view, shown, actions, detailPane, Modifier.fillMaxSize().padding(padding))
     }
 ) {
     val drawer =

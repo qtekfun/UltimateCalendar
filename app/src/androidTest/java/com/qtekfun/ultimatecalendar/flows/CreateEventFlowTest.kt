@@ -47,20 +47,25 @@ class CreateEventFlowTest : FlowTest() {
         waitForRows(title, 1)
     }
 
-    /** Opens the start time, types [hour]:[minute] in the dial's keyboard mode and confirms. */
+    /**
+     * Opens the start time and taps [hour] and then [minute] on the dial, which switches itself to
+     * minutes after the hour. The dial's numbers describe themselves ("10 o'clock", "15 minutes")
+     * and a tap lands on the number it is made on, as a finger would.
+     */
     private fun setStartTime(hour: Int, minute: Int) {
         clickDescribed("Start time", substring = true)
         waitForText("Select time")
-        compose.onNode(
-            hasContentDescription("text input", substring = true, ignoreCase = true)
-        ).performClick()
-        val fields = compose.onAllNodes(hasSetTextAction() and hasAnyAncestor(isDialog()))
-        waitUntil { fields.fetchSemanticsNodes().size >= 2 }
-        fields[0].performTextReplacement(hour.toString())
-        fields[1].performTextReplacement(minute.toString())
-        // On a 12-hour clock the typed hour needs its half of the day; 24-hour clocks have none.
+        clickDial("$hour o'clock")
+        clickDial("$minute minutes")
+        // On a 12-hour clock the hour needs its half of the day; 24-hour clocks have none.
         if (compose.onAllNodesWithText("AM").fetchSemanticsNodes().isNotEmpty()) click("AM")
         click("OK")
+    }
+
+    private fun clickDial(description: String) {
+        val number = hasContentDescription(description) and hasAnyAncestor(isDialog())
+        waitUntil { compose.onAllNodes(number).fetchSemanticsNodes().isNotEmpty() }
+        compose.onAllNodes(number).onFirst().performClick()
     }
 
     private fun chooseCalendar(name: String) {

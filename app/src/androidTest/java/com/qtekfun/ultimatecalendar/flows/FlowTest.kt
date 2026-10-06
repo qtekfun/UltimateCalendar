@@ -5,17 +5,21 @@ package com.qtekfun.ultimatecalendar.flows
 
 import android.app.NotificationManager
 import android.content.Context
+import android.os.ParcelFileDescriptor
+import androidx.compose.ui.test.ComposeTimeoutException
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.SemanticsNodeInteractionCollection
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isPopup
+import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.printToString
 import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry
 import com.qtekfun.ultimatecalendar.ui.MainActivity
@@ -78,8 +82,29 @@ abstract class FlowTest {
     }
 
     /** Waits (up to [timeoutMillis]) for [condition], which may look at the UI or the provider. */
-    protected fun waitUntil(timeoutMillis: Long = TIMEOUT_MS, condition: () -> Boolean) =
-        compose.waitUntil(timeoutMillis, condition)
+    protected fun waitUntil(timeoutMillis: Long = TIMEOUT_MS, condition: () -> Boolean) {
+        try {
+            compose.waitUntil(timeoutMillis, condition)
+        } catch (e: ComposeTimeoutException) {
+            // A timeout alone says nothing about why: put what was on screen in the report.
+            throw AssertionError("${e.message}\n${describeScreen()}", e)
+        }
+    }
+
+    private fun describeScreen(): String {
+        val roots = compose.onAllNodes(isRoot())
+        val tree = runCatching {
+            (0 until roots.fetchSemanticsNodes().size).joinToString("\n---\n") {
+                roots[it].printToString(Int.MAX_VALUE)
+            }
+        }.getOrElse { "no semantics tree: $it" }
+        val automation = InstrumentationRegistry.getInstrumentation().uiAutomation
+        val windows = ParcelFileDescriptor.AutoCloseInputStream(
+            automation.executeShellCommand("dumpsys window windows")
+        ).use { stream -> stream.readBytes().decodeToString() }
+            .lines().filter { "mCurrentFocus" in it || "mFocusedApp" in it }
+        return (windows + tree).joinToString("\n").take(SCREEN_DUMP_CHARS)
+    }
 
     protected fun click(text: String) {
         waitForText(text)
@@ -131,5 +156,6 @@ abstract class FlowTest {
 
     protected companion object {
         const val TIMEOUT_MS = 20_000L
+        const val SCREEN_DUMP_CHARS = 8_000
     }
 }
