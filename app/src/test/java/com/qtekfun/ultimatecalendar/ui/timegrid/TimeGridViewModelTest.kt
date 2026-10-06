@@ -82,7 +82,7 @@ class TimeGridViewModelTest {
     }
 
     private fun viewModel(repository: CalendarRepository = this.repository) =
-        TimeGridViewModel(repository, clock, SystemZone { madrid })
+        TimeGridViewModel(repository, clock, SystemZone { madrid }, Dispatchers.Unconfined)
 
     private suspend fun add(calendar: CalendarInfo, title: String, hour: Int, color: Int? = null) =
         source.create(

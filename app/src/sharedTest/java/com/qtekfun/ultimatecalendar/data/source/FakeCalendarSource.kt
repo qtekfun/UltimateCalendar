@@ -184,7 +184,8 @@ class FakeCalendarSource(calendars: List<CalendarInfo> = emptyList()) : Calendar
                     location = edit?.location ?: event.location,
                     color = edit?.color ?: event.color,
                     isRecurring = event.isRecurring,
-                    selfStatus = self
+                    selfStatus = self,
+                    hasAttendees = event.attendees.isNotEmpty()
                 )
             }
         }.filter { overlaps(it.time, range) }

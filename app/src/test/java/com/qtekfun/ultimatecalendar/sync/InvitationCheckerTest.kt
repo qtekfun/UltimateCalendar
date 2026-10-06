@@ -175,6 +175,27 @@ class InvitationCheckerTest {
     }
 
     @Test
+    fun `with aliases only the events that list attendees are read one by one`() = runTest {
+        create(invitation("To my alias", attendee = "alias@example.com"))
+        create(invitation("Not mine", attendee = "someone@example.com"))
+        create(
+            EventDraft(
+                CalendarId(1),
+                "Plain",
+                EventTime.Timed(now.plusSeconds(60), now.plusSeconds(120), ZoneOffset.UTC)
+            )
+        )
+        settings.aliases = setOf("alias@example.com")
+        val counting = CountingReads(source)
+
+        val outcome = done(checker(counting).check(false))
+
+        assertEquals(1, outcome.pending)
+        // The two events with attendees are read; the plain one cannot be an invitation.
+        assertEquals(2, counting.reads)
+    }
+
+    @Test
     fun `a sync is requested for the accounts only when asked`() = runTest {
         checker().check(requestSync = false)
         assertTrue(syncs.requests.isEmpty())
@@ -263,6 +284,16 @@ class InvitationCheckerTest {
         override suspend fun event(id: EventId): CalendarResult<Event> {
             stalled.complete(Unit)
             awaitCancellation()
+        }
+    }
+
+    private class CountingReads(private val inner: CalendarSource) : CalendarSource by inner {
+        var reads = 0
+            private set
+
+        override suspend fun event(id: EventId): CalendarResult<Event> {
+            reads++
+            return inner.event(id)
         }
     }
 
