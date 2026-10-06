@@ -19,23 +19,29 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.intl.Locale
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.qtekfun.ultimatecalendar.R
+import com.qtekfun.ultimatecalendar.domain.accessibility.SpokenTime
+import com.qtekfun.ultimatecalendar.domain.model.AttendeeStatus
 import com.qtekfun.ultimatecalendar.domain.model.EventInstance
 import com.qtekfun.ultimatecalendar.domain.model.EventTime
 import com.qtekfun.ultimatecalendar.domain.timegrid.AllDayBar
 import com.qtekfun.ultimatecalendar.domain.timegrid.TimedBlock
+import com.qtekfun.ultimatecalendar.ui.components.eventSpeech
+import com.qtekfun.ultimatecalendar.ui.components.spokenTimeOf
+import com.qtekfun.ultimatecalendar.ui.theme.EventDisplay
+import com.qtekfun.ultimatecalendar.ui.theme.rememberEventChipColors
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
-private const val LIGHT_TEXT_LUMINANCE = 0.5f
 private val OUTLINE_WIDTH = 2.dp
 private val CORNER = 4.dp
 private val BAR_MARGIN = 8.dp
@@ -57,31 +63,26 @@ private fun Modifier.dragHandle(color: Color): Modifier = drawBehind {
     )
 }
 
-/** How an event is painted: filled with its color, or only outlined while the invitation is open. */
-internal data class EventPaint(val fill: Color, val border: BorderStroke?, val text: Color)
+/** How an event is painted: [EventDisplay] decides fill, outline and strike-through. */
+internal data class EventPaint(
+    val fill: Color,
+    val border: BorderStroke?,
+    val text: Color,
+    val strike: Boolean
+)
 
 @Composable
-internal fun eventPaint(argb: Int?, pending: Boolean): EventPaint {
-    val color = argb?.let { Color(it) } ?: MaterialTheme.colorScheme.primary
-    return if (pending) {
-        EventPaint(
-            Color.Transparent,
-            BorderStroke(OUTLINE_WIDTH, color),
-            MaterialTheme.colorScheme.onSurface
-        )
-    } else {
-        EventPaint(
-            color,
-            null,
-            if (color.luminance() >
-                LIGHT_TEXT_LUMINANCE
-            ) {
-                Color.Black
-            } else {
-                Color.White
-            }
-        )
-    }
+internal fun eventPaint(argb: Int?, selfStatus: AttendeeStatus?): EventPaint {
+    val colors = rememberEventChipColors(
+        argb ?: MaterialTheme.colorScheme.primary.toArgb(),
+        EventDisplay.of(selfStatus)
+    )
+    return EventPaint(
+        colors.container,
+        colors.border?.let { BorderStroke(OUTLINE_WIDTH, it) },
+        colors.content,
+        colors.strikeThrough
+    )
 }
 
 private fun timeFormat() =
@@ -100,22 +101,6 @@ private fun ownZoneTag(time: EventTime.Timed, ownZone: ZoneId): String {
     return clock.format(timeFormat()) + " " + clock.format(DateTimeFormatter.ofPattern("z", locale))
 }
 
-/** What TalkBack reads for a timed event: title, time, place, open invitation, other zone. */
-@Composable
-private fun describe(block: TimedBlock, zone: ZoneId): String {
-    val event = block.instance
-    val time = event.time as EventTime.Timed
-    val (from, to) = timeRange(time, zone)
-    val parts = listOfNotNull(
-        event.title.ifBlank { stringResource(R.string.timegrid_untitled) },
-        stringResource(R.string.timegrid_time_range, from, to),
-        event.location?.takeIf { it.isNotBlank() },
-        stringResource(R.string.timegrid_pending).takeIf { block.isPending },
-        block.otherZone?.let { stringResource(R.string.timegrid_other_zone, ownZoneTag(time, it)) }
-    )
-    return parts.joinToString(", ")
-}
-
 @Composable
 internal fun TimedEventBlock(
     block: TimedBlock,
@@ -124,9 +109,13 @@ internal fun TimedEventBlock(
     modifier: Modifier = Modifier,
     lifted: Boolean = false
 ) {
-    val paint = eventPaint(block.color, block.isPending)
-    val description = describe(block, zone)
+    val paint = eventPaint(block.color, block.instance.selfStatus)
     val time = block.instance.time as EventTime.Timed
+    val description = eventSpeech(
+        block.instance,
+        spokenTimeOf(time, zone),
+        block.otherZone?.let { ownZoneTag(time, it) }
+    )
     val detailLabel = stringResource(R.string.timegrid_event_detail)
     Surface(
         modifier = modifier
@@ -148,14 +137,16 @@ internal fun TimedEventBlock(
                 block.instance.title.ifBlank { stringResource(R.string.timegrid_untitled) },
                 style = MaterialTheme.typography.labelMedium,
                 maxLines = 2,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
+                textDecoration = strike(paint)
             )
             val (from, to) = timeRange(time, zone)
             Text(
                 "$from - $to",
                 style = MaterialTheme.typography.labelSmall,
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
+                textDecoration = strike(paint)
             )
             block.otherZone?.let {
                 Text(
@@ -176,13 +167,9 @@ internal fun AllDayEventBar(
     modifier: Modifier = Modifier,
     lifted: Boolean = false
 ) {
-    val paint = eventPaint(bar.color, bar.isPending)
+    val paint = eventPaint(bar.color, bar.instance.selfStatus)
     val title = bar.instance.title.ifBlank { stringResource(R.string.timegrid_untitled) }
-    val description = listOfNotNull(
-        title,
-        stringResource(R.string.timegrid_all_day),
-        stringResource(R.string.timegrid_pending).takeIf { bar.isPending }
-    ).joinToString(", ")
+    val description = eventSpeech(bar.instance, SpokenTime.AllDay)
     val detailLabel = stringResource(R.string.timegrid_event_detail)
     // The row is 48 dp tall and all of it is the touch target; the painted bar is 32 dp.
     Surface(
@@ -201,7 +188,10 @@ internal fun AllDayEventBar(
             Modifier.padding(horizontal = 4.dp),
             style = MaterialTheme.typography.labelMedium,
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.Ellipsis,
+            textDecoration = strike(paint)
         )
     }
 }
+
+private fun strike(paint: EventPaint) = if (paint.strike) TextDecoration.LineThrough else null

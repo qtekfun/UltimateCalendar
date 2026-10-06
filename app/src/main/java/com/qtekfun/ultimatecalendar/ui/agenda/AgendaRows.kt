@@ -31,6 +31,7 @@ import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.qtekfun.ultimatecalendar.R
+import com.qtekfun.ultimatecalendar.domain.accessibility.SpokenTime
 import com.qtekfun.ultimatecalendar.domain.agenda.AgendaEntry
 import com.qtekfun.ultimatecalendar.domain.agenda.AgendaSlot
 import com.qtekfun.ultimatecalendar.domain.model.EventInstance
@@ -38,6 +39,8 @@ import com.qtekfun.ultimatecalendar.ui.components.DayBadge
 import com.qtekfun.ultimatecalendar.ui.components.DayBadgeState
 import com.qtekfun.ultimatecalendar.ui.components.EventChip
 import com.qtekfun.ultimatecalendar.ui.components.SectionHeader
+import com.qtekfun.ultimatecalendar.ui.components.eventSpeech
+import com.qtekfun.ultimatecalendar.ui.components.spokenClock
 import com.qtekfun.ultimatecalendar.ui.theme.Dimens
 import com.qtekfun.ultimatecalendar.ui.theme.EventDisplay
 import com.qtekfun.ultimatecalendar.ui.theme.Spacing
@@ -110,13 +113,7 @@ internal fun AgendaEventRow(
     val title = event.title.ifBlank { stringResource(R.string.timegrid_untitled) }
     val times = timeLines(entry.slot, zone)
     val zoneTag = entry.otherZone?.let { ownZoneTag(entry, it) }
-    val spoken = listOfNotNull(
-        title,
-        spokenTime(entry.slot, zone),
-        event.location?.takeIf { it.isNotBlank() },
-        stringResource(R.string.cal_status_pending).takeIf { entry.isPending },
-        zoneTag?.let { stringResource(R.string.timegrid_other_zone, it) }
-    ).joinToString(", ")
+    val spoken = eventSpeech(event, spokenSlot(entry.slot, zone), zoneTag)
     val chip = @Composable {
         EventChip(
             title = title,
@@ -200,19 +197,17 @@ private fun timeLines(slot: AgendaSlot, zone: ZoneId): List<String> {
     }
 }
 
-@Composable
-private fun spokenTime(slot: AgendaSlot, zone: ZoneId): String {
-    fun at(instant: Instant) = instant.timeIn(zone)
-    return when (slot) {
-        AgendaSlot.AllDay -> stringResource(R.string.cal_all_day)
+private fun spokenSlot(slot: AgendaSlot, zone: ZoneId): SpokenTime = when (slot) {
+    AgendaSlot.AllDay -> SpokenTime.AllDay
 
-        is AgendaSlot.Span ->
-            stringResource(R.string.timegrid_time_range, at(slot.start), at(slot.end))
+    is AgendaSlot.Span -> SpokenTime.Range(
+        spokenClock(slot.start, zone),
+        spokenClock(slot.end, zone)
+    )
 
-        is AgendaSlot.From -> at(slot.start)
+    is AgendaSlot.From -> SpokenTime.Start(spokenClock(slot.start, zone))
 
-        is AgendaSlot.Until -> stringResource(R.string.agenda_until, at(slot.end))
-    }
+    is AgendaSlot.Until -> SpokenTime.Until(spokenClock(slot.end, zone))
 }
 
 /** "18:00 JST": the start of the event as its own zone shows it. */

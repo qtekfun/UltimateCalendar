@@ -25,6 +25,8 @@ import com.qtekfun.ultimatecalendar.R
 import com.qtekfun.ultimatecalendar.domain.model.EventInstance
 import com.qtekfun.ultimatecalendar.ui.components.CalendarBottomSheet
 import com.qtekfun.ultimatecalendar.ui.components.EventChip
+import com.qtekfun.ultimatecalendar.ui.components.eventSpeech
+import com.qtekfun.ultimatecalendar.ui.components.spokenTimeOf
 import com.qtekfun.ultimatecalendar.ui.theme.Dimens
 import com.qtekfun.ultimatecalendar.ui.theme.EventDisplay
 import com.qtekfun.ultimatecalendar.ui.theme.Spacing
@@ -69,6 +71,7 @@ internal fun MonthDaySheet(
                     modifier = Modifier.fillMaxWidth().heightIn(min = Dimens.minTouch),
                     detail = timeDetail(bar.instance, zone),
                     display = EventDisplay.of(bar.instance.selfStatus),
+                    description = eventSpeech(bar.instance, spokenTimeOf(bar.instance.time, zone)),
                     onClick = { onOpenEvent(bar.instance) }
                 )
             }
