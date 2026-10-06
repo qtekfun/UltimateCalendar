@@ -105,7 +105,7 @@ private fun previewPage(): MonthPage {
 }
 
 @Composable
-private fun MonthPreview(weekNumbers: Boolean = false) {
+internal fun MonthPreview(weekNumbers: Boolean = false) {
     UltimateCalendarTheme(ThemeOptions(dynamicColor = false)) {
         Surface {
             MonthPageContent(

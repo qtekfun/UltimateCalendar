@@ -38,6 +38,7 @@ import com.qtekfun.ultimatecalendar.R
 import com.qtekfun.ultimatecalendar.domain.firstrun.SetupItem
 import com.qtekfun.ultimatecalendar.domain.firstrun.SetupStatus
 import com.qtekfun.ultimatecalendar.domain.firstrun.SetupStep
+import com.qtekfun.ultimatecalendar.ui.adaptive.ReadingPane
 
 /**
  * The first-run wizard and the reliability steps (RF-01, RF-08): each step says why it is asked
@@ -50,26 +51,27 @@ fun ReliabilityWizardScreen(onDone: () -> Unit, viewModel: FirstRunViewModel = v
     // Permissions change in other screens and in the system's settings: read them again.
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.refresh() }
     Scaffold(containerColor = MaterialTheme.colorScheme.surfaceContainerLow) { padding ->
-        Column(
-            Modifier.padding(padding).fillMaxSize().verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Text(
-                stringResource(R.string.wizard_title),
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.semantics { heading() }
-            )
-            Text(
-                stringResource(R.string.wizard_intro),
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            status?.let { current ->
-                viewModel.plan(current).forEach { item -> StepCard(item, current, viewModel) }
-            }
-            Button(onClick = onDone, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.wizard_done))
+        ReadingPane(Modifier.padding(padding)) {
+            Column(
+                Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    stringResource(R.string.wizard_title),
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.semantics { heading() }
+                )
+                Text(
+                    stringResource(R.string.wizard_intro),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                status?.let { current ->
+                    viewModel.plan(current).forEach { item -> StepCard(item, current, viewModel) }
+                }
+                Button(onClick = onDone, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.wizard_done))
+                }
             }
         }
     }

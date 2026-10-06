@@ -1,0 +1,10 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//UltimateCalendar//corpus//EN
+BEGIN:VEVENT
+UID:edge-2@ultimatecalendar
+SUMMARY:Without a final END
+this line is not a content line
+DTSTART:20261005T093000Z
+STATUS:CONFIRMED
+END:VTODO

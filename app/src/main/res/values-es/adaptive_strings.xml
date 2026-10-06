@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 UltimateCalendar contributors
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<resources>
+    <string name="agenda_pick_title">Elige un evento</string>
+    <string name="agenda_pick_body">Sus detalles aparecen aquí.</string>
+    <string name="detail_close">Cerrar detalles</string>
+</resources>
