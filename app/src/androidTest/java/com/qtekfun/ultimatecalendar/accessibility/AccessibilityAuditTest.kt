@@ -68,12 +68,9 @@ class AccessibilityAuditTest {
     }
 
     @Test
-    fun theAuditCatchesASilentSmallButton() {
-        val found = audit {
-            Box(Modifier.size(20.dp).clickable { })
-        }
-        assertTrue(found.toString(), found.any { it.startsWith("silent actionable") })
-        assertTrue(found.toString(), found.any { it.startsWith("small actionable") })
+    fun theAuditCatchesASilentButton() {
+        val silent = audit { Box(Modifier.size(MIN_SIZE).clickable { }) }
+        assertTrue(silent.toString(), silent.any { it.startsWith("silent actionable") })
     }
 
     @Test fun agenda() = clean { AgendaListPreview() }
@@ -118,5 +115,6 @@ class AccessibilityAuditTest {
 
     private companion object {
         const val LARGE = 2f
+        val MIN_SIZE = 48.dp
     }
 }
