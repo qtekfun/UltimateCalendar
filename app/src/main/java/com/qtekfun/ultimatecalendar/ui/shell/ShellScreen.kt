@@ -94,13 +94,22 @@ fun ShellContent(
     startWithDrawerOpen: Boolean = false,
     content: @Composable (PeriodKey, PaddingValues) -> Unit = { period, padding ->
         val modifier = Modifier.fillMaxSize().padding(padding)
+        // While a view fades out, it is still drawn with its own view and days, not the new ones.
+        val shown = if (period.view == state.view) {
+            state
+        } else {
+            state.copy(
+                view = period.view,
+                range = ViewPeriods.range(period.view, state.date, state.firstDayOfWeek)
+            )
+        }
         when (period.view) {
             CalendarView.DAY, CalendarView.THREE_DAYS, CalendarView.WEEK ->
-                TimeGridScreen(state, actions, modifier)
+                TimeGridScreen(shown, actions, modifier)
 
-            CalendarView.AGENDA -> AgendaScreen(state, actions, modifier)
+            CalendarView.AGENDA -> AgendaScreen(shown, actions, modifier)
 
-            CalendarView.MONTH -> MonthScreen(state, actions, modifier)
+            CalendarView.MONTH -> MonthScreen(shown, actions, modifier)
         }
     }
 ) {
