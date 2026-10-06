@@ -64,4 +64,18 @@ class ReminderLinksTest {
         assertNull(ReminderLinks.map("https://meet.google.com/abc"))
         assertNull(ReminderLinks.map("Zoom https://zoom.us/j/1"))
     }
+
+    @Test
+    fun `lists every link with its place in the text`() {
+        val text = "See https://a.org/x, then (https://b.org/y)."
+        val links = ReminderLinks.links(text)
+        assertEquals(listOf("https://a.org/x", "https://b.org/y"), links.map { it.url })
+        links.forEach { assertEquals(it.url, text.substring(it.start, it.end)) }
+    }
+
+    @Test
+    fun `no links in an empty text`() {
+        assertEquals(emptyList<ReminderLinks.Link>(), ReminderLinks.links(null))
+        assertEquals(emptyList<ReminderLinks.Link>(), ReminderLinks.links("no link here"))
+    }
 }
