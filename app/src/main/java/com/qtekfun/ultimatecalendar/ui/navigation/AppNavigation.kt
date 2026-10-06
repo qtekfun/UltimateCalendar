@@ -31,11 +31,15 @@ fun AppNavigation() {
         // T23: the Settings screen replaces this placeholder.
         nav.settings -> Placeholder(R.string.shell_settings) { nav.settings = false }
 
+        // Help: a later task (T23, with Settings) fills this in.
+        nav.help -> Placeholder(R.string.shell_help) { nav.help = false }
+
         else -> ShellScreen(
             onSearch = { nav.search = true },
             onNewEvent = { nav.newEvent = true },
             onInvitations = { nav.invitations = true },
-            onSettings = { nav.settings = true }
+            onSettings = { nav.settings = true },
+            onHelp = { nav.help = true }
         )
     }
 }

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 UltimateCalendar contributors
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<resources>
+    <string name="cal_day_today">Today, %1$s</string>
+    <string name="cal_today_button">Go to today, day %1$d</string>
+    <string name="cal_all_day">All day</string>
+    <string name="cal_status_pending">invitation not answered</string>
+    <string name="cal_status_tentative">maybe</string>
+    <string name="cal_status_declined">declined</string>
+    <string name="cal_empty_title">Nothing planned</string>
+    <string name="cal_empty_body">Enjoy the free time, or tap Create to add an event.</string>
+    <string name="cal_undo">Undo</string>
+    <string name="cal_loading">Loading</string>
+    <string name="cal_account_collapse">Hide calendars of %1$s</string>
+    <string name="cal_account_expand">Show calendars of %1$s</string>
+    <string name="shell_create">Create</string>
+    <string name="shell_help">Help</string>
+    <string name="shell_switch_view">Change view, now %1$s</string>
+    <string name="shell_week_number">Week %1$d</string>
+</resources>

@@ -126,7 +126,7 @@ detekt {
     buildUponDefaultConfig = true
     allRules = false
     config.setFrom(rootProject.file("config/detekt/detekt.yml"))
-    source.setFrom("src/main/java", "src/test/java", "src/androidTest/java")
+    source.setFrom("src/main/java", "src/debug/java", "src/test/java", "src/androidTest/java")
 }
 
 tasks.withType<Detekt>().configureEach {

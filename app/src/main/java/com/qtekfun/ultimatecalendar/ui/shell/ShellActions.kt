@@ -18,5 +18,6 @@ data class ShellActions(
     val onSearch: () -> Unit = {},
     val onInvitations: () -> Unit = {},
     val onNewEvent: () -> Unit = {},
-    val onSettings: () -> Unit = {}
+    val onSettings: () -> Unit = {},
+    val onHelp: () -> Unit = {}
 )
