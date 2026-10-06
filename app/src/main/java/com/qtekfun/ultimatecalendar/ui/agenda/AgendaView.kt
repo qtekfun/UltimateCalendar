@@ -30,6 +30,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.qtekfun.ultimatecalendar.R
 import com.qtekfun.ultimatecalendar.domain.agenda.AgendaItem
 import com.qtekfun.ultimatecalendar.domain.agenda.AgendaItems
+import com.qtekfun.ultimatecalendar.domain.detail.EventRef
 import com.qtekfun.ultimatecalendar.domain.model.EventInstance
 import com.qtekfun.ultimatecalendar.ui.components.EmptyState
 import com.qtekfun.ultimatecalendar.ui.components.EventListSkeleton
@@ -61,6 +62,7 @@ fun AgendaScreen(
     state: ShellUiState,
     actions: ShellActions,
     modifier: Modifier = Modifier,
+    selected: EventRef? = null,
     viewModel: AgendaViewModel = viewModel()
 ) {
     val agenda by viewModel.state.collectAsStateWithLifecycle()
@@ -76,7 +78,8 @@ fun AgendaScreen(
             onLater = viewModel::later,
             onNewEvent = actions.onNewEvent
         ),
-        modifier = modifier
+        modifier = modifier,
+        selected = selected
     )
 }
 
@@ -93,7 +96,8 @@ internal fun AgendaView(
     today: LocalDate,
     callbacks: AgendaCallbacks,
     modifier: Modifier = Modifier,
-    contentPadding: PaddingValues = PaddingValues()
+    contentPadding: PaddingValues = PaddingValues(),
+    selected: EventRef? = null
 ) {
     val list = rememberLazyListState()
     val latest by rememberUpdatedState(agenda)
@@ -139,7 +143,7 @@ internal fun AgendaView(
 
     Box(modifier.fillMaxSize(), Alignment.Center) {
         if (ready) AgendaNotice(agenda, callbacks.onNewEvent, Modifier.padding(contentPadding))
-        AgendaList(list, agenda, today, callbacks.onOpenEvent, contentPadding)
+        AgendaList(list, agenda, today, callbacks.onOpenEvent, Modifier, contentPadding, selected)
         if (!ready) {
             EventListSkeleton(
                 Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface)
@@ -176,9 +180,11 @@ internal fun AgendaList(
     agenda: AgendaState,
     today: LocalDate,
     onOpenEvent: (EventInstance) -> Unit,
-    contentPadding: PaddingValues = PaddingValues()
+    modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(),
+    selected: EventRef? = null
 ) {
-    LazyColumn(Modifier.fillMaxSize(), list, contentPadding) {
+    LazyColumn(modifier.fillMaxSize(), list, contentPadding) {
         agenda.items.forEach { item ->
             when (item) {
                 is AgendaItem.MonthDivider -> item(item.key, CONTENT_MONTH) {
@@ -190,7 +196,12 @@ internal fun AgendaList(
                 }
 
                 is AgendaItem.EventRow -> item(item.key, CONTENT_EVENT) {
-                    AgendaEventRow(item.entry, agenda.zone, onOpenEvent)
+                    AgendaEventRow(
+                        item.entry,
+                        agenda.zone,
+                        onOpenEvent,
+                        selected = selected != null && EventRef.of(item.entry.instance) == selected
+                    )
                 }
             }
         }

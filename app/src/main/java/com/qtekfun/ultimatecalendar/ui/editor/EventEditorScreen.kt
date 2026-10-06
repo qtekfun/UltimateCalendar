@@ -148,7 +148,7 @@ private fun EditorBody(state: EditorUiState.Ready, device: ZoneId, actions: Edit
     val form = state.form
     Column(
         Modifier
-            .widthIn(max = Dimens.contentMaxWidth)
+            .widthIn(max = Dimens.readingMaxWidth)
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .imePadding()
