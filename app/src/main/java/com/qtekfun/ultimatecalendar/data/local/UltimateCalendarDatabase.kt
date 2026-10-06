@@ -8,15 +8,18 @@ import androidx.room3.RoomDatabase
 import androidx.room3.migration.Migration
 import com.qtekfun.ultimatecalendar.data.local.dao.CalendarSettingsDao
 import com.qtekfun.ultimatecalendar.data.local.dao.NotifiedInvitationDao
+import com.qtekfun.ultimatecalendar.data.local.dao.ReRemindDao
 import com.qtekfun.ultimatecalendar.data.local.entity.CalendarSettingsEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.DefaultCalendarEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.NotifiedInvitationEntity
+import com.qtekfun.ultimatecalendar.data.local.entity.ReRemindEntity
 
 @Database(
     entities = [
         CalendarSettingsEntity::class,
         DefaultCalendarEntity::class,
-        NotifiedInvitationEntity::class
+        NotifiedInvitationEntity::class,
+        ReRemindEntity::class
     ],
     version = UltimateCalendarDatabase.VERSION,
     exportSchema = true
@@ -26,13 +29,15 @@ abstract class UltimateCalendarDatabase : RoomDatabase() {
 
     abstract fun notifiedInvitationDao(): NotifiedInvitationDao
 
+    abstract fun reRemindDao(): ReRemindDao
+
     companion object {
-        const val VERSION = 2
+        const val VERSION = 3
 
         /**
          * Migrations from each released version to the next. There is no destructive fallback:
          * raising [VERSION] requires adding its migration here (checked by DatabaseSchemaTest).
          */
-        val MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_1_2)
+        val MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3)
     }
 }
