@@ -5,6 +5,7 @@ package com.qtekfun.ultimatecalendar.domain.reminders
 
 import com.qtekfun.ultimatecalendar.domain.model.EventTime
 import com.qtekfun.ultimatecalendar.domain.model.ReminderMethod
+import java.time.Duration
 import java.time.Instant
 import java.time.LocalTime
 import java.time.ZoneId
@@ -21,6 +22,10 @@ object ReminderPlanner {
     /** Android keeps at most 500 alarms per app; the rest are planned when these have rung. */
     const val MAX_ALARMS = 200
 
+    /** How far ahead occurrences are read to plan: the heartbeat and the app renew it. */
+    val HORIZON: Duration = Duration.ofDays(HORIZON_DAYS)
+
+    private const val HORIZON_DAYS = 30L
     private const val MINUTES_PER_DAY = 1_440L
     private const val SECONDS_PER_MINUTE = 60L
 
