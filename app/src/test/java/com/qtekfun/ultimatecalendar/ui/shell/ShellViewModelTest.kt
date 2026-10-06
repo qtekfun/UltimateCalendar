@@ -17,6 +17,7 @@ import com.qtekfun.ultimatecalendar.domain.model.CalendarId
 import com.qtekfun.ultimatecalendar.domain.model.CalendarInfo
 import com.qtekfun.ultimatecalendar.domain.navigation.CalendarView
 import com.qtekfun.ultimatecalendar.domain.navigation.DateRange
+import com.qtekfun.ultimatecalendar.domain.navigation.NavigationSettings
 import com.qtekfun.ultimatecalendar.domain.navigation.PendingInvitations
 import com.qtekfun.ultimatecalendar.domain.result.CalendarError
 import com.qtekfun.ultimatecalendar.domain.result.CalendarResult
@@ -92,8 +93,11 @@ class ShellViewModelTest {
         PendingInvitations { invitations },
         clock,
         SystemZone { madrid },
-        { firstDay },
-        { initial }
+        object : NavigationSettings {
+            override fun current() = firstDay
+
+            override fun initial() = initial
+        }
     )
 
     /** The first state from here on that [matches]: the calendars load on another thread. */
@@ -266,26 +270,6 @@ class ShellViewModelTest {
             model.setCalendarVisible(work.id, true)
             awaitUntil { it.isVisible(work.id) == true }
             assertEquals(true, repository.settings(work.id).visible)
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-
-    @Test
-    fun `customizing a calendar stores a name and a color on this phone only`() = runTest {
-        val model = viewModel()
-
-        model.state.test {
-            loaded()
-            model.saveCalendarLook(work, "Job", 0xFF112233.toInt())
-
-            awaitUntil {
-                it.accounts.flatMap { g -> g.calendars }.any { c -> c.displayName == "Job" }
-            }
-            val stored = repository.settings(work.id)
-            assertEquals("Job", stored.displayName)
-            assertEquals(0xFF112233.toInt(), stored.color)
-            // The source itself was not touched.
-            assertEquals("Work", source.calendars().value.first { it.id == work.id }.displayName)
             cancelAndIgnoreRemainingEvents()
         }
     }

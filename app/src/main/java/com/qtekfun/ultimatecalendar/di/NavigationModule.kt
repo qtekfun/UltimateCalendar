@@ -6,7 +6,7 @@ package com.qtekfun.ultimatecalendar.di
 import com.qtekfun.ultimatecalendar.data.invitations.InvitationInbox
 import com.qtekfun.ultimatecalendar.data.settings.RepositoryNavigationSettings
 import com.qtekfun.ultimatecalendar.domain.navigation.FirstDayOfWeekSource
-import com.qtekfun.ultimatecalendar.domain.navigation.InitialViewSource
+import com.qtekfun.ultimatecalendar.domain.navigation.NavigationSettings
 import com.qtekfun.ultimatecalendar.domain.navigation.PendingInvitations
 import dagger.Module
 import dagger.Provides
@@ -20,13 +20,13 @@ import kotlinx.coroutines.flow.onStart
 @Module
 @InstallIn(SingletonComponent::class)
 object NavigationModule {
-    /** The first day of the week of Settings (RF-10), for the views and the widgets. */
+    /** The first day of the week and the opening view of Settings (RF-10), for the shell. */
+    @Provides
+    fun navigationSettings(settings: RepositoryNavigationSettings): NavigationSettings = settings
+
+    /** The first day of the week of Settings, for the widgets. */
     @Provides
     fun firstDayOfWeek(settings: RepositoryNavigationSettings): FirstDayOfWeekSource = settings
-
-    /** The view the app opens on, from Settings (RF-10). */
-    @Provides
-    fun initialView(settings: RepositoryNavigationSettings): InitialViewSource = settings
 
     /** The badge of the tray counts what the invitation tray lists (RF-06). */
     @Provides

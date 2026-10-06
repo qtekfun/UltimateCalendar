@@ -44,6 +44,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextOverflow
 import com.qtekfun.ultimatecalendar.R
+import com.qtekfun.ultimatecalendar.domain.model.CalendarInfo
 import com.qtekfun.ultimatecalendar.domain.navigation.AccountCalendars
 import com.qtekfun.ultimatecalendar.domain.navigation.CalendarView
 import com.qtekfun.ultimatecalendar.ui.components.CalendarCheckRow
@@ -176,39 +177,40 @@ private fun AccountSection(group: AccountCalendars, actions: ShellActions) {
         }
         AnimatedVisibility(expanded) {
             Column {
-                group.calendars.forEach { calendar ->
-                    var editing by rememberSaveable(calendar.id.value) { mutableStateOf(false) }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        CalendarCheckRow(
-                            name = calendar.displayName,
-                            color = calendar.color,
-                            checked = calendar.visible,
-                            onCheckedChange = { actions.onSetCalendarVisible(calendar.id, it) },
-                            modifier = Modifier.weight(1f).padding(start = Spacing.s)
-                        )
-                        IconButton(onClick = { editing = true }) {
-                            Icon(
-                                Icons.Filled.Edit,
-                                contentDescription = stringResource(
-                                    R.string.cal_look_edit,
-                                    calendar.displayName
-                                )
-                            )
-                        }
-                    }
-                    if (editing) {
-                        CalendarLookDialog(
-                            calendar,
-                            onDismiss = { editing = false },
-                            onSave = { name, color ->
-                                editing = false
-                                actions.onSaveCalendarLook(calendar, name, color)
-                            }
-                        )
-                    }
-                }
+                group.calendars.forEach { calendar -> CalendarRow(calendar, actions) }
             }
         }
+    }
+}
+
+/** A calendar's visibility box, and the pencil that opens its name and color on this phone. */
+@Composable
+private fun CalendarRow(calendar: CalendarInfo, actions: ShellActions) {
+    var editing by rememberSaveable(calendar.id.value) { mutableStateOf(false) }
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        CalendarCheckRow(
+            name = calendar.displayName,
+            color = calendar.color,
+            checked = calendar.visible,
+            onCheckedChange = { actions.onSetCalendarVisible(calendar.id, it) },
+            modifier = Modifier.weight(1f).padding(start = Spacing.s)
+        )
+        IconButton(onClick = { editing = true }) {
+            Icon(
+                Icons.Filled.Edit,
+                contentDescription = stringResource(R.string.cal_look_edit, calendar.displayName)
+            )
+        }
+    }
+    if (editing) {
+        CalendarLookDialog(
+            calendar,
+            onDismiss = { editing = false },
+            onSave = { name, color ->
+                editing = false
+                actions.onSaveCalendarLook(calendar, name, color)
+            }
+        )
     }
 }
 

@@ -26,7 +26,7 @@ data class AppSettings(
     val defaultReminders: List<Int> = SettingsRules.DEFAULT_REMINDERS,
     /** Reminders given to a new all-day event, in minutes before [allDayMinute] of its day. */
     val defaultAllDayReminders: List<Int> = SettingsRules.DEFAULT_ALL_DAY_REMINDERS,
-    val inviteCheck: InviteCheckInterval = InviteCheckInterval.EVERY_30,
+    val inviteCheck: InviteCheckInterval = InviteCheckInterval.EVERY_15,
     /** Addresses that are the user's own, besides the accounts' (lower case). */
     val ownEmails: List<String> = emptyList(),
     /** Tell when the organizer moves an invitation (RF-07); off by default. */

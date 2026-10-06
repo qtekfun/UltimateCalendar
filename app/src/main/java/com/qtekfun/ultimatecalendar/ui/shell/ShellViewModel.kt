@@ -8,11 +8,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.qtekfun.ultimatecalendar.data.calendar.CalendarRepository
 import com.qtekfun.ultimatecalendar.domain.model.CalendarId
-import com.qtekfun.ultimatecalendar.domain.model.CalendarInfo
 import com.qtekfun.ultimatecalendar.domain.navigation.AccountCalendars
 import com.qtekfun.ultimatecalendar.domain.navigation.CalendarView
-import com.qtekfun.ultimatecalendar.domain.navigation.FirstDayOfWeekSource
-import com.qtekfun.ultimatecalendar.domain.navigation.InitialViewSource
+import com.qtekfun.ultimatecalendar.domain.navigation.NavigationSettings
 import com.qtekfun.ultimatecalendar.domain.navigation.PendingInvitations
 import com.qtekfun.ultimatecalendar.domain.navigation.ViewPeriods
 import com.qtekfun.ultimatecalendar.domain.result.CalendarResult
@@ -42,8 +40,7 @@ class ShellViewModel @Inject constructor(
     invitations: PendingInvitations,
     private val clock: Clock,
     private val zone: SystemZone,
-    private val firstDayOfWeek: FirstDayOfWeekSource,
-    private val initialView: InitialViewSource
+    private val navigation: NavigationSettings
 ) : ViewModel() {
     private data class Selection(val view: CalendarView, val date: LocalDate)
 
@@ -53,7 +50,7 @@ class ShellViewModel @Inject constructor(
         selection,
         repository.calendars(),
         invitations.count(),
-        firstDayOfWeek.changes()
+        navigation.changes()
     ) { selected, calendars, pending, first ->
         build(
             selected,
@@ -67,7 +64,7 @@ class ShellViewModel @Inject constructor(
         SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS),
         build(
             selection.value,
-            firstDayOfWeek.current(),
+            navigation.current(),
             accounts = emptyList(),
             failed = false,
             pending = 0
@@ -88,20 +85,6 @@ class ShellViewModel @Inject constructor(
     fun setCalendarVisible(id: CalendarId, visible: Boolean) {
         viewModelScope.launch {
             repository.saveSettings(id, repository.settings(id).copy(visible = visible))
-        }
-    }
-
-    /**
-     * Gives a calendar the name and color the user typed and picked, on this phone only (RF-02).
-     * [pickedColor] null goes back to the source's color; a blank [typedName], to its name.
-     */
-    fun saveCalendarLook(calendar: CalendarInfo, typedName: String, pickedColor: Int?) {
-        viewModelScope.launch {
-            val current = repository.settings(calendar.id)
-            repository.saveSettings(
-                calendar.id,
-                current.withLook(calendar.displayName, typedName, calendar.color, pickedColor)
-            )
         }
     }
 
@@ -134,7 +117,7 @@ class ShellViewModel @Inject constructor(
         val view = saved.get<String>(KEY_VIEW)
             ?.let { name -> CalendarView.entries.firstOrNull { it.name == name } }
         val date = saved.get<Long>(KEY_DATE)?.let(LocalDate::ofEpochDay)
-        return Selection(view ?: initialView.initial(), date ?: today())
+        return Selection(view ?: navigation.initial(), date ?: today())
     }
 
     private companion object {

@@ -38,7 +38,7 @@ class SettingsRepositoryTest {
         assertEquals(60, settings.defaultDurationMinutes)
         assertEquals(listOf(10), settings.defaultReminders)
         assertEquals(listOf(0), settings.defaultAllDayReminders)
-        assertEquals(InviteCheckInterval.EVERY_30, settings.inviteCheck)
+        assertEquals(InviteCheckInterval.EVERY_15, settings.inviteCheck)
         assertEquals(emptyList<String>(), settings.ownEmails)
         assertFalse(settings.notifyChanges || settings.notifyCancellations)
         assertEquals(ReRemindOption.OFF, settings.reRemind)
@@ -127,7 +127,7 @@ class SettingsRepositoryTest {
         assertEquals(ThemeMode.SYSTEM, settings.theme)
         assertEquals(FirstDayOfWeek.LOCALE, settings.firstDayOfWeek)
         assertEquals(InitialView.WEEK, settings.initialView)
-        assertEquals(InviteCheckInterval.EVERY_30, settings.inviteCheck)
+        assertEquals(InviteCheckInterval.EVERY_15, settings.inviteCheck)
         assertEquals(listOf(10, 20), settings.defaultReminders)
         assertEquals(listOf("ana@example.com"), settings.ownEmails)
         assertEquals(24 * 60, settings.defaultDurationMinutes)
@@ -218,7 +218,7 @@ class SettingsRepositoryTest {
     fun `the invitation check reads the interval and the aliases of the settings`() = runTest {
         val check = RepositoryInvitationCheckSettings(repository)
         check.intervals.test {
-            assertEquals(CheckInterval.HALF_HOUR, awaitItem())
+            assertEquals(CheckInterval.QUARTER_HOUR, awaitItem())
             repository.update { it.copy(inviteCheck = InviteCheckInterval.EVERY_60) }
             assertEquals(CheckInterval.HOUR, awaitItem())
             // A change of something else is not a new interval.

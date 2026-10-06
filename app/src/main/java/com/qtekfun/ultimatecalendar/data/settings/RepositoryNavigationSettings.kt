@@ -4,8 +4,7 @@
 package com.qtekfun.ultimatecalendar.data.settings
 
 import com.qtekfun.ultimatecalendar.domain.navigation.CalendarView
-import com.qtekfun.ultimatecalendar.domain.navigation.FirstDayOfWeekSource
-import com.qtekfun.ultimatecalendar.domain.navigation.InitialViewSource
+import com.qtekfun.ultimatecalendar.domain.navigation.NavigationSettings
 import com.qtekfun.ultimatecalendar.domain.settings.InitialView
 import java.time.DayOfWeek
 import java.util.Locale
@@ -21,8 +20,7 @@ import kotlinx.coroutines.flow.map
  */
 @Singleton
 class RepositoryNavigationSettings @Inject constructor(private val repository: SettingsRepository) :
-    FirstDayOfWeekSource,
-    InitialViewSource {
+    NavigationSettings {
     override fun current(): DayOfWeek = resolve(repository.current())
 
     override fun changes(): Flow<DayOfWeek> =
