@@ -19,11 +19,13 @@ naming:
 
 complexity:
   TooManyFunctions:
-    # detekt's default test exclusions (an excludes list replaces them), plus the Room
+    # detekt's default test exclusions (an excludes list replaces them; sharedTest is the
+    # fake and contract suite shared by test and androidTest), plus the Room
     # database, which exposes one accessor per DAO.
     excludes:
       - '**/test/**'
       - '**/androidTest/**'
+      - '**/sharedTest/**'
       - '**/data/local/UltimateCalendarDatabase.kt'
   LongParameterList:
     # Composables expose many optional parameters with defaults.
@@ -40,6 +42,7 @@ style:
     excludes:
       - '**/test/**'
       - '**/androidTest/**'
+      - '**/sharedTest/**'
       - '**/*.kts'
       - '**/ui/theme/**'
       # Sample data of the drag and drop prototype (T02).
@@ -50,3 +53,5 @@ style:
       - '**/ui/timegrid/TimeGridPreviews.kt'
       # Invented sample data of the month previews (T17).
       - '**/ui/month/MonthPreviews.kt'
+      # Invented sample data of the Week previews (T16).
+      - '**/ui/timegrid/WeekPreviews.kt'

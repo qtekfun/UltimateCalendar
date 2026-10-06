@@ -13,4 +13,12 @@
     <string name="timegrid_failed">Events could not be read</string>
     <string name="timegrid_event_detail">Event</string>
     <string name="timegrid_day_today">%1$s, today</string>
+    <string name="timegrid_week_number_short">W%1$d</string>
+    <string name="timegrid_week_number">Week %1$d</string>
+    <string name="timegrid_all_day_less">Less</string>
+    <string name="timegrid_all_day_less_description">Show fewer all-day events</string>
+    <plurals name="timegrid_all_day_more">
+        <item quantity="one">%1$d more all-day event, show all</item>
+        <item quantity="other">%1$d more all-day events, show all</item>
+    </plurals>
 </resources>

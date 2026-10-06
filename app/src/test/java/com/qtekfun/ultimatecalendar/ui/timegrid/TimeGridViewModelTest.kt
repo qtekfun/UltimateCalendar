@@ -183,6 +183,46 @@ class TimeGridViewModelTest {
     }
 
     @Test
+    fun `a week page spreads timed and multi-day events over seven columns and follows changes`() =
+        runTest {
+            // Monday 9 March to Sunday 15 March 2026; the events sit on Wed 11 and Fri 13.
+            val week = DateRange(day.minusDays(2), day.plusDays(5))
+            add(work, "Midweek", 9)
+            source.create(
+                EventDraft(
+                    calendarId = home.id,
+                    title = "Trip",
+                    time = EventTime.AllDay(day.plusDays(1), day.plusDays(5))
+                )
+            )
+
+            viewModel().page(week).test {
+                val first = awaitItem()
+                assertEquals(7, first.page.days.size)
+                assertEquals(listOf(2), first.page.timed.map { it.dayIndex })
+                val trip = first.page.allDay.single()
+                assertEquals(3, trip.firstDay)
+                assertEquals(6, trip.lastDay)
+                assertEquals(0xFF445566.toInt(), trip.color)
+
+                source.create(
+                    EventDraft(
+                        calendarId = work.id,
+                        title = "Friday",
+                        time = EventTime.Timed(
+                            day.plusDays(2).atTime(15, 0).atZone(madrid).toInstant(),
+                            day.plusDays(2).atTime(16, 0).atZone(madrid).toInstant(),
+                            madrid
+                        )
+                    )
+                )
+                val updated = awaitItem()
+                assertEquals(listOf(2, 4), updated.page.timed.map { it.dayIndex })
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+    @Test
     fun `a source that fails gives an empty page flagged as failed`() = runTest {
         val failing = mockk<CalendarSource>()
         every { failing.changes } returns emptyFlow()
