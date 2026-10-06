@@ -5,6 +5,7 @@ package com.qtekfun.ultimatecalendar.data.source
 
 import com.qtekfun.ultimatecalendar.domain.model.Event
 import com.qtekfun.ultimatecalendar.domain.model.EventDraft
+import com.qtekfun.ultimatecalendar.domain.model.EventId
 import com.qtekfun.ultimatecalendar.domain.recurrence.SeriesChange
 import com.qtekfun.ultimatecalendar.domain.result.CalendarResult
 import java.time.ZoneOffset
@@ -38,19 +39,30 @@ object SeriesChanges {
         source: CalendarSource,
         master: Event,
         change: SeriesChange
-    ): CalendarResult<Unit> = when (change) {
-        is SeriesChange.Update -> source.update(change.event)
+    ): CalendarResult<Unit> = applyTracked(source, master, change).map { }
 
-        is SeriesChange.Delete -> source.delete(change.id)
+    /**
+     * Like [apply], and answers the id of the series a split started (null when it did not start
+     * one), so that a caller can take the split back.
+     */
+    suspend fun applyTracked(
+        source: CalendarSource,
+        master: Event,
+        change: SeriesChange
+    ): CalendarResult<EventId?> = when (change) {
+        is SeriesChange.Update -> source.update(change.event).map { null }
+
+        is SeriesChange.Delete -> source.delete(change.id).map { null }
 
         is SeriesChange.CancelOccurrence ->
             source.cancelInstance(master.id, change.originalStart.startIn(ZoneOffset.UTC))
+                .map { null }
 
         is SeriesChange.ReplaceOccurrence -> source.editInstance(
             master.id,
             change.originalStart.startIn(ZoneOffset.UTC),
             change.event.toDraft()
-        )
+        ).map { null }
 
         is SeriesChange.Split -> split(source, master, change)
     }
@@ -59,11 +71,13 @@ object SeriesChanges {
         source: CalendarSource,
         master: Event,
         change: SeriesChange.Split
-    ): CalendarResult<Unit> {
+    ): CalendarResult<EventId?> {
         val cut = source.update(change.truncated)
         val next = change.newSeries
-        return if (cut is CalendarResult.Failure || next == null) {
+        return if (cut is CalendarResult.Failure) {
             cut
+        } else if (next == null) {
+            CalendarResult.Success(null)
         } else {
             startNext(source, master, next)
         }
@@ -74,9 +88,9 @@ object SeriesChanges {
         source: CalendarSource,
         master: Event,
         next: Event
-    ): CalendarResult<Unit> {
+    ): CalendarResult<EventId?> {
         val created = source.create(next.toDraft())
         if (created is CalendarResult.Failure) source.update(master)
-        return created.map { }
+        return created
     }
 }
