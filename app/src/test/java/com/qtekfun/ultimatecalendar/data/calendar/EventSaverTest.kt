@@ -229,7 +229,7 @@ class EventSaverTest {
     }
 
     @Test
-    fun `a split that cannot end the old series takes the new one back`() = runTest {
+    fun `a split that cannot end the old series changes nothing`() = runTest {
         val master = series()
         val failing = object : CalendarSource by source {
             override suspend fun update(event: Event): CalendarResult<Unit> =
@@ -248,7 +248,7 @@ class EventSaverTest {
     }
 
     @Test
-    fun `a split whose new series is refused leaves the old one alone`() = runTest {
+    fun `a split whose new series is refused puts the old series back`() = runTest {
         val master = series()
         val refusing = object : CalendarSource by source {
             override suspend fun create(draft: EventDraft): CalendarResult<EventId> =
