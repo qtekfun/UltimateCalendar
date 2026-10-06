@@ -35,7 +35,7 @@ internal class ProviderReminderReads(private val gateway: ProviderGateway) {
             val own = stored[row.long(Instances.EVENT_ID)].orEmpty()
             EventReminders(
                 instance = instance,
-                reminders = own.mapNotNull(ReminderMapping::toReminder),
+                reminders = own.mapNotNull(ReminderMapping::toReminder).distinct(),
                 description = row.text(Instances.DESCRIPTION)?.ifEmpty { null },
                 usesDefaults = own.any(ReminderMapping::isDefault)
             )

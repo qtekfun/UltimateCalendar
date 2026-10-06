@@ -410,11 +410,13 @@ object CalendarSourceContract {
                 "no reminders left"
             )
         },
-        Scenario("a changed occurrence has its own reminders and the others keep theirs") {
+        Scenario("a changed occurrence is read with the reminders it was changed with") {
             val id = source.create(
                 draft(rrule = "FREQ=DAILY;COUNT=3").copy(reminders = listOf(Reminder(15)))
             ).value()
             val second = noon.plusSeconds(DAY)
+            // The provider may also copy the series' reminders into a changed occurrence, so the
+            // scenario only needs the ones it asked for to be there.
             source.editInstance(
                 id,
                 second,
@@ -422,15 +424,18 @@ object CalendarSourceContract {
             ).value()
             val found = source.instancesWithReminders(month).value()
             expectEquals(
-                listOf("Lunch" to 15, "Moved" to 5, "Lunch" to 15),
-                found.map { it.instance.title to it.reminders.single().minutesBefore },
-                "reminders by occurrence"
+                listOf("Lunch", "Moved", "Lunch"),
+                found.map { it.instance.title },
+                "titles"
             )
             expectEquals(
                 listOf(noon, second.plusSeconds(HOUR), noon.plusSeconds(2 * DAY)),
                 found.map { it.instance.time.startIn(ZoneOffset.UTC) },
                 "starts"
             )
+            expectEquals(setOf(Reminder(15)), found[0].reminders.toSet(), "first keeps its own")
+            expect(Reminder(5) in found[1].reminders, "the changed one has the new reminder")
+            expectEquals(setOf(Reminder(15)), found[2].reminders.toSet(), "last keeps its own")
         },
         Scenario("changes are announced") {
             coroutineScope {

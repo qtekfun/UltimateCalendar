@@ -153,6 +153,14 @@ class ProviderReminderReadsTest {
     }
 
     @Test
+    fun `a reminder the provider repeats is read once`() = runTest {
+        gateway.instances = listOf(instance(1))
+        gateway.reminders = listOf(reminder(1, 15), reminder(1, 15), reminder(1, 5))
+
+        assertEquals(listOf(Reminder(15), Reminder(5)), read().single().reminders)
+    }
+
+    @Test
     fun `the occurrences come sorted by start`() = runTest {
         gateway.instances = listOf(
             instance(1, noon.plusSeconds(2 * HOUR)),

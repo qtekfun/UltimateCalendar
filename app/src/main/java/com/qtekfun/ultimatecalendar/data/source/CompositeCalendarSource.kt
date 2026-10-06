@@ -56,8 +56,13 @@ class CompositeCalendarSource(
         range: TimeRange,
         calendarIds: Set<CalendarId>?
     ): CalendarResult<List<EventReminders>> = merged(
-        ask(calendarIds, calDav = false) { provider.instancesWithReminders(range, it) },
-        ask(calendarIds, calDav = true) { caldav.instancesWithReminders(range, it) }
+        ask(calendarIds, SourceKind.PROVIDER) { provider.instancesWithReminders(range, it) },
+        listOf(
+            ask(calendarIds, SourceKind.CALDAV) { caldav.instancesWithReminders(range, it) },
+            ask(calendarIds, SourceKind.SUBSCRIPTION) {
+                subscriptions.instancesWithReminders(range, it)
+            }
+        )
     ) { list -> list.sortedBy { it.instance.time.startIn(ZoneOffset.UTC) } }
 
     override suspend fun search(
