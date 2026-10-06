@@ -3,8 +3,8 @@
 
 package com.qtekfun.ultimatecalendar.di
 
+import com.qtekfun.ultimatecalendar.data.settings.RepositoryReminderSettings
 import com.qtekfun.ultimatecalendar.domain.reminders.ReminderEventSource
-import com.qtekfun.ultimatecalendar.notify.PreferencesReminderSettings
 import com.qtekfun.ultimatecalendar.notify.PreferencesShownReminders
 import com.qtekfun.ultimatecalendar.notify.ReminderBeat
 import com.qtekfun.ultimatecalendar.notify.ReminderHeartbeat
@@ -26,7 +26,7 @@ interface ReminderBindingsModule {
     fun beat(heartbeat: ReminderHeartbeat): ReminderBeat
 
     @Binds
-    fun settings(settings: PreferencesReminderSettings): ReminderSettingsSource
+    fun settings(settings: RepositoryReminderSettings): ReminderSettingsSource
 
     @Binds
     fun shown(shown: PreferencesShownReminders): ShownReminders
