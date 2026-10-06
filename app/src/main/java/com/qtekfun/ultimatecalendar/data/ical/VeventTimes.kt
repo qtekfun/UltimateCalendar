@@ -12,6 +12,7 @@ import java.time.ZoneId
 import java.time.ZoneOffset
 
 /** `DTSTART`, `DTEND`, `DURATION`, `EXDATE`, `RDATE` and `RECURRENCE-ID` of a `VEVENT`. */
+@Suppress("TooManyFunctions")
 internal object VeventTimes {
     private const val SECONDS_PER_DAY = 86_400L
 

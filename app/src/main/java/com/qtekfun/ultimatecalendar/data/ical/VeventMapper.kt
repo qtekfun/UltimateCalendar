@@ -16,6 +16,8 @@ import java.util.Locale
  * each field with what the file already says and only rewrites the properties that changed, so
  * the rest of the file, including what the app does not understand, stays byte for byte.
  */
+// Reading and writing each field is one small function; they belong together.
+@Suppress("TooManyFunctions")
 object VeventMapper {
     const val PRODUCT_ID = "-//UltimateCalendar//UltimateCalendar//EN"
 

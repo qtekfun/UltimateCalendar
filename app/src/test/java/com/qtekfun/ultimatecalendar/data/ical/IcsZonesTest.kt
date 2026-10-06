@@ -87,7 +87,8 @@ class IcsZonesTest {
         )
 
         val onlyDaylight = calendarOf(
-            "BEGIN:VTIMEZONE\nTZID:Corporate Time Zone 7\nBEGIN:DAYLIGHT\nTZOFFSETTO:-0300\nEND:DAYLIGHT\nEND:VTIMEZONE\n"
+            "BEGIN:VTIMEZONE\nTZID:Corporate Time Zone 7\nBEGIN:DAYLIGHT\nTZOFFSETTO:-0300\n" +
+                "END:DAYLIGHT\nEND:VTIMEZONE\n"
         )
         assertEquals(
             ZoneOffset.ofHours(-3),

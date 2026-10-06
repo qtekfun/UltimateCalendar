@@ -9,6 +9,7 @@ import com.qtekfun.ultimatecalendar.domain.model.AttendeeStatus
 import java.util.Locale
 
 /** `ORGANIZER` and `ATTENDEE` (`CN`, `PARTSTAT`, `ROLE`, `CUTYPE`) of a `VEVENT`. */
+@Suppress("TooManyFunctions")
 internal object VeventAttendees {
     private const val MAILTO = "mailto:"
 

@@ -23,10 +23,11 @@ class PreferencesLoginStorage @Inject constructor(
         val login = preferences.getString(LOGIN_NAME, null)
         val ciphertext = preferences.getString(CIPHERTEXT, null)?.let(::decode)
         val iv = preferences.getString(IV, null)?.let(::decode)
-        return if (server == null || login == null || ciphertext == null || iv == null) {
-            null
+        val secret = if (ciphertext != null && iv != null) EncryptedSecret(ciphertext, iv) else null
+        return if (server != null && login != null && secret != null) {
+            StoredLogin(server, login, secret)
         } else {
-            StoredLogin(server, login, EncryptedSecret(ciphertext, iv))
+            null
         }
     }
 

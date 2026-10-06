@@ -16,6 +16,8 @@ import java.util.Locale
  */
 object IcsZones {
     /** The zone of [tzid], or null when neither the name nor [calendar]'s VTIMEZONEs explain it. */
+    // Direct name first, then the file's own definition: early returns keep it readable.
+    @Suppress("ReturnCount")
     fun resolve(tzid: String, calendar: IcsComponent? = null): ZoneId? {
         val name = tzid.trim().trim('"')
         val direct = named(name) ?: windows(name)
@@ -53,6 +55,8 @@ object IcsZones {
     }
 
     /** `+0100`, `-0530` or `+010000`. */
+    // Each malformed shape is refused on its own line.
+    @Suppress("ReturnCount")
     internal fun parseOffset(text: String): ZoneOffset? {
         val sign = when (text.firstOrNull()) {
             '+' -> 1
@@ -65,11 +69,13 @@ object IcsZones {
         ) {
             return null
         }
-        val hours = digits.substring(0, 2).toInt()
-        val minutes = digits.substring(2, 4).toInt()
-        val seconds = digits.drop(4).ifEmpty { "0" }.toInt()
+        val hours = digits.substring(0, HH_END).toInt()
+        val minutes = digits.substring(HH_END, MM_END).toInt()
+        val seconds = digits.drop(MM_END).ifEmpty { "0" }.toInt()
         return runCatching {
-            ZoneOffset.ofTotalSeconds(sign * (hours * SECONDS_PER_HOUR + minutes * 60 + seconds))
+            ZoneOffset.ofTotalSeconds(
+                sign * (hours * SECONDS_PER_HOUR + minutes * SECONDS_PER_MINUTE + seconds)
+            )
         }.getOrNull()
     }
 
@@ -95,6 +101,9 @@ object IcsZones {
     private const val OFFSET_MINUTES = 4
     private const val OFFSET_SECONDS = 6
     private const val SECONDS_PER_HOUR = 3600
+    private const val SECONDS_PER_MINUTE = 60
+    private const val HH_END = 2
+    private const val MM_END = 4
 
     /** Windows zone names (CLDR windowsZones, territory 001) to IANA ids; keys in lower case. */
     private val WINDOWS: Map<String, String> = mapOf(
