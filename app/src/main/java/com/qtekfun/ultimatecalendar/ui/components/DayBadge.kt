@@ -16,16 +16,19 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.text.intl.Locale
+import androidx.compose.ui.unit.Dp
 import com.qtekfun.ultimatecalendar.R
 import com.qtekfun.ultimatecalendar.ui.theme.Dimens
 import com.qtekfun.ultimatecalendar.ui.theme.Motion
@@ -37,13 +40,16 @@ import java.time.format.FormatStyle
 
 /**
  * The day-of-month number in a circle. With [onClick] the whole 48 dp around it is the touch
- * target; the circle itself stays [Dimens.dayBadge]. Talkback reads the full date.
+ * target; the circle is at least [Dimens.dayBadge] and grows with the font so the number never
+ * clips. Talkback reads the full date, unless [announce] is false: the parent describes the day
+ * (the Month cell), and saying it twice would be noise.
  */
 @Composable
 fun DayBadge(
     date: LocalDate,
     modifier: Modifier = Modifier,
     state: DayBadgeState = DayBadgeState.NORMAL,
+    announce: Boolean = true,
     onClick: (() -> Unit)? = null
 ) {
     val scheme = MaterialTheme.colorScheme
@@ -79,14 +85,16 @@ fun DayBadge(
         modifier
             .then(clickable)
             .clearAndSetSemantics {
-                contentDescription = description
-                selected = state == DayBadgeState.SELECTED || state == DayBadgeState.TODAY
+                if (announce) {
+                    contentDescription = description
+                    selected = state == DayBadgeState.SELECTED || state == DayBadgeState.TODAY
+                }
             },
         contentAlignment = Alignment.Center
     ) {
         Box(
             Modifier
-                .size(Dimens.dayBadge)
+                .size(rememberDayBadgeSize())
                 .clip(CircleShape)
                 .background(fill),
             contentAlignment = Alignment.Center
@@ -101,6 +109,19 @@ fun DayBadge(
 }
 
 private const val DIMMED_ALPHA = 0.8f
+
+/**
+ * The side of the circle: [Dimens.dayBadge], or the height of the number plus a little air when
+ * the font is large enough to need more (200 % would clip a fixed 32 dp).
+ */
+@Composable
+fun rememberDayBadgeSize(): Dp {
+    val density = LocalDensity.current
+    val style = MaterialTheme.calendarType.dayNumber
+    return remember(density, style) {
+        maxOf(Dimens.dayBadge, with(density) { style.lineHeight.toDp() } + Spacing.s)
+    }
+}
 
 @ComponentPreviews
 @Composable

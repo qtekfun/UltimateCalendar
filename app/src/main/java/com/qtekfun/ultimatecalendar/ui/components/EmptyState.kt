@@ -23,6 +23,10 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.PathParser
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import com.qtekfun.ultimatecalendar.R
 import com.qtekfun.ultimatecalendar.ui.theme.Dimens
@@ -47,17 +51,25 @@ fun EmptyState(
         verticalArrangement = Arrangement.spacedBy(Spacing.m, Alignment.CenterVertically)
     ) {
         illustration()
-        Text(
-            title,
-            style = MaterialTheme.typography.titleMedium,
-            textAlign = TextAlign.Center
-        )
-        Text(
-            body,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center
-        )
+        // One node, announced politely when it appears (an empty search, a view without events).
+        Column(
+            Modifier.semantics(mergeDescendants = true) { liveRegion = LiveRegionMode.Polite },
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(Spacing.m)
+        ) {
+            Text(
+                title,
+                Modifier.semantics { heading() },
+                style = MaterialTheme.typography.titleMedium,
+                textAlign = TextAlign.Center
+            )
+            Text(
+                body,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
+            )
+        }
         if (actionLabel != null) {
             FilledTonalButton(onClick = onAction) { Text(actionLabel) }
         }

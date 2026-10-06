@@ -26,4 +26,5 @@
     <string name="invitations_answered_decline">Has rechazado %1$s</string>
     <string name="invitations_refresh_failed">No se pudieron buscar invitaciones.</string>
     <string name="invitations_gone">Ese evento ya no existe.</string>
+    <string name="invitation_answer_for">%1$s: %2$s</string>
 </resources>
