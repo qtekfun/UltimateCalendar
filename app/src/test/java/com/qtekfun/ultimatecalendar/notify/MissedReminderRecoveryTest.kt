@@ -13,6 +13,8 @@ import com.qtekfun.ultimatecalendar.domain.reminders.PlannedReminder
 import com.qtekfun.ultimatecalendar.domain.reminders.ReminderEventSource
 import com.qtekfun.ultimatecalendar.domain.reminders.ReminderPlanner
 import com.qtekfun.ultimatecalendar.domain.reminders.ShownReminder
+import com.qtekfun.ultimatecalendar.domain.reminders.SnoozeOption
+import com.qtekfun.ultimatecalendar.domain.reminders.Snoozes
 import io.mockk.every
 import io.mockk.mockk
 import java.time.Clock
@@ -67,25 +69,44 @@ private class FakeSettings(initial: ReminderSettings = ReminderSettings()) :
     }
 }
 
+private class FakeSnoozed : SnoozedReminders {
+    val items = mutableListOf<PlannedReminder>()
+
+    override suspend fun all(): List<PlannedReminder> = items.toList()
+
+    override suspend fun put(reminder: PlannedReminder) {
+        items.removeAll { it.id == reminder.id }
+        items += reminder
+    }
+
+    override suspend fun remove(ids: Collection<Long>) {
+        items.removeAll { it.id in ids }
+    }
+
+    override suspend fun take(id: Long, at: Instant): Boolean =
+        items.removeAll { it.id == id && it.at == at }
+}
+
 /** Missed reminders: what shows, what does not, and only once (RF-08). */
 class MissedReminderRecoveryTest {
     private val clock = MutableClock(Instant.parse("2026-10-05T10:00:00Z"))
     private val shown = FakeShownReminders()
     private val settings = FakeSettings()
+    private val snoozed = FakeSnoozed()
     private val events = mutableListOf<EventReminders>()
     private val source = ReminderEventSource { _, _ -> flowOf(events.toList()) }
     private val brought = mutableListOf<Pair<PlannedReminder, Boolean>>()
     private val notifier = mockk<ReminderNotifier> {
-        every { show(any(), any()) } answers
+        every { show(any(), any(), any()) } answers
             { brought += firstArg<PlannedReminder>() to secondArg() }
     }
     private val recovery = MissedReminderRecovery(
         source,
         settings,
         shown,
+        snoozed,
         notifier,
-        { ZoneOffset.UTC },
-        clock
+        ReminderTime(clock) { ZoneOffset.UTC }
     )
 
     /** An event starting at [start] (UTC) with an alert 10 minutes before. */
@@ -148,5 +169,59 @@ class MissedReminderRecoveryTest {
         shown.records += ShownReminder(4, clock.now.minus(Duration.ofHours(47)))
         recovery.recover()
         assertEquals(listOf(4L), shown.records.map { it.reminderId })
+    }
+
+    /** The reminder of the last [event] after being postponed to [at]. */
+    private fun postponed(at: String): PlannedReminder {
+        val planned = ReminderPlanner.planAll(events, LocalTime.of(9, 0), ZoneOffset.UTC).last()
+        return Snoozes.snooze(
+            planned,
+            SnoozeOption.FIVE_MINUTES,
+            Instant.parse(at).minusSeconds(300)
+        )
+    }
+
+    @Test
+    fun `a postponed reminder whose alarm was lost comes back once`() = runTest {
+        recovery.recover()
+        event("lunch", "2026-10-05T10:30:00Z")
+        val later = postponed("2026-10-05T09:58:00Z")
+        snoozed.put(later)
+        recovery.recover()
+        recovery.recover()
+        assertEquals(listOf("lunch" to true), brought.map { it.first.title to it.second })
+        assertEquals(emptyList<PlannedReminder>(), snoozed.items)
+    }
+
+    @Test
+    fun `a postponed reminder that rang is not shown again by the recovery`() = runTest {
+        recovery.recover()
+        event("lunch", "2026-10-05T10:30:00Z")
+        val later = postponed("2026-10-05T09:58:00Z")
+        snoozed.put(later)
+        recovery.fireSnoozed(later)
+        recovery.recover()
+        assertEquals(listOf("lunch" to false), brought.map { it.first.title to it.second })
+    }
+
+    @Test
+    fun `a postponed reminder that was replaced or already shown does not ring`() = runTest {
+        event("lunch", "2026-10-05T10:30:00Z")
+        val old = postponed("2026-10-05T10:05:00Z")
+        snoozed.put(old.copy(at = old.at.plusSeconds(600)))
+        recovery.fireSnoozed(old)
+        recovery.fireSnoozed(old.copy(id = 1))
+        assertEquals(emptyList<Pair<PlannedReminder, Boolean>>(), brought)
+    }
+
+    @Test
+    fun `a postponed reminder of a cancelled event is forgotten when its time passes`() = runTest {
+        event("lunch", "2026-10-05T10:30:00Z")
+        val later = postponed("2026-10-05T09:58:00Z")
+        events.clear()
+        snoozed.put(later)
+        recovery.recover()
+        assertEquals(emptyList<Pair<PlannedReminder, Boolean>>(), brought)
+        assertEquals(emptyList<PlannedReminder>(), snoozed.items)
     }
 }

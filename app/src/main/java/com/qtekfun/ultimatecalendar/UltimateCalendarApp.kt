@@ -5,6 +5,7 @@ package com.qtekfun.ultimatecalendar
 
 import android.app.Application
 import com.qtekfun.ultimatecalendar.notify.KeepAliveController
+import com.qtekfun.ultimatecalendar.notify.NotificationChannels
 import com.qtekfun.ultimatecalendar.notify.ReminderCoordinator
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
@@ -24,6 +25,7 @@ class UltimateCalendarApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        NotificationChannels.ensureCreated(this)
         // Alarms, recovery of missed reminders and robust mode live as long as the process.
         reminders.start(scope)
         keepAlive.start(scope)

@@ -43,7 +43,8 @@ object ReminderPlanner {
         events: List<EventReminders>,
         allDayTime: LocalTime,
         zone: ZoneId
-    ): List<PlannedReminder> = events.flatMap { (instance, reminders) ->
+    ): List<PlannedReminder> = events.flatMap { event ->
+        val (instance, reminders) = event
         val start = instance.time.startIn(zone)
         reminders.filter { it.method == ReminderMethod.ALERT }
             .map { it.minutesBefore }
@@ -58,7 +59,8 @@ object ReminderPlanner {
                     location = instance.location,
                     start = start,
                     allDay = instance.time is EventTime.AllDay,
-                    at = fireAt(instance.time, minutes, allDayTime, zone)
+                    at = fireAt(instance.time, minutes, allDayTime, zone),
+                    joinUrl = event.joinUrl
                 )
             }
     }.sortedBy { it.at }
