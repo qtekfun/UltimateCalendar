@@ -57,7 +57,8 @@ Reglas: una tarea cada vez, en su rama `feat/<tarea>`, con `./gradlew check` en 
 - [ ] **T20 Editor de eventos** (RF-05): campos, avisos múltiples, zona horaria, editor de repetición, asistentes.
 - [ ] **T21 Bandeja de invitaciones** (RF-06) + **notificaciones** con acciones (RF-07): invitaciones, cambios/cancelaciones opcionales, recordatorios con Posponer, canales separados.
 - [ ] **T22 Búsqueda** (RF-09).
-- [ ] **T23 Ajustes** (RF-10) y **copia de seguridad cifrada** (RF-11), copiada de UltimateTasks.
+- [x] **T23 Ajustes** (RF-10) y **copia de seguridad cifrada** (RF-11), copiada de UltimateTasks.
+  - *Resultado:* `SettingsRepository` (SharedPreferences, `Flow<AppSettings>`) sustituye a `PreferencesReminderSettings` y migra el modo robusto antiguo; pantalla `SettingsScreen` (punto de entrada composable, sin cablear a la navegación: T13); copia cifrada AES-256-GCM con PBKDF2 de todo el contenido (en UltimateTasks solo se cifraba la sesión) y sin el calendario por defecto (los ids son del teléfono). Nueva dependencia: kotlinx-serialization-json (Apache-2.0).
 - [ ] **T24 Tablet**: diseño adaptativo (cajón fijo, agenda + detalle).
 
 ## Fase 4 — Pulido
