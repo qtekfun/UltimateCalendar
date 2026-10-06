@@ -103,6 +103,25 @@ Login Flow v2 de Nextcloud, descubrimiento, `sync-collection`, eventos en Room c
 - Accesibilidad: `contentDescription`, 48 dp, fuente al 200 %, TalkBack en la vista de agenda y en la bandeja.
 - Sin datos personales en logs.
 
+### Accesibilidad (T26)
+**Verificado (por código y por tests, sin TalkBack real):**
+- Un solo descriptor puro, `domain.accessibility.EventSpeech`, dice cada evento como una frase ("título, de 9:00 a 9:30, lugar, calendario X, invitación sin responder, en la zona horaria del evento: …") en bloques de la cuadrícula, barras de todo el día, chips del Mes, hoja del día, filas de Agenda y búsqueda; y cada celda del Mes como "martes 6 de octubre, 3 eventos". Palabras en `values/` y `values-es/` (con plurales), probadas contra los XML reales en ambos idiomas.
+- El color nunca es el único portador: pendiente = contorno, quizá = tinte con borde, rechazado = tachado y atenuado, y los tres se dicen. Los bloques de la cuadrícula usaban un umbral de luminancia propio; ahora usan los colores compartidos de `EventChip`, así que el texto llega a AA y los rechazados se tachan también ahí.
+- Contraste: `ContrastAuditTest` recorre una rejilla de más de 200 colores de calendario × 4 estados × claro/oscuro/AMOLED (texto ≥ 4,5:1, contornos y puntos ≥ 3:1) y los pares del tema (texto, error/línea de "ahora", primario/hoy, contorno, días atenuados del mes vecino). Los colores dinámicos del fondo de pantalla no se pueden probar sin dispositivo.
+- Fuente al 200 %: `DayBadge` ya no recorta (el círculo crece con la fuente y el Mes reserva esa altura; si no caben carriles pasa a puntos), la columna de horas y las filas de Agenda ya escalaban, filas de calendario y de cuenta del cajón sin límite de líneas, el título de la barra superior se detiene en 130 % (comparte una fila de 64 dp con cinco botones; el lector dice el título entero).
+- TalkBack: títulos marcados (`heading()`), `stateDescription` en visibilidad de calendarios ("visible/oculto") y cuentas del cajón ("desplegado/plegado"), selección expuesta en los selectores de calendario y color del editor, botones Aceptar/Quizá/Rechazar de la bandeja con el evento ("Aceptar: título") y las mismas tres como acciones personalizadas de la tarjeta, estado vacío y esqueleto como regiones vivas educadas, snackbars de Material con región viva, acciones de TalkBack de T18 ya existentes, y el botón Crear con descripción propia colapsado o no.
+- Movimiento: Agenda, Mes y cuadrícula saltan sin deslizar cuando el sistema quita animaciones (`rememberReduceMotion`); no hay parpadeos.
+- Teclado: acciones IME en los campos del editor, ajustes y búsqueda (Siguiente/Hecho/Buscar); los elementos pulsables usan la indicación de foco de Material.
+- `AccessibilityAuditTest` (androidTest) recorre el árbol semántico de las pantallas principales con datos de las vistas previas, al 100 % y al 200 % de fuente: sin nodos pulsables mudos ni de menos de 48 dp, sin descripciones repetidas. No usa Google accessibility-test-framework: añadiría 28 artefactos a la verificación de dependencias.
+
+**Excepciones que quedan (documentadas, no arregladas):**
+- Chips del Mes (~20 dp), celdas "+N", bloques con hora de menos de 48 dp en Día/Semana y columnas de Semana estrechas (7 días en un teléfono estrecho) siguen por debajo de 48 dp. Compose ya amplía el área táctil de cualquier elemento pulsable hasta 48 dp sin cambiar el diseño (gana el vecino más cercano), no se añade una región mayor porque se solaparía con otros eventos, y la ruta alternativa a tamaño completo existe: tocar el día abre el Día, "+N" abre una hoja con filas de 48 dp y la Agenda lista todo con filas de 48 dp.
+- El icono de "Hoy" tiene el número a tamaño fijo dentro de un glifo de 24 dp (como cualquier icono); su descripción dice la fecha.
+- Contraste de los colores dinámicos y de pares de texto dibujados por Material (menús, diálogos) no se mide aquí: se confía en Material.
+- Los campos numéricos con error se marcan con color y `isError`, sin texto de apoyo propio.
+
+**Solo una sesión real de TalkBack en el teléfono del autor puede confirmar:** el orden de lectura y el foco tras abrir detalle, editor, bandeja y hojas; que las frases suenen naturales en español; que las acciones personalizadas (bandeja, mover/redimensionar) aparezcan en el menú de acciones; cuánto tarda en leerse un día de Mes denso; el comportamiento con "Seleccionar para hablar" y con teclado físico/acceso por botones; y el tamaño de fuente del sistema al máximo en ColorOS (que puede pasar de 200 %).
+
 ## 7. Calidad y CI
 - `./gradlew check` en verde para cerrar cualquier tarea; la CI lo exige antes de fusionar (rama `master` protegida).
 - Kover: ≥ 85 % sobre `domain`, `data` y `sync`; **100 %** en el detector de invitaciones, el planificador de avisos, la recuperación de avisos perdidos, la división de repeticiones ("este y los siguientes") y, en la fase CalDAV, la cola, el resolutor y la expansión de recurrencias.

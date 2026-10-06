@@ -76,7 +76,8 @@ Reglas: una tarea cada vez, en su rama `feat/<tarea>`, con `./gradlew check` en 
 
 ## Fase 4 — Pulido
 - [ ] **T25 Medidas**: rendimiento de Semana/Mes con 5.000 y 20.000 eventos (Macrobenchmark o medidas manuales anotadas en `SPEC.md` §6), batería de la comprobación periódica.
-- [ ] **T26 Accesibilidad**: TalkBack en agenda, bandeja y editor; fuente al 200 %; contraste.
+- [x] **T26 Accesibilidad**: TalkBack en agenda, bandeja y editor; fuente al 200 %; contraste.
+  - *Resultado:* hecho en código y con tests (descriptor `EventSpeech` en ambos idiomas, auditoría de contraste sobre una rejilla de colores y los tres temas, auditoría semántica en androidTest al 100 % y 200 % de fuente). Quedan excepciones de 48 dp en el Mes y la cuadrícula (ver SPEC §6, "Accesibilidad (T26)"). **Pendiente del autor:** una pasada real con TalkBack en el móvil (orden de lectura, foco, acciones personalizadas, frases en español) y con la fuente al máximo en ColorOS.
 - [ ] **T27 Tests de UI de flujos clave**: crear evento, responder invitación desde la notificación y desde la bandeja, editar "este y los siguientes". Corren cada noche en el emulador (`ui-tests.yml`).
 
 ## Fase 5 — Identidad y publicación
