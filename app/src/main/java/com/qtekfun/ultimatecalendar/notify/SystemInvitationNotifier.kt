@@ -38,5 +38,6 @@ class SystemInvitationNotifier @Inject constructor(
         is NotificationOp.CancelInvitation -> surface.cancel(operation.key)
         is NotificationOp.ShowMoved -> surface.showMoved(operation.invitation)
         is NotificationOp.ShowCancelled -> surface.showCancelled(operation.invitation)
+        is NotificationOp.ClearChanges -> surface.clearChanges(operation.key)
     }
 }

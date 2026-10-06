@@ -3,6 +3,7 @@
 
 package com.qtekfun.ultimatecalendar.notify
 
+import com.qtekfun.ultimatecalendar.domain.invitations.AttendedChanges
 import com.qtekfun.ultimatecalendar.domain.invitations.ChangeNotifications
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationAlert
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationChange
@@ -75,5 +76,26 @@ class SystemInvitationNotifierTest {
             surface.calls
         )
         assertEquals(InvitationAlert.SILENT, surface.alerts.values.single())
+    }
+
+    @Test
+    fun `events the user goes to are told on the changes channel only when asked`() = runTest {
+        val attended = changes().withAttended(
+            AttendedChanges(
+                changed = listOf(InvitationChange(sampleInvitation(1), sampleInvitation(1, "New"))),
+                cancelled = listOf(sampleInvitation(2)),
+                dropped = listOf(sampleInvitation(3).key)
+            )
+        )
+        notifier.notify(attended)
+        assertEquals(listOf("clear 2", "clear 3", "summary"), surface.calls)
+
+        surface.calls.clear()
+        options = ChangeNotifications(changes = true, cancellations = true)
+        notifier.notify(attended)
+        assertEquals(
+            listOf("moved 1", "clear 2", "cancelled 2", "clear 3", "summary"),
+            surface.calls
+        )
     }
 }
