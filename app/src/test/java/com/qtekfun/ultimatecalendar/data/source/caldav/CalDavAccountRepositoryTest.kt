@@ -9,7 +9,6 @@ import com.qtekfun.ultimatecalendar.data.auth.SignedInAccount
 import com.qtekfun.ultimatecalendar.data.local.entity.CalendarSettingsEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.DavAccountEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.DavCalendarEntity
-import com.qtekfun.ultimatecalendar.data.local.entity.DefaultCalendarEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.NotifiedInvitationEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.PendingOperationEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.ReRemindEntity
@@ -311,9 +310,6 @@ class CalDavAccountRepositoryTest {
             // left alone.
             db.calendarSettingsDao().save(CalendarSettingsEntity(mine.value, "Mine", null, false))
             db.calendarSettingsDao().save(CalendarSettingsEntity(7, "Google", null, null))
-            db.calendarSettingsDao().saveDefaultCalendar(
-                DefaultCalendarEntity(calendarId = mine.value)
-            )
             db.notifiedInvitationDao().replaceAll(
                 listOf(notified(mine.value, 1), notified(7, 2))
             )
@@ -330,21 +326,9 @@ class CalDavAccountRepositoryTest {
             assertEquals(emptyList<PendingOperationEntity>(), queue.all(id))
             assertEquals(1, queue.all(otherAccount).size)
             assertEquals(listOf(7L), db.calendarSettingsDao().all().map { it.calendarId })
-            assertNull(db.calendarSettingsDao().observeDefaultCalendar().first())
             assertEquals(listOf(7L), db.notifiedInvitationDao().all().map { it.calendarId })
             assertEquals(listOf(7L), db.reRemindDao().all().map { it.calendarId })
         }
-
-    @Test
-    fun `a default calendar of another source survives signing out`() = runBlocking {
-        active.value = signedIn
-        calendar(account(), "Mine")
-        db.calendarSettingsDao().saveDefaultCalendar(DefaultCalendarEntity(calendarId = 7))
-
-        repository.signOut()
-
-        assertEquals(7L, db.calendarSettingsDao().observeDefaultCalendar().first())
-    }
 
     @Test
     fun `signing out without a stored account still forgets the login`() = runBlocking {

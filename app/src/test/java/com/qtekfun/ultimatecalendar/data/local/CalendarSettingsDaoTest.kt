@@ -6,7 +6,6 @@ package com.qtekfun.ultimatecalendar.data.local
 import app.cash.turbine.test
 import com.qtekfun.ultimatecalendar.data.local.dao.CalendarSettingsDao
 import com.qtekfun.ultimatecalendar.data.local.entity.CalendarSettingsEntity
-import com.qtekfun.ultimatecalendar.data.local.entity.DefaultCalendarEntity
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -49,18 +48,5 @@ class CalendarSettingsDaoTest {
 
         assertNull(dao.find(1))
         assertEquals("B", dao.find(2)?.displayName)
-    }
-
-    @Test
-    fun `the default calendar is a single value that observers see change`() = runTest {
-        dao.observeDefaultCalendar().test {
-            assertNull(awaitItem())
-            dao.saveDefaultCalendar(DefaultCalendarEntity(calendarId = 5))
-            assertEquals(5L, awaitItem())
-            dao.saveDefaultCalendar(DefaultCalendarEntity(calendarId = 7))
-            assertEquals(7L, awaitItem())
-            dao.clearDefaultCalendar()
-            assertNull(awaitItem())
-        }
     }
 }

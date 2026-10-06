@@ -5,7 +5,6 @@ package com.qtekfun.ultimatecalendar.data.calendar
 
 import com.qtekfun.ultimatecalendar.data.local.dao.CalendarSettingsDao
 import com.qtekfun.ultimatecalendar.data.local.entity.CalendarSettingsEntity
-import com.qtekfun.ultimatecalendar.data.local.entity.DefaultCalendarEntity
 import com.qtekfun.ultimatecalendar.data.source.CalendarSource
 import com.qtekfun.ultimatecalendar.di.IoDispatcher
 import com.qtekfun.ultimatecalendar.domain.model.CalendarId
@@ -70,17 +69,16 @@ class CalendarRepository @Inject constructor(
         }.distinctUntilChanged().flowOn(io)
 
     /**
-     * The calendar for new events: the one the user chose if it still exists and accepts
-     * events, else the first visible calendar that does, else the first that does. Fails with
-     * [CalendarError.NotFound] when no calendar accepts events.
+     * The calendar for new events when the user has not chosen one, or the chosen one is gone:
+     * the first visible calendar that accepts events, else the first that does. Fails with
+     * [CalendarError.NotFound] when no calendar accepts events. The user's own choice lives in
+     * `AppSettings.defaultCalendar` and is applied by `EditorCalendars.initial`.
      */
-    fun defaultCalendar(): Flow<CalendarResult<CalendarInfo>> =
-        combine(calendars(), dao.observeDefaultCalendar()) { calendars, chosen ->
+    fun automaticDefaultCalendar(): Flow<CalendarResult<CalendarInfo>> =
+        calendars().map { calendars ->
             calendars.flatMap { all ->
                 val writable = all.filter { it.access.canCreate }
-                val found = writable.firstOrNull { it.id.value == chosen }
-                    ?: writable.firstOrNull { it.visible }
-                    ?: writable.firstOrNull()
+                val found = writable.firstOrNull { it.visible } ?: writable.firstOrNull()
                 found?.let { CalendarResult.Success(it) }
                     ?: CalendarResult.Failure(CalendarError.NotFound)
             }
@@ -105,15 +103,6 @@ class CalendarRepository @Inject constructor(
     /** The local overrides of a calendar, empty when there are none. */
     suspend fun settings(id: CalendarId): CalendarSettings = withContext(io) {
         dao.find(id.value)?.toSettings() ?: CalendarSettings()
-    }
-
-    /** Chooses the calendar for new events; null goes back to the automatic choice. */
-    suspend fun setDefaultCalendar(id: CalendarId?) = withContext(io) {
-        if (id == null) {
-            dao.clearDefaultCalendar()
-        } else {
-            dao.saveDefaultCalendar(DefaultCalendarEntity(calendarId = id.value))
-        }
     }
 
     private fun sourceChanges(): Flow<Unit> = source.changes.onStart { emit(Unit) }

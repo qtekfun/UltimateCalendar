@@ -21,7 +21,6 @@ import com.qtekfun.ultimatecalendar.data.local.entity.CalendarSettingsEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.DavAccountEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.DavCalendarEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.DavEventEntity
-import com.qtekfun.ultimatecalendar.data.local.entity.DefaultCalendarEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.NotifiedInvitationEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.PendingOperationEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.ReRemindEntity
@@ -31,7 +30,6 @@ import com.qtekfun.ultimatecalendar.data.local.entity.SubscriptionEventEntity
 @Database(
     entities = [
         CalendarSettingsEntity::class,
-        DefaultCalendarEntity::class,
         NotifiedInvitationEntity::class,
         DavAccountEntity::class,
         DavCalendarEntity::class,
@@ -68,13 +66,20 @@ abstract class UltimateCalendarDatabase : RoomDatabase() {
     abstract fun subscriptionEventDao(): SubscriptionEventDao
 
     companion object {
-        const val VERSION = 6
+        const val VERSION = 7
 
         /**
          * Migrations from each released version to the next. There is no destructive fallback:
          * raising [VERSION] requires adding its migration here (checked by DatabaseSchemaTest).
          */
         val MIGRATIONS: Array<Migration> =
-            arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+            arrayOf(
+                MIGRATION_1_2,
+                MIGRATION_2_3,
+                MIGRATION_3_4,
+                MIGRATION_4_5,
+                MIGRATION_5_6,
+                MIGRATION_6_7
+            )
     }
 }

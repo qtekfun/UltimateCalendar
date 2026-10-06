@@ -5,6 +5,7 @@ package com.qtekfun.ultimatecalendar.data.local
 
 import android.content.Context
 import androidx.room3.Room
+import androidx.sqlite.SQLiteConnection
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import androidx.sqlite.execSQL
 import com.qtekfun.ultimatecalendar.data.local.entity.CalendarSettingsEntity
@@ -193,6 +194,45 @@ class MigrationTest {
             database.close()
         }
     }
+
+    @Test
+    fun `version 6 loses the default calendar table and keeps the rest in version 7`(
+        @TempDir dir: File
+    ) = runTest {
+        val file = File(dir, "calendar.db")
+        createVersion(6, file)
+        val before = BundledSQLiteDriver().open(file.path)
+        try {
+            before.execSQL("INSERT INTO default_calendar (id, calendarId) VALUES (0, 7)")
+            assertEquals(1, tables(before).count { it == "default_calendar" })
+        } finally {
+            before.close()
+        }
+
+        val database = open(file)
+        try {
+            assertEquals(
+                CalendarSettingsEntity(7, "Work", 255, false),
+                database.calendarSettingsDao().find(7)
+            )
+            assertSubscriptionTablesWork(database)
+        } finally {
+            database.close()
+        }
+        val after = BundledSQLiteDriver().open(file.path)
+        try {
+            assertEquals(0, tables(after).count { it == "default_calendar" })
+        } finally {
+            after.close()
+        }
+    }
+
+    private fun tables(connection: SQLiteConnection): List<String> =
+        connection.prepare("SELECT name FROM sqlite_master WHERE type = 'table'").use { statement ->
+            buildList {
+                while (statement.step()) add(statement.getText(0))
+            }
+        }
 
     /** Subscriptions keep their events apart by UID and take them along when removed. */
     private suspend fun assertSubscriptionTablesWork(database: UltimateCalendarDatabase) {

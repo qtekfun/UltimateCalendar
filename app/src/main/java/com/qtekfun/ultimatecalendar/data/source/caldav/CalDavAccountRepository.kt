@@ -157,7 +157,6 @@ class CalDavAccountRepository @Inject constructor(
                 if (ids.isNotEmpty()) {
                     val cleanup = database.accountCleanupDao()
                     cleanup.clearSettings(ids)
-                    cleanup.clearDefaultCalendar(ids)
                     cleanup.clearNotified(ids)
                     cleanup.clearReReminders(ids)
                 }
