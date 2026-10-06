@@ -12,6 +12,7 @@ import com.qtekfun.ultimatecalendar.domain.model.EventId
 import com.qtekfun.ultimatecalendar.domain.model.EventInstance
 import com.qtekfun.ultimatecalendar.domain.model.TimeRange
 import com.qtekfun.ultimatecalendar.domain.result.CalendarResult
+import com.qtekfun.ultimatecalendar.domain.search.SearchableEvent
 import java.time.Instant
 import kotlinx.coroutines.flow.Flow
 
@@ -39,6 +40,20 @@ interface CalendarSource {
         range: TimeRange,
         calendarIds: Set<CalendarId>? = null
     ): CalendarResult<List<EventInstance>>
+
+    /**
+     * The events that match [query] (RF-09), each series once: every word of the query (see
+     * `SearchQuery`) is found, without case or accents, in the title, location, description or an
+     * attendee's name or address, as `SearchMatcher` decides. Limited to [calendarIds] (all
+     * calendars when null, none when empty) and, when [range] is given, to events with an
+     * occurrence in it. Single changed occurrences are not searched on their own; the order of
+     * the result is not defined (ranking is domain logic).
+     */
+    suspend fun search(
+        query: String,
+        calendarIds: Set<CalendarId>? = null,
+        range: TimeRange? = null
+    ): CalendarResult<List<SearchableEvent>>
 
     /** The event with its attendees and reminders; for a series, the series itself. */
     suspend fun event(id: EventId): CalendarResult<Event>

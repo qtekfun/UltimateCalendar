@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 UltimateCalendar contributors
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<resources>
+    <string name="search_hint">Buscar eventos</string>
+    <string name="search_clear">Borrar búsqueda</string>
+    <string name="search_include_hidden">Incluir calendarios ocultos</string>
+    <string name="search_searching">Buscando</string>
+    <string name="search_recent_title">Búsquedas recientes</string>
+    <string name="search_recent_clear">Borrar</string>
+    <string name="search_recent_clear_description">Borrar búsquedas recientes</string>
+    <string name="search_recent_forget">Quitar «%1$s» de las búsquedas recientes</string>
+    <string name="search_idle_title">Busca en tus calendarios</string>
+    <string name="search_idle_body">Encuentra eventos por título, lugar, descripción o asistente.</string>
+    <string name="search_none_title">Sin resultados</string>
+    <string name="search_none_body">Nada coincide con «%1$s». Revisa la ortografía o prueba con menos palabras.</string>
+    <string name="search_failed_title">No se pudo buscar</string>
+    <string name="search_failed_body">Comprueba que la app tiene permiso para leer tus calendarios.</string>
+    <string name="search_upcoming">Próximos (%1$d)</string>
+    <string name="search_past">Pasados (%1$d)</string>
+    <string name="search_repeats">Evento que se repite</string>
+    <string name="search_field_location">Lugar</string>
+    <string name="search_field_attendee">Asistente</string>
+    <string name="search_field_description">Descripción</string>
+    <string name="search_snippet">%1$s: %2$s</string>
+</resources>

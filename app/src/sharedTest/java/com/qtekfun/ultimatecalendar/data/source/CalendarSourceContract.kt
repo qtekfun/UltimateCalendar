@@ -217,6 +217,112 @@ object CalendarSourceContract {
                 "cancel unknown occurrence"
             )
         },
+        Scenario("search finds an event by title, location, description or attendee") {
+            source.create(draft("Budget review")).value()
+            source.create(draft("Lunch").copy(location = "Harbour cafe")).value()
+            source.create(draft("Call").copy(description = "Discuss the roadmap")).value()
+            source.create(
+                draft("Visit", attendees = listOf(Attendee.of("zoe@example.com", "Zoe Smith")))
+            ).value()
+            expectEquals(listOf("Budget review"), source.titlesFor("budget"), "title")
+            expectEquals(listOf("Lunch"), source.titlesFor("harbour"), "location")
+            expectEquals(listOf("Call"), source.titlesFor("roadmap"), "description")
+            expectEquals(listOf("Visit"), source.titlesFor("smith"), "attendee name")
+            expectEquals(listOf("Visit"), source.titlesFor("zoe@example"), "attendee address")
+            expectEquals(emptyList(), source.titlesFor("nothing like this"), "no match")
+        },
+        Scenario("search ignores case and accents in both directions") {
+            source.create(draft("Reunión semanal")).value()
+            source.create(draft("Cafe con Zoë")).value()
+            expectEquals(
+                listOf("Reunión semanal"),
+                source.titlesFor("REUNION"),
+                "plain finds accent"
+            )
+            expectEquals(
+                listOf("Reunión semanal"),
+                source.titlesFor("reunión"),
+                "accent finds accent"
+            )
+            expectEquals(listOf("Cafe con Zoë"), source.titlesFor("zoe"), "plain finds diaeresis")
+            expectEquals(listOf("Cafe con Zoë"), source.titlesFor("café"), "accent finds plain")
+        },
+        Scenario("search needs every word, wherever each one is") {
+            source.create(draft("Planning").copy(location = "Room 4")).value()
+            source.create(draft("Planning").copy(location = "Room 9")).value()
+            expectEquals(
+                listOf("Planning"),
+                source.titlesFor("room 4 planning"),
+                "words in two fields"
+            )
+            expectEquals(emptyList(), source.titlesFor("planning room 5"), "one word missing")
+        },
+        Scenario("search takes percent, underscore and backslash literally") {
+            source.create(draft("100% done")).value()
+            source.create(draft("Plan_B")).value()
+            source.create(draft("PlanXB")).value()
+            source.create(draft("C:\\temp")).value()
+            expectEquals(listOf("100% done"), source.titlesFor("100%"), "percent")
+            expectEquals(listOf("Plan_B"), source.titlesFor("plan_b"), "underscore")
+            expectEquals(listOf("Plan_B"), source.titlesFor("_"), "lone underscore")
+            expectEquals(listOf("100% done"), source.titlesFor("%"), "lone percent")
+            expectEquals(listOf("C:\\temp"), source.titlesFor("\\"), "backslash")
+        },
+        Scenario("search is limited to some calendars and to a range") {
+            source.create(draft("Standup")).value()
+            source.create(draft("Standup", noon.plusSeconds(60 * DAY))).value()
+            expectEquals(2, source.search("standup").value().size, "all calendars, any time")
+            expectEquals(
+                0,
+                source.search("standup", setOf(readOnly.id)).value().size,
+                "other calendar"
+            )
+            expectEquals(0, source.search("standup", emptySet()).value().size, "no calendars")
+            expectEquals(1, source.search("standup", range = month).value().size, "range")
+        },
+        Scenario("search lists a series once, found by a later occurrence in the range too") {
+            source.create(draft("Gym", rrule = "FREQ=WEEKLY;COUNT=3")).value()
+            val later =
+                TimeRange(noon.plusSeconds(2 * WEEK - HOUR), noon.plusSeconds(2 * WEEK + HOUR))
+            val found = source.search("gym").value().single()
+            expect(found.isRecurring, "the series is flagged as recurring")
+            expectEquals(1, source.search("gym", range = later).value().size, "third occurrence")
+            expectEquals(
+                0,
+                source.search(
+                    "gym",
+                    range = TimeRange(noon.plusSeconds(3 * WEEK), noon.plusSeconds(4 * WEEK))
+                )
+                    .value()
+                    .size,
+                "after the series"
+            )
+        },
+        Scenario("search gives the attendees and times of what it finds") {
+            val dates = EventTime.AllDay(LocalDate.of(2026, 10, 6), LocalDate.of(2026, 10, 7))
+            source.create(
+                draft("Retreat", attendees = listOf(Attendee.of("zoe@example.com", "Zoe")))
+                    .copy(time = dates, color = 0xFF112233.toInt())
+            ).value()
+            val found = source.search("retreat").value().single()
+            expectEquals(dates, found.time, "time")
+            expectEquals(writable.id, found.calendarId, "calendar")
+            expect(found.attendees.any { it.email == "zoe@example.com" }, "attendees come along")
+        },
+        Scenario("search does not find deleted events, blank queries or lone changed occurrences") {
+            val id = source.create(draft("Doomed")).value()
+            source.delete(id).value()
+            expectEquals(0, source.search("doomed").value().size, "deleted")
+            expectEquals(0, source.search("   ").value().size, "blank")
+            val series = source.create(draft("Stand", rrule = "FREQ=DAILY;COUNT=2")).value()
+            source.editInstance(
+                series,
+                noon.plusSeconds(DAY),
+                draft("Moved", noon.plusSeconds(DAY))
+            ).value()
+            expectEquals(emptyList(), source.titlesFor("moved"), "changed occurrence alone")
+            expectEquals(listOf("Stand"), source.titlesFor("stand"), "the series")
+        },
         Scenario("changes are announced") {
             coroutineScope {
                 val seen = async(start = CoroutineStart.UNDISPATCHED) {
@@ -233,6 +339,9 @@ object CalendarSourceContract {
     private const val WEEK = 7 * DAY
     private const val CHANGE_TIMEOUT_MS = 5_000L
 }
+
+private suspend fun CalendarSource.titlesFor(query: String): List<String> =
+    search(query).value().map { it.title }.sorted()
 
 private fun <T> CalendarResult<T>.value(): T = when (this) {
     is CalendarResult.Success -> value

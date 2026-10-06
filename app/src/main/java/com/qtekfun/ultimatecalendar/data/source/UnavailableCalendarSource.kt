@@ -13,6 +13,7 @@ import com.qtekfun.ultimatecalendar.domain.model.EventInstance
 import com.qtekfun.ultimatecalendar.domain.model.TimeRange
 import com.qtekfun.ultimatecalendar.domain.result.CalendarError
 import com.qtekfun.ultimatecalendar.domain.result.CalendarResult
+import com.qtekfun.ultimatecalendar.domain.search.SearchableEvent
 import java.time.Instant
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
@@ -31,6 +32,12 @@ object UnavailableCalendarSource : CalendarSource {
         calendarIds: Set<CalendarId>?
     ): CalendarResult<List<EventInstance>> = unavailable()
 
+    override suspend fun search(
+        query: String,
+        calendarIds: Set<CalendarId>?,
+        range: TimeRange?
+    ): CalendarResult<List<SearchableEvent>> = unavailable()
+
     override suspend fun event(id: EventId): CalendarResult<Event> = unavailable()
 
     override suspend fun create(draft: EventDraft): CalendarResult<EventId> = unavailable()
@@ -48,7 +55,8 @@ object UnavailableCalendarSource : CalendarSource {
     override suspend fun cancelInstance(id: EventId, originalStart: Instant) = unavailable()
 
     override suspend fun respond(id: EventId, status: AttendeeStatus) = unavailable()
-
-    private fun unavailable(): CalendarResult.Failure =
-        CalendarResult.Failure(CalendarError.SourceFailure("no calendar source is bound"))
 }
+
+/** The one failure every call of [UnavailableCalendarSource] reports. */
+private fun unavailable(): CalendarResult.Failure =
+    CalendarResult.Failure(CalendarError.SourceFailure("no calendar source is bound"))
