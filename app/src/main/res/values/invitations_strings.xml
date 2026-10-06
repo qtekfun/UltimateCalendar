@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 UltimateCalendar contributors
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<resources>
+    <!-- Invitation notifications (RF-07) -->
+    <string name="invitation_accept">Accept</string>
+    <string name="invitation_maybe">Maybe</string>
+    <string name="invitation_decline">Decline</string>
+    <string name="invitation_answer_failed">Your answer was not sent. Try again.</string>
+    <string name="invitation_moved">Changed: %1$s</string>
+    <string name="invitation_cancelled">Cancelled by the organizer (was %1$s)</string>
+    <plurals name="invitation_summary">
+        <item quantity="one">%1$d new invitation</item>
+        <item quantity="other">%1$d new invitations</item>
+    </plurals>
+    <string name="invitation_summary_text">Tap to answer them</string>
+    <!-- Invitation tray (RF-06) -->
+    <string name="invitations_empty_title">No pending invitations</string>
+    <string name="invitations_empty_body">When someone invites you to an event, it shows up here so you can accept, decline or answer maybe.</string>
+    <string name="invitations_from">From %1$s</string>
+    <string name="invitations_answered_accept">You accepted %1$s</string>
+    <string name="invitations_answered_maybe">You answered maybe to %1$s</string>
+    <string name="invitations_answered_decline">You declined %1$s</string>
+    <string name="invitations_refresh_failed">Could not look for invitations.</string>
+    <string name="invitations_gone">That event no longer exists.</string>
+</resources>

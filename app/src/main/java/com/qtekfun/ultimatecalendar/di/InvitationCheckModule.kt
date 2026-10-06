@@ -3,15 +3,22 @@
 
 package com.qtekfun.ultimatecalendar.di
 
+import com.qtekfun.ultimatecalendar.data.invitations.InvitationResponses
 import com.qtekfun.ultimatecalendar.data.invitations.NotifiedInvitations
+import com.qtekfun.ultimatecalendar.data.invitations.SourceInvitationResponses
 import com.qtekfun.ultimatecalendar.data.source.CalendarSource
 import com.qtekfun.ultimatecalendar.data.source.UnavailableCalendarSource
 import com.qtekfun.ultimatecalendar.data.sync.AccountSyncTrigger
 import com.qtekfun.ultimatecalendar.data.sync.ContentResolverSyncTrigger
 import com.qtekfun.ultimatecalendar.data.sync.ProviderSyncRequester
 import com.qtekfun.ultimatecalendar.data.sync.SourceSyncRequester
-import com.qtekfun.ultimatecalendar.domain.invitations.InvitationChanges
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationNotifier
+import com.qtekfun.ultimatecalendar.data.settings.SettingsRepository
+import com.qtekfun.ultimatecalendar.domain.invitations.ChangeNotifications
+import com.qtekfun.ultimatecalendar.notify.AndroidInvitationNotifications
+import com.qtekfun.ultimatecalendar.notify.ChangeNotificationSettings
+import com.qtekfun.ultimatecalendar.notify.InvitationNotificationSurface
+import com.qtekfun.ultimatecalendar.notify.SystemInvitationNotifier
 import com.qtekfun.ultimatecalendar.sync.CheckInterval
 import com.qtekfun.ultimatecalendar.sync.InvitationCheckScheduler
 import com.qtekfun.ultimatecalendar.sync.InvitationCheckSettings
@@ -29,11 +36,6 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
 
-/** No notifications yet: T21 replaces this binding with the real notifier. */
-class NoOpInvitationNotifier @Inject constructor() : InvitationNotifier {
-    override suspend fun notify(changes: InvitationChanges) = Unit
-}
-
 /** The defaults until the settings screen (T23) binds its own: every 15 minutes, no aliases. */
 class DefaultInvitationCheckSettings @Inject constructor() : InvitationCheckSettings {
     override suspend fun interval(): CheckInterval = CheckInterval.QUARTER_HOUR
@@ -48,9 +50,14 @@ class DefaultInvitationCheckSettings @Inject constructor() : InvitationCheckSett
 @Module
 @InstallIn(SingletonComponent::class)
 interface InvitationCheckBindingsModule {
-    // Replaced by T21 (notifications).
     @Binds
-    fun notifier(notifier: NoOpInvitationNotifier): InvitationNotifier
+    fun notifier(notifier: SystemInvitationNotifier): InvitationNotifier
+
+    @Binds
+    fun notifications(notifications: AndroidInvitationNotifications): InvitationNotificationSurface
+
+    @Binds
+    fun responses(responses: SourceInvitationResponses): InvitationResponses
 
     // Replaced by T23 (settings).
     @Binds
@@ -77,6 +84,12 @@ interface InvitationCheckBindingsModule {
 @Module
 @InstallIn(SingletonComponent::class)
 object InvitationCheckModule {
+    /** The optional notifications of Settings (RF-07), read when a check notifies. */
+    @Provides
+    fun changeNotificationSettings(settings: SettingsRepository) = ChangeNotificationSettings {
+        settings.current().let { ChangeNotifications(it.notifyChanges, it.notifyCancellations) }
+    }
+
     @Provides
     @Singleton
     @Suppress("LongParameterList")
