@@ -69,6 +69,27 @@ class InvitationChecker(
         }
     }
 
+    /**
+     * The invitations pending right now, soonest first, read without notifying or recording
+     * anything: what the tray shows. It does not wait for a running check.
+     */
+    suspend fun pending(): CalendarResult<List<Invitation>> = withContext(io) {
+        try {
+            when (val calendars = source.calendars()) {
+                is CalendarResult.Failure -> calendars
+
+                is CalendarResult.Success -> {
+                    val aliases = settings.aliases()
+                    readEvents(null, aliases).map {
+                        detector.scan(it, calendars.value, aliases).pending
+                    }
+                }
+            }
+        } catch (_: SecurityException) {
+            CalendarResult.Failure(CalendarError.PermissionDenied)
+        }
+    }
+
     private suspend fun run(requestSync: Boolean): InvitationCheckOutcome =
         when (val calendars = source.calendars()) {
             is CalendarResult.Failure -> InvitationCheckOutcome.Failed(calendars.error)

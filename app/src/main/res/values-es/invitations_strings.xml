@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 UltimateCalendar contributors
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<resources>
+    <!-- Notificaciones de invitaciones (RF-07) -->
+    <string name="invitation_accept">Aceptar</string>
+    <string name="invitation_maybe">Quizá</string>
+    <string name="invitation_decline">Rechazar</string>
+    <string name="invitation_answer_failed">No se envió tu respuesta. Inténtalo otra vez.</string>
+    <string name="invitation_moved">Cambiado: %1$s</string>
+    <string name="invitation_cancelled">Cancelado por el organizador (era %1$s)</string>
+    <plurals name="invitation_summary">
+        <item quantity="one">%1$d invitación nueva</item>
+        <item quantity="many">%1$d invitaciones nuevas</item>
+        <item quantity="other">%1$d invitaciones nuevas</item>
+    </plurals>
+    <string name="invitation_summary_text">Toca para responderlas</string>
+    <!-- Bandeja de invitaciones (RF-06) -->
+    <string name="invitations_empty_title">No hay invitaciones pendientes</string>
+    <string name="invitations_empty_body">Cuando alguien te invite a un evento, aparecerá aquí para que lo aceptes, lo rechaces o respondas quizá.</string>
+    <string name="invitations_from">De %1$s</string>
+    <string name="invitations_answered_accept">Has aceptado %1$s</string>
+    <string name="invitations_answered_maybe">Has respondido quizá a %1$s</string>
+    <string name="invitations_answered_decline">Has rechazado %1$s</string>
+    <string name="invitations_refresh_failed">No se pudieron buscar invitaciones.</string>
+    <string name="invitations_gone">Ese evento ya no existe.</string>
+</resources>

@@ -43,6 +43,8 @@
         android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- Lets the user exempt the app from battery savers that delay reminders (the first-run wizard). -->
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <!-- Robust mode (RF-08): an optional foreground service that keeps the process alive. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
@@ -87,6 +89,9 @@
             android:exported="false" />
         <receiver
             android:name=".notify.ReminderActionReceiver"
+            android:exported="false" />
+        <receiver
+            android:name=".notify.InvitationActionReceiver"
             android:exported="false" />
         <receiver
             android:name=".notify.HeartbeatReceiver"

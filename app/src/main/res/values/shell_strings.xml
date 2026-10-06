@@ -16,8 +16,6 @@
     <string name="shell_back">Back</string>
     <string name="shell_ok">OK</string>
     <string name="shell_cancel">Cancel</string>
-    <string name="shell_previous">Previous</string>
-    <string name="shell_next">Next</string>
     <string name="shell_coming_soon">Coming soon</string>
     <string name="shell_view_agenda">Agenda</string>
     <string name="shell_view_day">Day</string>

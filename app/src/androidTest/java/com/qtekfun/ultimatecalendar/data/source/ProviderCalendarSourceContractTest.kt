@@ -24,6 +24,7 @@ import com.qtekfun.ultimatecalendar.domain.model.EventId
 import com.qtekfun.ultimatecalendar.domain.model.EventInstance
 import com.qtekfun.ultimatecalendar.domain.model.TimeRange
 import com.qtekfun.ultimatecalendar.domain.result.CalendarResult
+import com.qtekfun.ultimatecalendar.domain.search.SearchableEvent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -143,6 +144,12 @@ class ProviderCalendarSourceContractTest(private val scenario: Scenario) {
             range: TimeRange,
             calendarIds: Set<CalendarId>?
         ): CalendarResult<List<EventInstance>> = inner.instances(range, calendarIds ?: ids)
+
+        override suspend fun search(
+            query: String,
+            calendarIds: Set<CalendarId>?,
+            range: TimeRange?
+        ): CalendarResult<List<SearchableEvent>> = inner.search(query, calendarIds ?: ids, range)
     }
 
     companion object {

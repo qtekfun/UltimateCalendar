@@ -3,6 +3,7 @@
 
 package com.qtekfun.ultimatecalendar.di
 
+import com.qtekfun.ultimatecalendar.data.invitations.InvitationInbox
 import com.qtekfun.ultimatecalendar.domain.navigation.FirstDayOfWeekSource
 import com.qtekfun.ultimatecalendar.domain.navigation.PendingInvitations
 import dagger.Module
@@ -11,7 +12,9 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import java.time.temporal.WeekFields
 import java.util.Locale
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 
 /** What the app shell reads that other tasks will provide properly. */
 @Module
@@ -21,7 +24,9 @@ object NavigationModule {
     fun firstDayOfWeek(): FirstDayOfWeekSource =
         FirstDayOfWeekSource { WeekFields.of(Locale.getDefault()).firstDayOfWeek }
 
-    /** No invitations are detected yet: T21 replaces this with the `InvitationDetector`. */
+    /** The badge of the tray counts what the invitation tray lists (RF-06). */
     @Provides
-    fun pendingInvitations(): PendingInvitations = PendingInvitations { flowOf(0) }
+    fun pendingInvitations(inbox: InvitationInbox): PendingInvitations = PendingInvitations {
+        inbox.pending().map { it.size }.onStart { emit(0) }.distinctUntilChanged()
+    }
 }

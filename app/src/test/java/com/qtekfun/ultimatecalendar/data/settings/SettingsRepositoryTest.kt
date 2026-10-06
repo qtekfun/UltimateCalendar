@@ -37,7 +37,7 @@ class SettingsRepositoryTest {
         assertEquals(listOf(0), settings.defaultAllDayReminders)
         assertEquals(InviteCheckInterval.EVERY_30, settings.inviteCheck)
         assertEquals(emptyList<String>(), settings.ownEmails)
-        assertTrue(settings.notifyChanges && settings.notifyCancellations)
+        assertFalse(settings.notifyChanges || settings.notifyCancellations)
         assertEquals(24, settings.missedWindowHours)
         assertFalse(settings.alarmClock || settings.robustMode)
         assertEquals(9 * 60, settings.allDayMinute)
@@ -57,8 +57,8 @@ class SettingsRepositoryTest {
             defaultAllDayReminders = listOf(0, 1440),
             inviteCheck = InviteCheckInterval.MANUAL,
             ownEmails = listOf("ana@example.com", "b@x.org"),
-            notifyChanges = false,
-            notifyCancellations = false,
+            notifyChanges = true,
+            notifyCancellations = true,
             missedWindowHours = 0,
             alarmClock = true,
             robustMode = true,
