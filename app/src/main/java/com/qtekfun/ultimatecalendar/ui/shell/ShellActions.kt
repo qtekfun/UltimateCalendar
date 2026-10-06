@@ -4,8 +4,10 @@
 package com.qtekfun.ultimatecalendar.ui.shell
 
 import com.qtekfun.ultimatecalendar.domain.model.CalendarId
+import com.qtekfun.ultimatecalendar.domain.model.EventInstance
 import com.qtekfun.ultimatecalendar.domain.navigation.CalendarView
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 /** What the shell can ask for; the screen is stateless and calls these. */
 data class ShellActions(
@@ -18,5 +20,9 @@ data class ShellActions(
     val onSearch: () -> Unit = {},
     val onInvitations: () -> Unit = {},
     val onNewEvent: () -> Unit = {},
-    val onSettings: () -> Unit = {}
+    val onSettings: () -> Unit = {},
+    /** A tap on an event: T19 opens its detail. */
+    val onOpenEvent: (EventInstance) -> Unit = {},
+    /** A tap on an empty slot: T20 starts a new event at that wall-clock time. */
+    val onCreateAt: (LocalDateTime) -> Unit = {}
 )
