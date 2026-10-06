@@ -144,7 +144,7 @@ class Screenshots {
             driver.launch()
             driver.switchTo(R.string.shell_view_agenda)
             driver.waitForText(week.earlyTitle)
-            driver.openEvent(week.detailTitle)
+            driver.openEvent(week.detailTitle, scroll = false)
             driver.waitForText("Liam Novak")
             snap(locale, "1_agenda_two_pane", driver.capture())
             driver.switchTo(R.string.shell_view_week)
@@ -154,7 +154,7 @@ class Screenshots {
             driver.waitForText(week.earlyTitle)
             snap(locale, "3_month", driver.capture())
             driver.openInvitations(pending = 2)
-            driver.waitForText(week.secondInvitationTitle)
+            driver.waitForText(driver.string(R.string.invitation_accept))
             snap(locale, "4_invitations", driver.capture())
         } catch (failure: Throwable) {
             snap(locale, "failure", DeviceTools.screen())
@@ -206,7 +206,7 @@ class Screenshots {
         snap(locale, "8_event_editor", driver.capture())
         driver.back()
         driver.openInvitations(pending = 2)
-        driver.waitForText(week.secondInvitationTitle)
+        driver.waitForText(driver.string(R.string.invitation_accept))
         snap(locale, "5_invitations", driver.capture())
         driver.back()
     }

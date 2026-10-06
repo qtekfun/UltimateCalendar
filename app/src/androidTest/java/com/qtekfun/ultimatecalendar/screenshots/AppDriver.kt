@@ -75,10 +75,13 @@ class AppDriver(private val compose: ComposeTestRule, base: Context, locale: Loc
     }
 
     /** Opens the detail of the event with [title], scrolling the list to it if needed. */
-    fun openEvent(title: String) {
+    fun openEvent(title: String, scroll: Boolean = true) {
         waitForText(title)
-        runCatching {
-            compose.onAllNodes(hasScrollAction()).onFirst().performScrollToNode(titled(title))
+        // Not in a wide window: its first scrollable is the always-open drawer.
+        if (scroll) {
+            runCatching {
+                compose.onAllNodes(hasScrollAction()).onFirst().performScrollToNode(titled(title))
+            }
         }
         compose.onAllNodes(titled(title)).onFirst().performClick()
         compose.waitForIdle()
