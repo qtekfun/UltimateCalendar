@@ -33,6 +33,7 @@ jobs:
             chore
             revert
           requireScope: false
-          subjectPattern: ^[a-z].+[^.]$
+          # Dependabot titles start with "Bump" and cannot be changed, so a capital is allowed.
+          subjectPattern: ^[A-Za-z].+[^.]$
           subjectPatternError: >-
-            The subject "{subject}" must start with a lowercase letter and not end with a period.
+            The subject "{subject}" must start with a letter and not end with a period.
