@@ -5,12 +5,13 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 # Privacy
 
-UltimateCalendar has no servers, no analytics, no ads and no telemetry. Your calendars stay on your phone and on the servers of the accounts you already use (Google, your CalDAV server through DAVx⁵…). The app only talks to the network in the future built-in CalDAV mode, and only to the server you configure, always over HTTPS (plain HTTP is refused). The building blocks of that mode (CalDAV client, iCalendar reader and Nextcloud Login Flow v2) are already in the code, but nothing uses them yet and the app does not declare the `INTERNET` permission until the mode ships. When it does, the app password of your account will be kept encrypted with a key that never leaves the Android Keystore, excluded from Android backups, and never written to logs.
+UltimateCalendar has no servers, no analytics, no ads and no telemetry. Your calendars stay on your phone and on the servers of the accounts you already use (Google, your CalDAV server through DAVx⁵…). The app talks to the network only when you sign in to its built-in CalDAV connection (Nextcloud), and then only to the one server you configured, always over HTTPS (plain HTTP is refused); it contacts no other host. Without that account the app makes no network request at all, and nothing is scheduled to. With it, events are kept on your phone and synced with that server: changes you make offline wait in a queue until there is a connection. The app never sends mail: invitations are sent, and answers passed on, by your server (CalDAV scheduling). The app password of your account is kept encrypted with a key that never leaves the Android Keystore, excluded from Android backups, and never written to logs; neither are event titles or addresses.
 
 ## Permissions
 
 | Permission | Why |
 |---|---|
+| Internet (`INTERNET`) | Reach the CalDAV server you sign in to, and only that one. Unused until you add that account. Syncs wait for a connection and for a battery that is not low (WorkManager, which also uses the system's network-state permission for this). |
 | Read / write calendar | Show your events, create and edit them, answer invitations. |
 | Notifications | Reminders, new invitations and (optional) changes or cancellations. |
 | Alarms & reminders (`USE_EXACT_ALARM` / `SCHEDULE_EXACT_ALARM`) | Deliver reminders exactly on time. |
@@ -22,4 +23,4 @@ UltimateCalendar has no servers, no analytics, no ads and no telemetry. Your cal
 
 Settings backups are encrypted with a password you choose and saved where you decide.
 
-*Reviewed against the manifest on 2026-10-06 (PLAN T30). The optional contacts permission is added with the event editor (T20) and will be reviewed with it.*
+*Reviewed against the manifest on 2026-10-06 (PLAN T30, T36). The optional contacts permission is added with the event editor (T20) and will be reviewed with it.*
