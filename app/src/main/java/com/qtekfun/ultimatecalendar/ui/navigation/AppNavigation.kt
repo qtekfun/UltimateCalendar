@@ -47,7 +47,7 @@ fun AppNavigation(routes: NotificationRoutes = remember { NotificationRoutes() }
     // The shell's view lives in its ViewModel, so it survives rotation and resizing too.
     val shellState = shell.state.collectAsStateWithLifecycle()
     val view by remember { derivedStateOf { shellState.value.view } }
-    OpenRequestedRoute(routes, nav)
+    OpenRequestedRoute(routes, nav, shell)
     val dialogs = layout.overlaysAsDialogs
     val detailInPane = layout.detailInPane(view, nav.overlayOpen())
     // T12: the first-run wizard (RF-01) becomes the first branch of this `when`.
@@ -148,9 +148,12 @@ private fun WideOverlays(nav: NavState, enabled: Boolean) {
     }
 }
 
-/** A tapped notification (RF-07): the summary opens the tray, an invitation opens its detail. */
+/**
+ * A tapped notification (RF-07) or widget (T38): the summary opens the tray, an invitation its
+ * detail, a day of the Month widget the Day view, the "+" the editor.
+ */
 @Composable
-private fun OpenRequestedRoute(routes: NotificationRoutes, nav: NavState) {
+private fun OpenRequestedRoute(routes: NotificationRoutes, nav: NavState, shell: ShellViewModel) {
     val requested by routes.pending.collectAsStateWithLifecycle()
     LaunchedEffect(requested) {
         when (val route = requested) {
@@ -159,6 +162,18 @@ private fun OpenRequestedRoute(routes: NotificationRoutes, nav: NavState) {
             is NotificationRoute.Event -> {
                 nav.detailRef = route.ref
                 nav.eventDetail = true
+            }
+
+            // A tapped widget (T38): back to the shell, on the Day view of that date.
+            is NotificationRoute.Day -> {
+                nav.closeAll()
+                shell.selectView(CalendarView.DAY)
+                shell.selectDate(route.date)
+            }
+
+            NotificationRoute.NewEvent -> {
+                nav.closeAll()
+                nav.openEditor(EditorRequest.New())
             }
 
             null -> return@LaunchedEffect

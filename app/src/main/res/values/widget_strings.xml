@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 UltimateCalendar contributors
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<resources>
+    <string name="widget_agenda_name">Agenda</string>
+    <string name="widget_month_name">Month</string>
+    <string name="widget_agenda_description">The next events of your calendars, day by day.</string>
+    <string name="widget_month_description">A month at a glance; tap a day to open it.</string>
+    <string name="widget_tomorrow">Tomorrow, %1$s</string>
+    <string name="widget_previous_month">Previous month</string>
+    <string name="widget_next_month">Next month</string>
+    <string name="widget_this_month">%1$s, go to the current month</string>
+    <string name="widget_empty">Nothing planned. Tap to open the app.</string>
+    <string name="widget_no_permission">The app cannot read your calendars. Tap to open it and grant access.</string>
+    <string name="widget_failed">Events could not be read. Tap to open the app.</string>
+    <string name="widget_more_events">+%1$d more events</string>
+    <string name="widget_open_day">%1$s, open the day</string>
+    <string name="widget_preview_today">Tue, 6 Oct</string>
+    <string name="widget_preview_event_1">9:00  Team meeting</string>
+    <string name="widget_preview_event_2">13:30  Lunch with Sam</string>
+    <string name="widget_preview_event_3">18:00  Yoga class</string>
+    <string name="widget_preview_month">October 2026</string>
+    <string name="widget_preview_grid">M  T  W  T  F  S  S</string>
+</resources>
