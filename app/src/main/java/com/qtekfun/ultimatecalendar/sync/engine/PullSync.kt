@@ -6,6 +6,7 @@ package com.qtekfun.ultimatecalendar.sync.engine
 import androidx.room3.immediateTransaction
 import androidx.room3.useWriterConnection
 import com.qtekfun.ultimatecalendar.data.local.UltimateCalendarDatabase
+import com.qtekfun.ultimatecalendar.data.local.entity.CalendarSettingsEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.DavAccountEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.DavCalendarEntity
 import com.qtekfun.ultimatecalendar.data.remote.caldav.CalDav
@@ -15,6 +16,7 @@ import com.qtekfun.ultimatecalendar.data.remote.caldav.DavResource
 import com.qtekfun.ultimatecalendar.data.remote.caldav.DavResult
 import com.qtekfun.ultimatecalendar.data.remote.caldav.then
 import com.qtekfun.ultimatecalendar.data.source.CalDavIds
+import com.qtekfun.ultimatecalendar.data.source.caldav.CalDavMapping
 import com.qtekfun.ultimatecalendar.sync.queue.OperationQueue
 import java.time.Clock
 import javax.inject.Inject
@@ -39,7 +41,7 @@ class PullSync @Inject constructor(
     suspend fun pull(dav: CalDav, account: DavAccountEntity): DavResult<*>? {
         val result = home(dav, account)
             .then { home -> dav.read.calendars(home) }
-            .then { collections -> DavResult.Success(saveCalendars(account.id, collections)) }
+            .then { collections -> DavResult.Success(saveCalendars(account, collections)) }
         if (result !is DavResult.Success) return result
         // A calendar the user switched off is not pulled; its rows stay, and switching it on
         // again resumes from its sync token.
@@ -71,12 +73,14 @@ class PullSync @Inject constructor(
     /**
      * Saves the server calendars, keeping what only lives here (the last sync token and ctag),
      * and pairs each with the ctag the server has now. Calendars gone from the server go with
-     * their events, unless one has unsent changes.
+     * their events, unless one has unsent changes. A calendar met for the first time takes the
+     * local overrides a backup restore left waiting for it.
      */
     private suspend fun saveCalendars(
-        accountId: Long,
+        account: DavAccountEntity,
         collections: List<DavCollection>
     ): List<Pair<DavCalendarEntity, String?>> {
+        val accountId = account.id
         val known = calendars.all(accountId).associateBy { it.href }
         val saved = collections.map { collection ->
             val old = known[collection.href]
@@ -94,6 +98,7 @@ class PullSync @Inject constructor(
                 )
             ) to collection.ctag
         }
+        applyWaitingOverrides(account, saved.map { it.first })
         val onServer = collections.map { it.href }.toSet()
         known.values.filter { it.href !in onServer }
             .filter { gone ->
@@ -104,6 +109,31 @@ class PullSync @Inject constructor(
             }
             .forEach { calendars.delete(it.id) }
         return saved
+    }
+
+    /**
+     * Gives the calendars the overrides restored from a backup for their account and name, and
+     * forgets those. A name two calendars share is not guessed: it keeps waiting.
+     */
+    private suspend fun applyWaitingOverrides(
+        account: DavAccountEntity,
+        saved: List<DavCalendarEntity>
+    ) {
+        val accountName = CalDavMapping.accountName(account)
+        val waiting = database.pendingCalendarOverrideDao().forAccount(accountName)
+        val byName = saved.groupBy { it.name }
+        waiting.forEach { row ->
+            val calendar = byName[row.calendarName]?.singleOrNull() ?: return@forEach
+            database.calendarSettingsDao().save(
+                CalendarSettingsEntity(
+                    CalDavIds.encode(calendar.id),
+                    row.displayName,
+                    row.color,
+                    row.visible
+                )
+            )
+            database.pendingCalendarOverrideDao().delete(accountName, row.calendarName)
+        }
     }
 
     /**

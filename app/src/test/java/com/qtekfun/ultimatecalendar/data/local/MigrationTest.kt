@@ -13,6 +13,7 @@ import com.qtekfun.ultimatecalendar.data.local.entity.DavAccountEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.DavCalendarEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.DavEventEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.NotifiedInvitationEntity
+import com.qtekfun.ultimatecalendar.data.local.entity.PendingCalendarOverrideEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.PendingOperationEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.ReRemindEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.SubscriptionEntity
@@ -95,6 +96,7 @@ class MigrationTest {
             assertCalDavTablesWork(database)
             assertReRemindTableWorks(database)
             assertSubscriptionTablesWork(database)
+            assertPendingOverridesWork(database)
         } finally {
             database.close()
         }
@@ -196,7 +198,7 @@ class MigrationTest {
     }
 
     @Test
-    fun `version 6 loses the default calendar table and keeps the rest in version 7`(
+    fun `version 6 swaps the default calendar table for the pending overrides one`(
         @TempDir dir: File
     ) = runTest {
         val file = File(dir, "calendar.db")
@@ -216,6 +218,7 @@ class MigrationTest {
                 database.calendarSettingsDao().find(7)
             )
             assertSubscriptionTablesWork(database)
+            assertPendingOverridesWork(database)
         } finally {
             database.close()
         }
@@ -225,6 +228,15 @@ class MigrationTest {
         } finally {
             after.close()
         }
+    }
+
+    private suspend fun assertPendingOverridesWork(database: UltimateCalendarDatabase) {
+        val dao = database.pendingCalendarOverrideDao()
+        assertEquals(emptyList<PendingCalendarOverrideEntity>(), dao.all())
+        val account = "ana@cloud.example.com"
+        val row = PendingCalendarOverrideEntity(account, "Work", "Job", 7, false)
+        dao.save(listOf(row))
+        assertEquals(listOf(row), dao.forAccount(account))
     }
 
     private fun tables(connection: SQLiteConnection): List<String> =

@@ -9,6 +9,7 @@ import com.qtekfun.ultimatecalendar.data.auth.FakeCipher
 import com.qtekfun.ultimatecalendar.data.auth.FakeLoginStorage
 import com.qtekfun.ultimatecalendar.data.local.UltimateCalendarDatabase
 import com.qtekfun.ultimatecalendar.data.local.entity.CalendarSettingsEntity
+import com.qtekfun.ultimatecalendar.data.local.entity.PendingCalendarOverrideEntity
 import com.qtekfun.ultimatecalendar.data.local.inMemoryDatabase
 import com.qtekfun.ultimatecalendar.data.remote.Credentials
 import com.qtekfun.ultimatecalendar.data.remote.ServerUrl
@@ -17,7 +18,9 @@ import com.qtekfun.ultimatecalendar.data.settings.AppSettings
 import com.qtekfun.ultimatecalendar.data.settings.FakePreferences
 import com.qtekfun.ultimatecalendar.data.settings.SettingsRepository
 import com.qtekfun.ultimatecalendar.data.settings.ThemeMode
+import com.qtekfun.ultimatecalendar.data.source.CalDavIds
 import com.qtekfun.ultimatecalendar.data.source.FakeCalendarSource
+import com.qtekfun.ultimatecalendar.data.source.caldav.CalDavMapping
 import com.qtekfun.ultimatecalendar.data.subscriptions.RestoredSubscriptions
 import com.qtekfun.ultimatecalendar.data.subscriptions.SubscriptionRepository
 import com.qtekfun.ultimatecalendar.domain.model.CalendarAccess
@@ -50,11 +53,19 @@ class BackupCoordinatorTest {
     private val root get() = server.url("/").toString()
     private val databases = mutableListOf<UltimateCalendarDatabase>()
 
+    private val personal = CalendarInfo(
+        CalendarId(1),
+        CalendarAccount("ana@gmail.com", "com.google"),
+        "Personal",
+        0xFF0000FF.toInt(),
+        CalendarAccess.OWNER
+    )
+
     @AfterEach
     fun close() = databases.forEach { it.close() }
 
     /** One phone: its own settings, session and database. */
-    private inner class Phone {
+    private inner class Phone(calendars: List<CalendarInfo> = listOf(personal)) {
         val settings = SettingsRepository(FakePreferences(), FakePreferences(), FakePreferences())
         val storage = FakeLoginStorage()
         val session = AccountSession(CredentialStore(storage, FakeCipher()))
@@ -69,22 +80,14 @@ class BackupCoordinatorTest {
         val coordinator = BackupCoordinator(
             SettingsBackup(settings),
             CalendarOverridesBackup(
-                FakeCalendarSource(
-                    listOf(
-                        CalendarInfo(
-                            CalendarId(1),
-                            CalendarAccount("ana@gmail.com", "com.google"),
-                            "Personal",
-                            0xFF0000FF.toInt(),
-                            CalendarAccess.OWNER
-                        )
-                    )
-                ),
+                FakeCalendarSource(calendars),
                 db.calendarSettingsDao(),
+                db.pendingCalendarOverrideDao(),
                 Dispatchers.Unconfined
             ),
             sessions,
             feeds,
+            session,
             Dispatchers.Unconfined
         )
 
@@ -213,16 +216,76 @@ class BackupCoordinatorTest {
                 CalendarOverridesBackup(
                     FakeCalendarSource(emptyList()),
                     new.db.calendarSettingsDao(),
+                    new.db.pendingCalendarOverrideDao(),
                     Dispatchers.Unconfined
                 ),
                 new.sessions,
                 new.feeds,
+                new.session,
                 Dispatchers.Unconfined
             )
 
             val outcome = bare.restore(file, passphrase)
 
             assertEquals(1, outcome.missingCalendars)
+        }
+
+    @Test
+    fun `overrides of CalDAV calendars wait for the first sync of the signed-in account`() =
+        runBlocking {
+            val accountName = CalDavMapping.accountName(root, "ana")
+            val caldavId = CalDavIds.calendar(3)
+            val work = CalendarInfo(
+                caldavId,
+                CalendarAccount(accountName, CalendarAccount.CALDAV_TYPE),
+                "Work",
+                0xFF0000FF.toInt(),
+                CalendarAccess.OWNER
+            )
+            val old = Phone(listOf(work))
+            old.db.calendarSettingsDao().save(
+                CalendarSettingsEntity(caldavId.value, "Job", 7, false)
+            )
+            val file = old.coordinator.export(passphrase, includeSession = false)
+            // The new phone is signed in to the same account but has not synced yet.
+            val new = Phone(emptyList()).apply { signIn() }
+
+            val outcome = new.coordinator.restore(file, passphrase)
+
+            assertEquals(0, outcome.missingCalendars)
+            assertEquals(1, outcome.waitingCalendars)
+            assertEquals(
+                listOf(PendingCalendarOverrideEntity(accountName, "Work", "Job", 7, false)),
+                new.db.pendingCalendarOverrideDao().all()
+            )
+        }
+
+    @Test
+    fun `overrides of CalDAV calendars are missing when nobody is signed in on the new phone`() =
+        runBlocking {
+            val caldavId = CalDavIds.calendar(3)
+            val work = CalendarInfo(
+                caldavId,
+                CalendarAccount(
+                    CalDavMapping.accountName(root, "ana"),
+                    CalendarAccount.CALDAV_TYPE
+                ),
+                "Work",
+                0xFF0000FF.toInt(),
+                CalendarAccess.OWNER
+            )
+            val old = Phone(listOf(work))
+            old.db.calendarSettingsDao().save(
+                CalendarSettingsEntity(caldavId.value, "Job", 7, false)
+            )
+            val file = old.coordinator.export(passphrase, includeSession = false)
+            val new = Phone(emptyList())
+
+            val outcome = new.coordinator.restore(file, passphrase)
+
+            assertEquals(1, outcome.missingCalendars)
+            assertEquals(0, outcome.waitingCalendars)
+            assertTrue(new.db.pendingCalendarOverrideDao().all().isEmpty())
         }
 
     @Test

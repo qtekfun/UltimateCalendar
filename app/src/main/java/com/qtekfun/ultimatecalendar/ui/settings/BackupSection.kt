@@ -94,7 +94,15 @@ fun RestoreBackupButton(viewModel: BackupViewModel = viewModel()) {
         uri?.let(viewModel::startRestore)
     }
     LaunchedEffect(viewModel) {
-        viewModel.messages.collect { Toast.makeText(context, it, Toast.LENGTH_LONG).show() }
+        viewModel.messages.collect { message ->
+            val text = when (message) {
+                is BackupMessage.Text -> context.getString(message.id)
+
+                is BackupMessage.Count ->
+                    context.resources.getQuantityString(message.id, message.count, message.count)
+            }
+            Toast.makeText(context, text, Toast.LENGTH_LONG).show()
+        }
     }
     TextButton(onClick = { open.launch(arrayOf("*/*")) }) {
         Text(stringResource(R.string.backup_restore))

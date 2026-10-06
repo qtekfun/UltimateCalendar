@@ -131,6 +131,11 @@
     <string name="backup_failed">No se pudo guardar el archivo</string>
     <string name="backup_restored">Ajustes restaurados</string>
     <string name="backup_restored_some_calendars">Ajustes restaurados. Algunos calendarios o suscripciones de la copia no se pudieron aplicar: el calendario no está en este teléfono o la dirección no es https.</string>
+    <plurals name="backup_restored_waiting_calendars">
+        <item quantity="one">%d calendario CalDAV espera a la primera sincronización: su nombre y color se aplicarán cuando aparezca.</item>
+        <item quantity="many">%d de calendarios CalDAV esperan a la primera sincronización: sus nombres y colores se aplicarán cuando aparezcan.</item>
+        <item quantity="other">%d calendarios CalDAV esperan a la primera sincronización: sus nombres y colores se aplicarán cuando aparezcan.</item>
+    </plurals>
     <string name="backup_wrong_passphrase">Frase incorrecta, o el archivo se ha modificado</string>
     <string name="backup_invalid">Esto no es una copia de UltimateCalendar</string>
     <string name="backup_newer_version">Esta copia viene de una versión más nueva de la app. Actualízala primero.</string>

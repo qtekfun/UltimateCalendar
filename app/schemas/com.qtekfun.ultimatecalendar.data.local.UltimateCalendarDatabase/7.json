@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 7,
-    "identityHash": "2a6e4082e325b9ecdef375043e97374e",
+    "identityHash": "0a4e9d933c917b447bbaaf26a9472a96",
     "entities": [
       {
         "tableName": "calendar_settings",
@@ -98,6 +98,46 @@
           "columnNames": [
             "calendarId",
             "eventId"
+          ]
+        }
+      },
+      {
+        "tableName": "pending_calendar_override",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`accountName` TEXT NOT NULL, `calendarName` TEXT NOT NULL, `displayName` TEXT, `color` INTEGER, `visible` INTEGER, PRIMARY KEY(`accountName`, `calendarName`))",
+        "fields": [
+          {
+            "fieldPath": "accountName",
+            "columnName": "accountName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "calendarName",
+            "columnName": "calendarName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "displayName",
+            "columnName": "displayName",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "color",
+            "columnName": "color",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "visible",
+            "columnName": "visible",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "accountName",
+            "calendarName"
           ]
         }
       },
@@ -965,7 +1005,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2a6e4082e325b9ecdef375043e97374e')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '0a4e9d933c917b447bbaaf26a9472a96')"
     ]
   }
 }

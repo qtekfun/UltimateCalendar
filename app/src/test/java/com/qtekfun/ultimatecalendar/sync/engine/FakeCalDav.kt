@@ -51,10 +51,8 @@ class FakeCalDav : Dispatcher() {
     /** Lists that answer sync-collection with 415, as Deck's do; they have a ctag instead. */
     val withoutSync = mutableSetOf<String>()
 
-    fun addCalendar(name: String): String = (home + name.lowercase() + "/").also {
-        calendars[it] =
-            name
-    }
+    fun addCalendar(name: String, slug: String = name.lowercase()): String =
+        (home + slug + "/").also { calendars[it] = name }
 
     fun put(href: String, ics: String): String {
         val etag = "\"${++nextEtag}\""

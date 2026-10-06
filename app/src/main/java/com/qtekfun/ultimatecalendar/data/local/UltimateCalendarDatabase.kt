@@ -12,6 +12,7 @@ import com.qtekfun.ultimatecalendar.data.local.dao.DavAccountDao
 import com.qtekfun.ultimatecalendar.data.local.dao.DavCalendarDao
 import com.qtekfun.ultimatecalendar.data.local.dao.DavEventDao
 import com.qtekfun.ultimatecalendar.data.local.dao.NotifiedInvitationDao
+import com.qtekfun.ultimatecalendar.data.local.dao.PendingCalendarOverrideDao
 import com.qtekfun.ultimatecalendar.data.local.dao.PendingOperationDao
 import com.qtekfun.ultimatecalendar.data.local.dao.PendingOperationRetryDao
 import com.qtekfun.ultimatecalendar.data.local.dao.ReRemindDao
@@ -22,6 +23,7 @@ import com.qtekfun.ultimatecalendar.data.local.entity.DavAccountEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.DavCalendarEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.DavEventEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.NotifiedInvitationEntity
+import com.qtekfun.ultimatecalendar.data.local.entity.PendingCalendarOverrideEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.PendingOperationEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.ReRemindEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.SubscriptionEntity
@@ -31,6 +33,7 @@ import com.qtekfun.ultimatecalendar.data.local.entity.SubscriptionEventEntity
     entities = [
         CalendarSettingsEntity::class,
         NotifiedInvitationEntity::class,
+        PendingCalendarOverrideEntity::class,
         DavAccountEntity::class,
         DavCalendarEntity::class,
         DavEventEntity::class,
@@ -60,6 +63,8 @@ abstract class UltimateCalendarDatabase : RoomDatabase() {
     abstract fun reRemindDao(): ReRemindDao
 
     abstract fun accountCleanupDao(): AccountCleanupDao
+
+    abstract fun pendingCalendarOverrideDao(): PendingCalendarOverrideDao
 
     abstract fun subscriptionDao(): SubscriptionDao
 

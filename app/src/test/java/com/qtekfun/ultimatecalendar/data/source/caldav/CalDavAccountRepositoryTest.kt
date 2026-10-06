@@ -10,6 +10,7 @@ import com.qtekfun.ultimatecalendar.data.local.entity.CalendarSettingsEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.DavAccountEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.DavCalendarEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.NotifiedInvitationEntity
+import com.qtekfun.ultimatecalendar.data.local.entity.PendingCalendarOverrideEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.PendingOperationEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.ReRemindEntity
 import com.qtekfun.ultimatecalendar.data.local.inMemoryDatabase
@@ -328,6 +329,47 @@ class CalDavAccountRepositoryTest {
             assertEquals(listOf(7L), db.calendarSettingsDao().all().map { it.calendarId })
             assertEquals(listOf(7L), db.notifiedInvitationDao().all().map { it.calendarId })
             assertEquals(listOf(7L), db.reRemindDao().all().map { it.calendarId })
+        }
+
+    @Test
+    fun `signing out forgets the overrides waiting for this account but not another's`() =
+        runBlocking {
+            active.value = signedIn
+            val id = account()
+            calendar(id, "Mine")
+            val mine = "ana@cloud.example.com"
+            db.pendingCalendarOverrideDao().save(
+                listOf(
+                    PendingCalendarOverrideEntity(mine, "Work", "Job", null, null),
+                    PendingCalendarOverrideEntity("bob@other.example", "Work", "Bob", null, null)
+                )
+            )
+
+            repository.signOut()
+
+            assertEquals(
+                listOf("bob@other.example"),
+                db.pendingCalendarOverrideDao().all().map { it.accountName }
+            )
+        }
+
+    @Test
+    fun `signing out before the first sync still forgets the overrides waiting for it`() =
+        runBlocking {
+            // No row for the account yet: the sync that creates it never ran.
+            active.value = signedIn
+            db.pendingCalendarOverrideDao().save(
+                listOf(
+                    PendingCalendarOverrideEntity("ana@cloud.example.com", "Work", "Job", 1, null)
+                )
+            )
+
+            repository.signOut()
+
+            assertEquals(
+                emptyList<PendingCalendarOverrideEntity>(),
+                db.pendingCalendarOverrideDao().all()
+            )
         }
 
     @Test

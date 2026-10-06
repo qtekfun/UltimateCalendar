@@ -8,13 +8,16 @@ import androidx.room3.Query
 
 /**
  * What is keyed by calendar outside the account's own tables and has to go with the account
- * when it is signed out (T37): the local overrides and the invitations
+ * when it is signed out (T37): the local overrides, the overrides still waiting for the account's first sync and the invitations
  * noticed and their re-reminders. [calendarIds] are the app's calendar ids (see `CalDavIds`).
  */
 @Dao
 interface AccountCleanupDao {
     @Query("DELETE FROM calendar_settings WHERE calendarId IN (:calendarIds)")
     suspend fun clearSettings(calendarIds: List<Long>)
+
+    @Query("DELETE FROM pending_calendar_override WHERE accountName = :accountName")
+    suspend fun clearPendingOverrides(accountName: String)
 
     @Query("DELETE FROM notified_invitations WHERE calendarId IN (:calendarIds)")
     suspend fun clearNotified(calendarIds: List<Long>)

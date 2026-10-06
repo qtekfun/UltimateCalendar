@@ -32,11 +32,11 @@ class BackupViewModel @Inject constructor(
     private val backup: BackupCoordinator,
     @IoDispatcher private val io: CoroutineDispatcher
 ) : ViewModel() {
-    private val mutableMessages = MutableSharedFlow<Int>(extraBufferCapacity = MESSAGES)
+    private val mutableMessages = MutableSharedFlow<BackupMessage>(extraBufferCapacity = MESSAGES)
     private val pending = MutableStateFlow<String?>(null)
 
-    /** Messages to show, as string resources. */
-    val messages: SharedFlow<Int> = mutableMessages.asSharedFlow()
+    /** Messages to show. */
+    val messages: SharedFlow<BackupMessage> = mutableMessages.asSharedFlow()
 
     /** A backup read from a file, waiting for its passphrase. */
     val needsPassphrase: StateFlow<String?> = pending.asStateFlow()
@@ -53,7 +53,9 @@ class BackupViewModel @Inject constructor(
                 }
             }
             mutableMessages.tryEmit(
-                if (written != null) R.string.backup_exported else R.string.backup_failed
+                BackupMessage.Text(
+                    if (written != null) R.string.backup_exported else R.string.backup_failed
+                )
             )
         }
     }
@@ -68,7 +70,7 @@ class BackupViewModel @Inject constructor(
                 }
             }
             if (text == null) {
-                mutableMessages.tryEmit(R.string.backup_invalid)
+                mutableMessages.tryEmit(BackupMessage.Text(R.string.backup_invalid))
             } else {
                 pending.value = text
             }
@@ -98,6 +100,6 @@ class BackupViewModel @Inject constructor(
     }
 
     private companion object {
-        const val MESSAGES = 4
+        const val MESSAGES = 6
     }
 }
