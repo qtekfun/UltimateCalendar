@@ -35,11 +35,21 @@ class MigrationTest {
         val json = File(schemas, "$version.json").readText()
         val tables = Regex("\"tableName\": \"(\\w+)\",\\s*\"createSql\": \"(.*)\",").findAll(json)
             .map { it.groupValues[2].replace("\${TABLE_NAME}", it.groupValues[1]) }
+        // Each entity's indices belong to the table named at the start of its block.
+        val indices = json.split("\"tableName\": \"").drop(1).flatMap { block ->
+            val table = block.substringBefore('"')
+            Regex("\"createSql\": \"(CREATE (?:UNIQUE )?INDEX[^\"]*)\"").findAll(block)
+                .map { it.groupValues[1].replace("\${TABLE_NAME}", table) }.toList()
+        }
         val setup = Regex("\"((?:CREATE|INSERT)[^\"]*room_master_table[^\"]*)\"")
             .findAll(json).map { it.groupValues[1] }
         val connection = BundledSQLiteDriver().open(file.path)
         try {
-            (tables + setup + sequenceOf("PRAGMA user_version = $version")).forEach {
+            (
+                tables + indices.asSequence() + setup + sequenceOf(
+                    "PRAGMA user_version = $version"
+                )
+                ).forEach {
                 connection.execSQL(it)
             }
             connection.execSQL(
@@ -107,6 +117,37 @@ class MigrationTest {
                 database.notifiedInvitationDao().all()
             )
             assertCalDavTablesWork(database)
+        } finally {
+            database.close()
+        }
+    }
+
+    @Test
+    fun `an account of version 3 keeps its row, without addresses or scheduling, in version 4`(
+        @TempDir dir: File
+    ) = runTest {
+        val file = File(dir, "calendar.db")
+        createVersion(3, file)
+        val connection = BundledSQLiteDriver().open(file.path)
+        try {
+            connection.execSQL(
+                "INSERT INTO dav_account (id, serverUrl, loginName, calendarHome) " +
+                    "VALUES (5, 'https://cloud.example.com/', 'ana', '/dav/calendars/ana/')"
+            )
+        } finally {
+            connection.close()
+        }
+
+        val database = open(file)
+        try {
+            val account = requireNotNull(database.davAccountDao().get(5))
+            assertEquals("/dav/calendars/ana/", account.calendarHome)
+            assertEquals("", account.userAddresses)
+            assertEquals(false, account.scheduling)
+            database.davAccountDao().update(
+                account.copy(userAddresses = "ana@example.com", scheduling = true)
+            )
+            assertEquals("ana@example.com", database.davAccountDao().get(5)?.userAddresses)
         } finally {
             database.close()
         }

@@ -19,6 +19,7 @@ import java.time.ZoneOffset
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withTimeout
 
@@ -328,6 +329,8 @@ object CalendarSourceContract {
                 val seen = async(start = CoroutineStart.UNDISPATCHED) {
                     withTimeout(CHANGE_TIMEOUT_MS) { source.changes.first() }
                 }
+                // A source that merges flows (Room invalidation) subscribes asynchronously; give it time.
+                delay(SUBSCRIBE_DELAY_MS)
                 source.create(draft()).value()
                 seen.await()
             }
@@ -338,6 +341,7 @@ object CalendarSourceContract {
     private const val DAY = 86_400L
     private const val WEEK = 7 * DAY
     private const val CHANGE_TIMEOUT_MS = 5_000L
+    private const val SUBSCRIBE_DELAY_MS = 100L
 }
 
 private suspend fun CalendarSource.titlesFor(query: String): List<String> =

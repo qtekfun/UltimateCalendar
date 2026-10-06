@@ -7,6 +7,7 @@ import androidx.work.ListenableWorker
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationChanges
 import com.qtekfun.ultimatecalendar.domain.result.CalendarError
 import com.qtekfun.ultimatecalendar.notify.MissedReminderRecovery
+import com.qtekfun.ultimatecalendar.sync.engine.SyncEngine
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -52,9 +53,18 @@ class InvitationCheckWorkerTest {
         assertEquals(ListenableWorker.Result.success(), worker.doWork())
     }
 
+    private val engine = mockk<SyncEngine>()
+
     @Test
     fun `the factory builds this worker and leaves any other to WorkManager`() {
-        val factory = InvitationWorkerFactory(Provider { checker }, Provider { recovery })
+        val factory =
+            InvitationWorkerFactory(
+                Provider {
+                    checker
+                },
+                Provider { recovery },
+                Provider { engine }
+            )
 
         val built = factory.createWorker(
             mockk(relaxed = true),
@@ -67,7 +77,14 @@ class InvitationCheckWorkerTest {
             mockk(relaxed = true)
         )
 
+        val sync = factory.createWorker(
+            mockk(relaxed = true),
+            CalDavSyncWorker::class.java.name,
+            mockk(relaxed = true)
+        )
+
         assertInstanceOf(InvitationCheckWorker::class.java, built)
+        assertInstanceOf(CalDavSyncWorker::class.java, sync)
         assertNull(other)
     }
 }

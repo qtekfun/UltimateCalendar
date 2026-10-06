@@ -40,6 +40,26 @@ interface DavEventDao {
     )
     fun observeWindow(calendarIds: List<Long>, from: Long, to: Long): Flow<List<DavEventEntity>>
 
+    /** The same series as [observeWindow], read once. */
+    @Query(
+        "SELECT * FROM dav_event WHERE calendarId IN (:calendarIds) AND NOT deleted " +
+            "AND windowStart < :to AND (windowEnd IS NULL OR windowEnd > :from) " +
+            "ORDER BY windowStart, id"
+    )
+    suspend fun inWindow(calendarIds: List<Long>, from: Long, to: Long): List<DavEventEntity>
+
+    /**
+     * The events whose text fields or guests may contain what [pattern] (a `LIKE` pattern
+     * escaped with `\`) looks for: a coarse filter, the search decides.
+     */
+    @Query(
+        "SELECT * FROM dav_event WHERE calendarId IN (:calendarIds) AND NOT deleted AND " +
+            "(title LIKE :pattern ESCAPE '\\' OR location LIKE :pattern ESCAPE '\\' " +
+            "OR description LIKE :pattern ESCAPE '\\' OR attendees LIKE :pattern ESCAPE '\\') " +
+            "ORDER BY id"
+    )
+    suspend fun matching(calendarIds: List<Long>, pattern: String): List<DavEventEntity>
+
     @Query("DELETE FROM dav_event WHERE id = :id")
     suspend fun delete(id: Long)
 }

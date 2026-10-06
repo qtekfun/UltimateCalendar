@@ -11,8 +11,8 @@ import com.qtekfun.ultimatecalendar.data.settings.SettingsRepository
 import com.qtekfun.ultimatecalendar.data.source.CalendarSource
 import com.qtekfun.ultimatecalendar.data.source.UnavailableCalendarSource
 import com.qtekfun.ultimatecalendar.data.sync.AccountSyncTrigger
+import com.qtekfun.ultimatecalendar.data.sync.CompositeSyncRequester
 import com.qtekfun.ultimatecalendar.data.sync.ContentResolverSyncTrigger
-import com.qtekfun.ultimatecalendar.data.sync.ProviderSyncRequester
 import com.qtekfun.ultimatecalendar.data.sync.SourceSyncRequester
 import com.qtekfun.ultimatecalendar.domain.invitations.ChangeNotifications
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationNotifier
@@ -54,7 +54,7 @@ interface InvitationCheckBindingsModule {
     fun settings(settings: RepositoryInvitationCheckSettings): InvitationCheckSettings
 
     @Binds
-    fun syncRequester(requester: ProviderSyncRequester): SourceSyncRequester
+    fun syncRequester(requester: CompositeSyncRequester): SourceSyncRequester
 
     @Binds
     fun syncTrigger(trigger: ContentResolverSyncTrigger): AccountSyncTrigger

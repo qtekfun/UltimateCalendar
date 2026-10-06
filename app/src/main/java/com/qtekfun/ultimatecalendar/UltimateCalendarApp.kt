@@ -8,6 +8,7 @@ import androidx.work.Configuration
 import com.qtekfun.ultimatecalendar.notify.KeepAliveController
 import com.qtekfun.ultimatecalendar.notify.NotificationChannels
 import com.qtekfun.ultimatecalendar.notify.ReminderCoordinator
+import com.qtekfun.ultimatecalendar.sync.CalDavSync
 import com.qtekfun.ultimatecalendar.sync.InvitationCheckCoordinator
 import com.qtekfun.ultimatecalendar.sync.InvitationWorkerFactory
 import com.qtekfun.ultimatecalendar.widget.WidgetRefresher
@@ -35,6 +36,9 @@ class UltimateCalendarApp :
     lateinit var widgets: WidgetRefresher
 
     @Inject
+    lateinit var caldavSync: CalDavSync
+
+    @Inject
     lateinit var workerFactory: InvitationWorkerFactory
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -53,6 +57,8 @@ class UltimateCalendarApp :
         // The periodic invitation check, and the checks the provider's changes and the app
         // opening start (RF-06).
         invitationChecks.start(scope)
+        // CalDAV syncs exist only while an account is signed in (RF-12).
+        caldavSync.start(scope)
         // The home-screen widgets follow the calendar while the process lives (T38).
         widgets.start(scope)
         registerActivityLifecycleCallbacks(

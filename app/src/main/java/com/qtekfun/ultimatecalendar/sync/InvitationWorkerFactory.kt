@@ -8,6 +8,7 @@ import androidx.work.ListenableWorker
 import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
 import com.qtekfun.ultimatecalendar.notify.MissedReminderRecovery
+import com.qtekfun.ultimatecalendar.sync.engine.SyncEngine
 import javax.inject.Inject
 import javax.inject.Provider
 import javax.inject.Singleton
@@ -20,15 +21,20 @@ import javax.inject.Singleton
 @Singleton
 class InvitationWorkerFactory @Inject constructor(
     private val checker: Provider<InvitationChecker>,
-    private val recovery: Provider<MissedReminderRecovery>
+    private val recovery: Provider<MissedReminderRecovery>,
+    private val engine: Provider<SyncEngine>
 ) : WorkerFactory() {
     override fun createWorker(
         appContext: Context,
         workerClassName: String,
         workerParameters: WorkerParameters
-    ): ListenableWorker? = if (workerClassName == InvitationCheckWorker::class.java.name) {
-        InvitationCheckWorker(appContext, workerParameters, checker.get(), recovery.get())
-    } else {
-        null
+    ): ListenableWorker? = when (workerClassName) {
+        InvitationCheckWorker::class.java.name ->
+            InvitationCheckWorker(appContext, workerParameters, checker.get(), recovery.get())
+
+        CalDavSyncWorker::class.java.name ->
+            CalDavSyncWorker(appContext, workerParameters, engine.get())
+
+        else -> null
     }
 }

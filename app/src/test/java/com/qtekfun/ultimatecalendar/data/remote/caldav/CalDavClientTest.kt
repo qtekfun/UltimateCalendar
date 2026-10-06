@@ -12,6 +12,7 @@ import mockwebserver3.junit5.StartStop
 import okhttp3.Headers.Companion.headersOf
 import okhttp3.OkHttpClient
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -83,6 +84,90 @@ class CalDavClientTest {
         assertEquals("0", first.headers["Depth"])
         assertTrue("current-user-principal" in first.text())
         assertEquals("/nextcloud/remote.php/dav/principals/users/ana/", server.takeRequest().target)
+    }
+
+    private fun principalAnswers(userProperties: String) {
+        server.enqueue(
+            multistatus(
+                response(
+                    "/nextcloud/remote.php/dav/",
+                    "<d:current-user-principal><d:href>/nextcloud/principals/ana/</d:href>" +
+                        "</d:current-user-principal>"
+                )
+            )
+        )
+        server.enqueue(
+            multistatus(
+                response(
+                    "/nextcloud/principals/ana/",
+                    "<cal:calendar-home-set><d:href>/nextcloud/calendars/ana/</d:href>" +
+                        "</cal:calendar-home-set>$userProperties"
+                )
+            )
+        )
+    }
+
+    @Test
+    fun `the profile adds the user's addresses and the scheduling outbox to the home`() = runTest {
+        principalAnswers(
+            "<cal:calendar-user-address-set>" +
+                "<d:href>mailto:Ana@Example.com</d:href><d:href>/principals/ana/</d:href>" +
+                "<d:href>MAILTO:ana@work.example</d:href><d:href>mailto:ana@example.com</d:href>" +
+                "</cal:calendar-user-address-set>" +
+                "<cal:schedule-outbox-URL><d:href>/nextcloud/calendars/ana/outbox/</d:href>" +
+                "</cal:schedule-outbox-URL>"
+        )
+
+        val profile = (client.profile() as DavResult.Success).value
+
+        assertEquals("/nextcloud/calendars/ana/", profile.home)
+        assertEquals(listOf("ana@example.com", "ana@work.example"), profile.addresses)
+        assertEquals("/nextcloud/calendars/ana/outbox/", profile.schedulingOutbox)
+        assertTrue(profile.schedules)
+        server.takeRequest()
+        val asked = server.takeRequest().text()
+        assertTrue("calendar-user-address-set" in asked && "schedule-outbox-URL" in asked)
+    }
+
+    @Test
+    fun `a server without scheduling properties gives a profile that does not schedule`() =
+        runTest {
+            principalAnswers("")
+
+            val profile = (client.profile() as DavResult.Success).value
+
+            assertEquals(emptyList<String>(), profile.addresses)
+            assertNull(profile.schedulingOutbox)
+            assertFalse(profile.schedules)
+        }
+
+    @Test
+    fun `an outbox without an address is not enough to schedule`() = runTest {
+        principalAnswers(
+            "<cal:schedule-outbox-URL><d:href>/outbox/</d:href></cal:schedule-outbox-URL>"
+        )
+
+        assertFalse((client.profile() as DavResult.Success).value.schedules)
+    }
+
+    @Test
+    fun `a profile needs a principal and a home`() = runTest {
+        server.enqueue(
+            multistatus(response("/nextcloud/remote.php/dav/", "<d:displayname>x</d:displayname>"))
+        )
+        assertEquals(DavResult.ParseError, client.profile())
+
+        server.takeRequest()
+        server.enqueue(
+            multistatus(
+                response(
+                    "/nextcloud/remote.php/dav/",
+                    "<d:current-user-principal><d:href>/p/</d:href></d:current-user-principal>"
+                )
+            )
+        )
+        server.enqueue(multistatus(response("/p/", "<d:displayname>no home</d:displayname>")))
+        assertEquals(DavResult.ParseError, client.profile())
     }
 
     @Test

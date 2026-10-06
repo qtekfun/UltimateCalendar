@@ -11,6 +11,13 @@
     <uses-permission android:name="android.permission.WRITE_CALENDAR" />
 
     <!--
+      The network, only to reach the CalDAV server the user signs in to (RF-12), over HTTPS (the
+      network security config refuses cleartext). Nothing else is contacted: no analytics, no
+      telemetry, no other host.
+    -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!--
       Optional (RF-05): asked only when the user taps to suggest guests from their contacts;
       without it the guests field works with typed addresses. Never uploaded, never stored.
     -->
