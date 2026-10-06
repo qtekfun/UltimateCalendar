@@ -48,21 +48,7 @@ fun AppNavigation(routes: NotificationRoutes = remember { NotificationRoutes() }
         )
 
         // The detail comes before the tray, so back from the detail returns to the tray.
-        nav.eventDetail -> {
-            val ref = nav.detailRef
-            if (ref == null) {
-                nav.eventDetail = false
-            } else {
-                EventDetailScreen(
-                    ref = ref,
-                    onBack = { nav.eventDetail = false },
-                    onEdit = {
-                        nav.eventDetail = false
-                        nav.openEditor(EditorRequest.Edit(ref))
-                    }
-                )
-            }
-        }
+        nav.eventDetail -> EventDetailRoute(nav)
 
         nav.invitations -> {
             BackHandler { nav.invitations = false }
@@ -96,6 +82,24 @@ fun AppNavigation(routes: NotificationRoutes = remember { NotificationRoutes() }
                 },
                 onCreateAt = { nav.openEditor(EditorRequest.New(it)) }
             )
+        )
+    }
+}
+
+/** The detail of the event in [NavState.detailRef]; edit opens the editor on the same occurrence. */
+@Composable
+private fun EventDetailRoute(nav: NavState) {
+    val ref = nav.detailRef
+    if (ref == null) {
+        nav.eventDetail = false
+    } else {
+        EventDetailScreen(
+            ref = ref,
+            onBack = { nav.eventDetail = false },
+            onEdit = {
+                nav.eventDetail = false
+                nav.openEditor(EditorRequest.Edit(ref))
+            }
         )
     }
 }
