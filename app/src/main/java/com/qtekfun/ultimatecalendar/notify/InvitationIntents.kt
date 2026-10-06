@@ -11,14 +11,21 @@ import com.qtekfun.ultimatecalendar.domain.invitations.InvitationKey
 import com.qtekfun.ultimatecalendar.domain.model.CalendarId
 import com.qtekfun.ultimatecalendar.domain.model.EventId
 import com.qtekfun.ultimatecalendar.ui.MainActivity
+import java.time.LocalDate
 
-/** Where tapping a notification of the app takes the user. */
+/** Where tapping a notification (or a home-screen widget, T38) of the app takes the user. */
 sealed interface NotificationRoute {
     /** The invitation tray (the group summary). */
     data object Inbox : NotificationRoute
 
     /** The detail of one occurrence (one invitation). */
     data class Event(val ref: EventRef) : NotificationRoute
+
+    /** The Day view on [date]: a tapped day of the Month widget. */
+    data class Day(val date: LocalDate) : NotificationRoute
+
+    /** The editor on a new event: the "+" of the Agenda widget. */
+    data object NewEvent : NotificationRoute
 }
 
 /**
@@ -42,7 +49,11 @@ object InvitationIntents {
             .also { intent ->
                 when (route) {
                     NotificationRoute.Inbox -> intent.putExtra(EXTRA_INBOX, true)
+
                     is NotificationRoute.Event -> intent.putExtra(EXTRA_REF, route.ref.encode())
+
+                    // Only the widgets ask for these, with intents of their own (WidgetIntents).
+                    is NotificationRoute.Day, NotificationRoute.NewEvent -> Unit
                 }
             }
 

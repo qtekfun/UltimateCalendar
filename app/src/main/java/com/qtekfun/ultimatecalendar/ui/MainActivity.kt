@@ -23,6 +23,7 @@ import com.qtekfun.ultimatecalendar.ui.navigation.AppNavigation
 import com.qtekfun.ultimatecalendar.ui.navigation.NotificationRoutes
 import com.qtekfun.ultimatecalendar.ui.theme.UltimateCalendarTheme
 import com.qtekfun.ultimatecalendar.ui.theme.toThemeOptions
+import com.qtekfun.ultimatecalendar.widget.WidgetIntents
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.flow.map
@@ -63,6 +64,8 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun publishRoute(intent: Intent?) {
-        intent?.let(InvitationIntents::routeOf)?.let(routes::publish)
+        intent?.let {
+            InvitationIntents.routeOf(it) ?: WidgetIntents.routeOf(it)
+        }?.let(routes::publish)
     }
 }
