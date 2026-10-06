@@ -4,6 +4,7 @@
 package com.qtekfun.ultimatecalendar.data.settings
 
 import app.cash.turbine.test
+import com.qtekfun.ultimatecalendar.domain.invitations.ReRemindOption
 import com.qtekfun.ultimatecalendar.domain.model.CalendarId
 import com.qtekfun.ultimatecalendar.domain.settings.FirstDayOfWeek
 import com.qtekfun.ultimatecalendar.domain.settings.InitialView
@@ -40,6 +41,7 @@ class SettingsRepositoryTest {
         assertEquals(InviteCheckInterval.EVERY_30, settings.inviteCheck)
         assertEquals(emptyList<String>(), settings.ownEmails)
         assertFalse(settings.notifyChanges || settings.notifyCancellations)
+        assertEquals(ReRemindOption.OFF, settings.reRemind)
         assertEquals(24, settings.missedWindowHours)
         assertFalse(settings.alarmClock || settings.robustMode)
         assertEquals(9 * 60, settings.allDayMinute)
@@ -61,6 +63,7 @@ class SettingsRepositoryTest {
             ownEmails = listOf("ana@example.com", "b@x.org"),
             notifyChanges = true,
             notifyCancellations = true,
+            reRemind = ReRemindOption.BOTH,
             missedWindowHours = 0,
             alarmClock = true,
             robustMode = true,
@@ -256,4 +259,17 @@ class SettingsRepositoryTest {
             assertEquals(ThemeMode.DARK, settings.theme)
             assertEquals(listOf("a@x.org"), settings.ownEmails)
         }
+
+    @Test
+    fun `an unknown re-remind value reads as off, and the reminders see the option`() = runTest {
+        prefs.values["re_remind"] = "EVERY_HOUR"
+        assertEquals(ReRemindOption.OFF, repository.current().reRemind)
+
+        repository.update { it.copy(reRemind = ReRemindOption.DAY_BEFORE) }
+
+        assertEquals(
+            ReRemindOption.DAY_BEFORE,
+            RepositoryReminderSettings(repository).settings.first().reRemind
+        )
+    }
 }

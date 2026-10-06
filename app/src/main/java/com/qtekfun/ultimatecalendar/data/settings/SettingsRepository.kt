@@ -6,6 +6,7 @@ package com.qtekfun.ultimatecalendar.data.settings
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.qtekfun.ultimatecalendar.domain.firstrun.FirstRunFlag
+import com.qtekfun.ultimatecalendar.domain.invitations.ReRemindOption
 import com.qtekfun.ultimatecalendar.domain.model.CalendarId
 import com.qtekfun.ultimatecalendar.domain.settings.FirstDayOfWeek
 import com.qtekfun.ultimatecalendar.domain.settings.InitialView
@@ -31,6 +32,7 @@ private const val KEY_INVITE_CHECK = "invite_check"
 private const val KEY_OWN_EMAILS = "own_emails"
 private const val KEY_NOTIFY_CHANGES = "notify_changes"
 private const val KEY_NOTIFY_CANCELLATIONS = "notify_cancellations"
+private const val KEY_RE_REMIND = "re_remind"
 private const val KEY_MISSED_WINDOW = "missed_window_hours"
 private const val KEY_ALARM_CLOCK = "alarm_clock"
 private const val KEY_ROBUST_MODE = "robust_mode"
@@ -103,6 +105,7 @@ class SettingsRepository @Inject constructor(
         putString(KEY_OWN_EMAILS, value.ownEmails.joinToString(LIST_SEPARATOR))
         putBoolean(KEY_NOTIFY_CHANGES, value.notifyChanges)
         putBoolean(KEY_NOTIFY_CANCELLATIONS, value.notifyCancellations)
+        putString(KEY_RE_REMIND, value.reRemind.name)
         putInt(KEY_MISSED_WINDOW, value.missedWindowHours)
         putBoolean(KEY_ALARM_CLOCK, value.alarmClock)
         putBoolean(KEY_ROBUST_MODE, value.robustMode)
@@ -133,6 +136,7 @@ class SettingsRepository @Inject constructor(
                 KEY_NOTIFY_CANCELLATIONS,
                 d.notifyCancellations
             ),
+            reRemind = enumOf<ReRemindOption>(KEY_RE_REMIND, d.reRemind),
             missedWindowHours = preferences.getInt(KEY_MISSED_WINDOW, d.missedWindowHours),
             alarmClock = preferences.getBoolean(KEY_ALARM_CLOCK, d.alarmClock),
             robustMode = preferences.getBoolean(KEY_ROBUST_MODE, d.robustMode),

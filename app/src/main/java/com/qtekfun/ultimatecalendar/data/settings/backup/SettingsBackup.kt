@@ -6,6 +6,7 @@ package com.qtekfun.ultimatecalendar.data.settings.backup
 import com.qtekfun.ultimatecalendar.data.settings.AppSettings
 import com.qtekfun.ultimatecalendar.data.settings.SettingsRepository
 import com.qtekfun.ultimatecalendar.data.settings.ThemeMode
+import com.qtekfun.ultimatecalendar.domain.invitations.ReRemindOption
 import com.qtekfun.ultimatecalendar.domain.settings.FirstDayOfWeek
 import com.qtekfun.ultimatecalendar.domain.settings.InitialView
 import com.qtekfun.ultimatecalendar.domain.settings.InviteCheckInterval
@@ -71,6 +72,7 @@ data class BackupSettings(
     val ownEmails: List<String>? = null,
     val notifyChanges: Boolean? = null,
     val notifyCancellations: Boolean? = null,
+    val reRemind: String? = null,
     val missedWindowHours: Int? = null,
     val alarmClock: Boolean? = null,
     val robustMode: Boolean? = null,
@@ -173,6 +175,7 @@ private fun AppSettings.toBackup() = BackupSettings(
     ownEmails = ownEmails,
     notifyChanges = notifyChanges,
     notifyCancellations = notifyCancellations,
+    reRemind = reRemind.name,
     missedWindowHours = missedWindowHours,
     alarmClock = alarmClock,
     robustMode = robustMode,
@@ -208,7 +211,8 @@ private fun BackupSettings.applyInvitations(base: AppSettings) = base.copy(
     inviteCheck = inviteCheck.asEnum<InviteCheckInterval>() ?: base.inviteCheck,
     ownEmails = ownEmails ?: base.ownEmails,
     notifyChanges = notifyChanges ?: base.notifyChanges,
-    notifyCancellations = notifyCancellations ?: base.notifyCancellations
+    notifyCancellations = notifyCancellations ?: base.notifyCancellations,
+    reRemind = reRemind.asEnum<ReRemindOption>() ?: base.reRemind
 )
 
 private inline fun <reified E : Enum<E>> String?.asEnum(): E? =

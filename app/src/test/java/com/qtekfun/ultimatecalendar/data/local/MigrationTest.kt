@@ -13,6 +13,7 @@ import com.qtekfun.ultimatecalendar.data.local.entity.DavCalendarEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.DavEventEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.NotifiedInvitationEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.PendingOperationEntity
+import com.qtekfun.ultimatecalendar.data.local.entity.ReRemindEntity
 import com.qtekfun.ultimatecalendar.data.local.model.OperationType
 import io.mockk.every
 import io.mockk.mockk
@@ -35,11 +36,16 @@ class MigrationTest {
         val json = File(schemas, "$version.json").readText()
         val tables = Regex("\"tableName\": \"(\\w+)\",\\s*\"createSql\": \"(.*)\",").findAll(json)
             .map { it.groupValues[2].replace("\${TABLE_NAME}", it.groupValues[1]) }
+        val indices = json.split("\"tableName\": \"").drop(1).flatMap { block ->
+            val name = block.substringBefore('"')
+            Regex("\"createSql\": \"(CREATE [^\"]*INDEX[^\"]*)\"").findAll(block)
+                .map { it.groupValues[1].replace("\${TABLE_NAME}", name) }.toList()
+        }
         val setup = Regex("\"((?:CREATE|INSERT)[^\"]*room_master_table[^\"]*)\"")
             .findAll(json).map { it.groupValues[1] }
         val connection = BundledSQLiteDriver().open(file.path)
         try {
-            (tables + setup + sequenceOf("PRAGMA user_version = $version")).forEach {
+            (tables + indices + setup + sequenceOf("PRAGMA user_version = $version")).forEach {
                 connection.execSQL(it)
             }
             connection.execSQL(
@@ -84,6 +90,7 @@ class MigrationTest {
             assertEquals(CalendarSettingsEntity(7, "Work", 255, false), settings)
             assertEquals(listOf(row), invitations.all())
             assertCalDavTablesWork(database)
+            assertReRemindTableWorks(database)
         } finally {
             database.close()
         }
@@ -107,9 +114,40 @@ class MigrationTest {
                 database.notifiedInvitationDao().all()
             )
             assertCalDavTablesWork(database)
+            assertReRemindTableWorks(database)
         } finally {
             database.close()
         }
+    }
+
+    @Test
+    fun `version 3 data survives and the re-reminders table is created by the migration to 4`(
+        @TempDir dir: File
+    ) = runTest {
+        val file = File(dir, "calendar.db")
+        createVersion(3, file)
+
+        val database = open(file)
+        try {
+            assertEquals(
+                listOf(NotifiedInvitationEntity(7, 9, "Lunch", false, 1, 2, "UTC", null, null)),
+                database.notifiedInvitationDao().all()
+            )
+            assertCalDavTablesWork(database)
+            assertReRemindTableWorks(database)
+        } finally {
+            database.close()
+        }
+    }
+
+    private suspend fun assertReRemindTableWorks(database: UltimateCalendarDatabase) {
+        val dao = database.reRemindDao()
+        assertEquals(emptyList<ReRemindEntity>(), dao.all())
+        val shown = ReRemindEntity(7, 9, "DAY_BEFORE", 1, 100, true)
+        val waiting = ReRemindEntity(7, 9, "HOUR_BEFORE", 1, 200, false)
+        dao.apply(listOf(shown, waiting), emptyList())
+        dao.apply(listOf(waiting.copy(at = 300)), listOf(shown))
+        assertEquals(listOf(waiting.copy(at = 300)), dao.all())
     }
 
     /** The new tables accept rows, keep them apart by account and cascade on delete. */

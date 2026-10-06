@@ -9,6 +9,7 @@
     <string name="invitation_maybe">Maybe</string>
     <string name="invitation_decline">Decline</string>
     <string name="invitation_answer_failed">Your answer was not sent. Try again.</string>
+    <string name="invitation_still_waiting">Still waiting for your answer</string>
     <string name="invitation_moved">Changed: %1$s</string>
     <string name="invitation_cancelled">Cancelled by the organizer (was %1$s)</string>
     <plurals name="invitation_summary">

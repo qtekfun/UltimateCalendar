@@ -33,12 +33,14 @@ class InvitationNotificationBuilders @Inject constructor(
     fun invitation(
         invitation: Invitation,
         silent: Boolean,
-        failed: Boolean
+        failed: Boolean,
+        reminder: Boolean = false
     ): NotificationCompat.Builder {
         val details = listOfNotNull(
             timeText(invitation),
             invitation.location?.takeIf { it.isNotBlank() },
-            context.getString(R.string.invitation_answer_failed).takeIf { failed }
+            context.getString(R.string.invitation_answer_failed).takeIf { failed },
+            context.getString(R.string.invitation_still_waiting).takeIf { reminder }
         )
         val builder = base(NotificationChannels.INVITATIONS)
             .setContentTitle(invitation.title)

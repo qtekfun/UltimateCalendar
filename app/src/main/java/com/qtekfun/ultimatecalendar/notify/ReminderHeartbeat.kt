@@ -13,10 +13,13 @@ import javax.inject.Singleton
 @Singleton
 class ReminderHeartbeat @Inject constructor(
     private val coordinator: ReminderCoordinator,
-    private val recovery: MissedReminderRecovery
+    private val recovery: MissedReminderRecovery,
+    private val reReminders: ReRemindCoordinator
 ) : ReminderBeat {
     override suspend fun beat() {
         recovery.recover()
         coordinator.replan()
+        // The re-reminders of unanswered invitations (T40) are set again and recovered too.
+        reReminders.reconcileStored()
     }
 }

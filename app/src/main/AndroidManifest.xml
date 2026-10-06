@@ -102,6 +102,9 @@
             android:name=".notify.InvitationActionReceiver"
             android:exported="false" />
         <receiver
+            android:name=".notify.InvitationReReminderReceiver"
+            android:exported="false" />
+        <receiver
             android:name=".notify.HeartbeatReceiver"
             android:exported="false" />
         <receiver

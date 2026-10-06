@@ -21,6 +21,7 @@ import com.qtekfun.ultimatecalendar.data.sync.SyncEnvironment
 import com.qtekfun.ultimatecalendar.data.sync.SyncRequestLog
 import com.qtekfun.ultimatecalendar.domain.invitations.ChangeNotifications
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationNotifier
+import com.qtekfun.ultimatecalendar.domain.invitations.InvitationReReminders
 import com.qtekfun.ultimatecalendar.notify.AndroidInvitationNotifications
 import com.qtekfun.ultimatecalendar.notify.ChangeNotificationSettings
 import com.qtekfun.ultimatecalendar.notify.InvitationNotificationSurface
@@ -110,7 +111,8 @@ object InvitationCheckModule {
         notifier: InvitationNotifier,
         settings: InvitationCheckSettings,
         clock: Clock,
-        @IoDispatcher io: CoroutineDispatcher
+        @IoDispatcher io: CoroutineDispatcher,
+        reReminders: InvitationReReminders
     ): InvitationChecker = InvitationChecker(
         source.orElse(UnavailableCalendarSource),
         syncRequester,
@@ -118,6 +120,7 @@ object InvitationCheckModule {
         notifier,
         settings,
         clock,
-        io
+        io,
+        reReminders
     )
 }
