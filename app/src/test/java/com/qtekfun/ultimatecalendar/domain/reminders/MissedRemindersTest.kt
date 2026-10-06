@@ -64,6 +64,21 @@ class MissedRemindersTest {
     }
 
     @Test
+    fun `an all-day reminder that showed counts as shown at whatever time it goes off now`() {
+        val showedAt = now.minus(Duration.ofHours(5))
+        val allDay = reminder(2, now.minus(Duration.ofHours(1))).copy(allDay = true)
+        val shown = setOf(ShownReminder(2, showedAt))
+        assertEquals(true, MissedReminders.wasShown(allDay, shown))
+        assertEquals(
+            emptyList<PlannedReminder>(),
+            MissedReminders.pick(listOf(allDay), shown, now, day)
+        )
+        // Another all-day reminder, or a timed one with the same id, is not the one that showed.
+        assertEquals(false, MissedReminders.wasShown(allDay.copy(id = 3), shown))
+        assertEquals(false, MissedReminders.wasShown(allDay.copy(allDay = false), shown))
+    }
+
+    @Test
     fun `a closed window recovers nothing`() {
         assertEquals(
             emptyList<PlannedReminder>(),
