@@ -12,26 +12,28 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class BackupMessagesTest {
+    private fun text(id: Int) = BackupMessage.Text(id)
+
     @Test
     fun `each result of the settings has its message`() {
         assertEquals(
-            listOf(R.string.backup_restored),
+            listOf(text(R.string.backup_restored)),
             restoreMessages(RestoreOutcome(RestoreResult.Restored()))
         )
         assertEquals(
-            listOf(R.string.backup_restored_some_calendars),
+            listOf(text(R.string.backup_restored_some_calendars)),
             restoreMessages(RestoreOutcome(RestoreResult.Restored(), missingCalendars = 2))
         )
         assertEquals(
-            listOf(R.string.backup_wrong_passphrase),
+            listOf(text(R.string.backup_wrong_passphrase)),
             restoreMessages(RestoreOutcome(RestoreResult.WrongPassphrase))
         )
         assertEquals(
-            listOf(R.string.backup_invalid),
+            listOf(text(R.string.backup_invalid)),
             restoreMessages(RestoreOutcome(RestoreResult.Invalid))
         )
         assertEquals(
-            listOf(R.string.backup_newer_version),
+            listOf(text(R.string.backup_newer_version)),
             restoreMessages(RestoreOutcome(RestoreResult.NewerVersion))
         )
     }
@@ -49,9 +51,47 @@ class BackupMessagesTest {
 
         expected.forEach { (result, message) ->
             assertEquals(
-                listOf(R.string.backup_restored, message),
+                listOf(text(R.string.backup_restored), text(message)),
                 restoreMessages(RestoreOutcome(RestoreResult.Restored(), 0, result))
             )
         }
+    }
+
+    @Test
+    fun `calendars waiting for the first sync are counted, not called missing`() {
+        assertEquals(
+            listOf(
+                text(R.string.backup_restored),
+                BackupMessage.Count(R.plurals.backup_restored_waiting_calendars, 3)
+            ),
+            restoreMessages(RestoreOutcome(RestoreResult.Restored(), waitingCalendars = 3))
+        )
+    }
+
+    @Test
+    fun `missing and waiting calendars each get their message, the sign-in last`() {
+        assertEquals(
+            listOf(
+                text(R.string.backup_restored_some_calendars),
+                BackupMessage.Count(R.plurals.backup_restored_waiting_calendars, 1),
+                text(R.string.backup_session_restored)
+            ),
+            restoreMessages(
+                RestoreOutcome(
+                    RestoreResult.Restored(),
+                    missingCalendars = 2,
+                    session = SessionRestoreResult.SignedIn(SignedInAccount("https://x/", "ana")),
+                    waitingCalendars = 1
+                )
+            )
+        )
+    }
+
+    @Test
+    fun `nothing is said about waiting calendars when the restore failed`() {
+        assertEquals(
+            listOf(text(R.string.backup_invalid)),
+            restoreMessages(RestoreOutcome(RestoreResult.Invalid, waitingCalendars = 1))
+        )
     }
 }

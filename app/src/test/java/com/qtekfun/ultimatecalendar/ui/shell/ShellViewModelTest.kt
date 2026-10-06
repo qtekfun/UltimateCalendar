@@ -11,6 +11,7 @@ import com.qtekfun.ultimatecalendar.data.local.UltimateCalendarDatabase
 import com.qtekfun.ultimatecalendar.data.local.inMemoryDatabase
 import com.qtekfun.ultimatecalendar.data.source.CalendarSource
 import com.qtekfun.ultimatecalendar.data.source.FakeCalendarSource
+import com.qtekfun.ultimatecalendar.data.source.ProviderAccess
 import com.qtekfun.ultimatecalendar.domain.model.CalendarAccess
 import com.qtekfun.ultimatecalendar.domain.model.CalendarAccount
 import com.qtekfun.ultimatecalendar.domain.model.CalendarId
@@ -23,6 +24,7 @@ import com.qtekfun.ultimatecalendar.domain.result.CalendarError
 import com.qtekfun.ultimatecalendar.domain.result.CalendarResult
 import com.qtekfun.ultimatecalendar.notify.SystemZone
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import java.time.Clock
@@ -33,6 +35,7 @@ import java.time.ZoneId
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -81,11 +84,18 @@ class ShellViewModelTest {
         // No resetMain: the cancelled upstreams finish on Main from another thread, after this.
     }
 
+    private val providerDenied = MutableStateFlow(false)
+
     private fun calendar(id: Long, name: String, account: CalendarAccount) =
         CalendarInfo(CalendarId(id), account, name, 0xFF0B63CE.toInt(), CalendarAccess.OWNER)
 
-    private fun repositoryOver(source: CalendarSource) =
-        CalendarRepository(source, database.calendarSettingsDao(), Dispatchers.Unconfined)
+    private fun repositoryOver(source: CalendarSource) = CalendarRepository(
+        object : CalendarSource by source, ProviderAccess {
+            override val denied: StateFlow<Boolean> = providerDenied
+        },
+        database.calendarSettingsDao(),
+        Dispatchers.Unconfined
+    )
 
     private fun viewModel(saved: SavedStateHandle = SavedStateHandle()) = ShellViewModel(
         saved,
@@ -115,6 +125,7 @@ class ShellViewModelTest {
 
     private companion object {
         const val STOP_TIMEOUT_MS = 6_000L
+        const val VERIFY_TIMEOUT_MS = 2_000L
     }
 
     @Test
@@ -299,6 +310,41 @@ class ShellViewModelTest {
             val state = loaded()
             assertTrue(state.calendarsFailed)
             assertTrue(state.accounts.isEmpty())
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun `the state tells when the phone's calendars cannot be read, whatever else loads`() =
+        runTest {
+            viewModel().state.test {
+                assertFalse(awaitItem().calendarPermissionMissing)
+
+                providerDenied.value = true
+                assertTrue(awaitUntil { it.calendarPermissionMissing }.calendarPermissionMissing)
+
+                providerDenied.value = false
+                assertFalse(awaitUntil { !it.calendarPermissionMissing }.calendarPermissionMissing)
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+
+    @Test
+    fun `answering the permission dialog reads the calendars again`() = runTest {
+        val counting = mockk<CalendarSource>()
+        every { counting.changes } returns emptyFlow()
+        coEvery { counting.calendars() } returns CalendarResult.Success(emptyList())
+        repository = repositoryOver(counting)
+        val model = viewModel()
+
+        model.state.test {
+            awaitItem()
+            coVerify(timeout = VERIFY_TIMEOUT_MS, exactly = 1) { counting.calendars() }
+
+            model.calendarPermissionAnswered()
+
+            // The state is the same, so no new item: the read is what changed.
+            coVerify(timeout = VERIFY_TIMEOUT_MS, exactly = 2) { counting.calendars() }
             cancelAndIgnoreRemainingEvents()
         }
     }

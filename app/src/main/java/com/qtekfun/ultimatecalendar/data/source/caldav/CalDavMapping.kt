@@ -27,9 +27,12 @@ internal object CalDavMapping {
     const val ACCOUNT_TYPE = CalendarAccount.CALDAV_TYPE
 
     /** "ana@cloud.example.com": the login and the server's host. */
-    fun accountName(account: DavAccountEntity): String {
-        val host = account.serverUrl.toHttpUrlOrNull()?.host ?: account.serverUrl
-        return "${account.loginName}@$host"
+    fun accountName(account: DavAccountEntity): String =
+        accountName(account.serverUrl, account.loginName)
+
+    fun accountName(serverUrl: String, loginName: String): String {
+        val host = serverUrl.toHttpUrlOrNull()?.host ?: serverUrl
+        return "$loginName@$host"
     }
 
     /**

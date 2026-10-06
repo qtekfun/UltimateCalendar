@@ -4,12 +4,23 @@
 package com.qtekfun.ultimatecalendar.data.settings.backup
 
 import com.qtekfun.ultimatecalendar.data.local.dao.CalendarSettingsDao
+import com.qtekfun.ultimatecalendar.data.local.dao.PendingCalendarOverrideDao
 import com.qtekfun.ultimatecalendar.data.local.entity.CalendarSettingsEntity
+import com.qtekfun.ultimatecalendar.data.local.entity.PendingCalendarOverrideEntity
 import com.qtekfun.ultimatecalendar.data.source.CalendarSource
 import com.qtekfun.ultimatecalendar.di.IoDispatcher
+import com.qtekfun.ultimatecalendar.domain.model.CalendarAccount
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
+
+/**
+ * What [CalendarOverridesBackup.apply] did with the entries it could not apply right away:
+ * [missing] found no calendar (or more than one) and were left out; [waiting] belong to the
+ * signed-in CalDAV account, whose calendars may not exist until its first sync, and are kept
+ * until it creates them.
+ */
+data class OverridesApplied(val missing: Int = 0, val waiting: Int = 0)
 
 /**
  * Takes the calendars' local name, color and visibility out of this phone for a backup, and puts
@@ -19,6 +30,7 @@ import kotlinx.coroutines.withContext
 class CalendarOverridesBackup @Inject constructor(
     private val source: CalendarSource,
     private val dao: CalendarSettingsDao,
+    private val pending: PendingCalendarOverrideDao,
     @IoDispatcher private val io: CoroutineDispatcher
 ) {
     /** The overrides of the calendars that still exist; calendars with nothing changed are left out. */
@@ -43,19 +55,27 @@ class CalendarOverridesBackup @Inject constructor(
     }
 
     /**
-     * Applies [entries] to the calendars of this phone and returns how many found no calendar
-     * (or more than one) to go to; those are left out rather than guessed.
+     * Applies [entries] to the calendars of this phone. Entries that find no calendar (or more
+     * than one) to go to are left out rather than guessed, except those of the CalDAV account
+     * named [calDavAccount] (the signed-in one, if any): its calendars are only created by the
+     * first sync, so those entries are kept and applied then.
      */
-    suspend fun apply(entries: List<BackupCalendar>): Int = withContext(io) {
+    suspend fun apply(
+        entries: List<BackupCalendar>,
+        calDavAccount: String? = null
+    ): OverridesApplied = withContext(io) {
         val calendars = source.calendars().getOrNull().orEmpty()
-        entries.count { entry ->
-            val match = calendars.singleOrNull {
+        val waiting = mutableListOf<PendingCalendarOverrideEntity>()
+        var missing = 0
+        entries.forEach { entry ->
+            val matches = calendars.filter {
                 it.account.type == entry.accountType &&
                     it.account.name == entry.accountName &&
                     it.displayName == entry.name
             }
-            if (match != null) {
-                dao.save(
+            val match = matches.singleOrNull()
+            when {
+                match != null -> dao.save(
                     CalendarSettingsEntity(
                         match.id.value,
                         entry.displayName,
@@ -63,8 +83,22 @@ class CalendarOverridesBackup @Inject constructor(
                         entry.visible
                     )
                 )
+
+                matches.isEmpty() && calDavAccount != null &&
+                    entry.accountType == CalendarAccount.CALDAV_TYPE &&
+                    entry.accountName == calDavAccount ->
+                    waiting += PendingCalendarOverrideEntity(
+                        entry.accountName,
+                        entry.name,
+                        entry.displayName,
+                        entry.color,
+                        entry.visible
+                    )
+
+                else -> missing++
             }
-            match == null
         }
+        if (waiting.isNotEmpty()) pending.save(waiting)
+        OverridesApplied(missing, waiting.size)
     }
 }

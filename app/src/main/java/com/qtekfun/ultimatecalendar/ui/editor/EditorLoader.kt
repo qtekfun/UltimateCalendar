@@ -49,7 +49,7 @@ class EditorLoader @Inject constructor(
         calendars: List<CalendarInfo>,
         prefs: AppSettings
     ): EditorUiState {
-        val automatic = repository.defaultCalendar().first().getOrNull()?.id
+        val automatic = repository.automaticDefaultCalendar().first().getOrNull()?.id
         val calendar = EditorCalendars.initial(calendars, prefs.defaultCalendar, automatic)
         return if (calendar == null) {
             EditorUiState.Failed(LoadFailure.NO_CALENDAR)

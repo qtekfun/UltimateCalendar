@@ -4,8 +4,10 @@
 package com.qtekfun.ultimatecalendar.sync.engine
 
 import com.qtekfun.ultimatecalendar.data.local.entity.CalendarSettingsEntity
+import com.qtekfun.ultimatecalendar.data.local.entity.PendingCalendarOverrideEntity
 import com.qtekfun.ultimatecalendar.data.remote.caldav.DavResult
 import com.qtekfun.ultimatecalendar.data.source.CalDavIds
+import com.qtekfun.ultimatecalendar.data.source.caldav.CalDavMapping
 import com.qtekfun.ultimatecalendar.domain.model.Attendee
 import com.qtekfun.ultimatecalendar.domain.model.AttendeeStatus
 import com.qtekfun.ultimatecalendar.domain.model.EventTime
@@ -320,5 +322,48 @@ class PullSyncTest {
         settings.clear(id)
         assertNull(env.pullAll())
         assertEquals("Standup", env.row(eventHref).title)
+    }
+
+    private val accountName get() = CalDavMapping.accountName(env.account)
+
+    @Test
+    fun `the first pull gives a new calendar the overrides waiting for it and forgets them`() =
+        runTest {
+            val waiting = env.db.pendingCalendarOverrideDao()
+            waiting.save(
+                listOf(
+                    PendingCalendarOverrideEntity(accountName, "Work", "Job", 7, false),
+                    PendingCalendarOverrideEntity(accountName, "Gym", "Sport", null, null),
+                    PendingCalendarOverrideEntity("other@example.com", "Work", "Mine", null, null)
+                )
+            )
+            fake.put(eventHref, env.ics(event(title = "Standup")))
+
+            assertNull(env.pullAll())
+
+            val id = CalDavIds.calendar(env.calendar().id).value
+            assertEquals(
+                CalendarSettingsEntity(id, "Job", 7, false),
+                env.db.calendarSettingsDao().find(id)
+            )
+            // "Gym" does not exist yet and another account's row is not this account's to use.
+            assertEquals(
+                listOf("Gym" to accountName, "Work" to "other@example.com"),
+                waiting.all().map { it.calendarName to it.accountName }.sortedBy { it.first }
+            )
+            // A hidden calendar is applied before its events are pulled, so it is not pulled.
+            assertNull(env.events.byHref(env.account.id, eventHref))
+        }
+
+    @Test
+    fun `an override waits again when two calendars share the name`() = runTest {
+        fake.addCalendar("Work", slug = "work-too")
+        env.db.pendingCalendarOverrideDao()
+            .save(listOf(PendingCalendarOverrideEntity(accountName, "Work", "Job", null, null)))
+
+        assertNull(env.pullAll())
+
+        assertEquals(emptyList<CalendarSettingsEntity>(), env.db.calendarSettingsDao().all())
+        assertEquals(1, env.db.pendingCalendarOverrideDao().all().size)
     }
 }

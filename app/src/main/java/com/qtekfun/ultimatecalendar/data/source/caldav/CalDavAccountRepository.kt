@@ -150,6 +150,10 @@ class CalDavAccountRepository @Inject constructor(
     }
 
     private suspend fun deleteLocalData(signed: SignedInAccount) {
+        // Overrides restored for calendars that never got to exist wait under the account's name.
+        database.accountCleanupDao().clearPendingOverrides(
+            CalDavMapping.accountName(signed.serverUrl, signed.loginName)
+        )
         val row = database.davAccountDao().find(signed.serverUrl, signed.loginName) ?: return
         val ids = database.davCalendarDao().all(row.id).map { CalDavIds.encode(it.id) }
         database.useWriterConnection { transactor ->
@@ -157,7 +161,6 @@ class CalDavAccountRepository @Inject constructor(
                 if (ids.isNotEmpty()) {
                     val cleanup = database.accountCleanupDao()
                     cleanup.clearSettings(ids)
-                    cleanup.clearDefaultCalendar(ids)
                     cleanup.clearNotified(ids)
                     cleanup.clearAttended(ids)
                     cleanup.clearReReminders(ids)

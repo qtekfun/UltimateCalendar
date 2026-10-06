@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.qtekfun.ultimatecalendar.data.calendar.CalendarRepository
 import com.qtekfun.ultimatecalendar.domain.model.CalendarId
+import com.qtekfun.ultimatecalendar.domain.model.CalendarInfo
 import com.qtekfun.ultimatecalendar.domain.navigation.AccountCalendars
 import com.qtekfun.ultimatecalendar.domain.navigation.CalendarView
 import com.qtekfun.ultimatecalendar.domain.navigation.NavigationSettings
@@ -44,20 +45,28 @@ class ShellViewModel @Inject constructor(
 ) : ViewModel() {
     private data class Selection(val view: CalendarView, val date: LocalDate)
 
-    private val selection = MutableStateFlow(restoreSelection())
+    private val selection = MutableStateFlow(
+        Selection(
+            saved.get<String>(KEY_VIEW)
+                ?.let { name -> CalendarView.entries.firstOrNull { it.name == name } }
+                ?: navigation.initial(),
+            saved.get<Long>(KEY_DATE)?.let(LocalDate::ofEpochDay) ?: today()
+        )
+    )
 
     val state: StateFlow<ShellUiState> = combine(
         selection,
         repository.calendars(),
         invitations.count(),
-        navigation.changes()
-    ) { selected, calendars, pending, first ->
+        navigation.changes(),
+        repository.providerDenied()
+    ) { selected, calendars, pending, first, denied ->
         build(
             selected,
             first,
-            accounts = calendars.getOrNull()?.let(AccountCalendars::group).orEmpty(),
-            failed = calendars is CalendarResult.Failure,
-            pending = pending
+            calendars,
+            pending = pending,
+            permissionMissing = denied
         )
     }.stateIn(
         viewModelScope,
@@ -65,9 +74,9 @@ class ShellViewModel @Inject constructor(
         build(
             selection.value,
             navigation.current(),
-            accounts = emptyList(),
-            failed = false,
-            pending = 0
+            calendars = null,
+            pending = 0,
+            permissionMissing = false
         )
     )
 
@@ -88,20 +97,24 @@ class ShellViewModel @Inject constructor(
         }
     }
 
+    /** The calendar permission dialog closed: read the calendars again, granted or not. */
+    fun calendarPermissionAnswered() = repository.refresh()
+
     private fun build(
         selected: Selection,
         first: DayOfWeek,
-        accounts: List<AccountCalendars>,
-        failed: Boolean,
-        pending: Int
+        calendars: CalendarResult<List<CalendarInfo>>?,
+        pending: Int,
+        permissionMissing: Boolean
     ): ShellUiState = ShellUiState(
         view = selected.view,
         date = selected.date,
         today = today(),
         range = ViewPeriods.range(selected.view, selected.date, first),
         firstDayOfWeek = first,
-        accounts = accounts,
-        calendarsFailed = failed,
+        accounts = calendars?.getOrNull()?.let(AccountCalendars::group).orEmpty(),
+        calendarsFailed = calendars is CalendarResult.Failure,
+        calendarPermissionMissing = permissionMissing,
         pendingInvitations = pending
     )
 
@@ -111,13 +124,6 @@ class ShellViewModel @Inject constructor(
         selection.update(change)
         saved[KEY_VIEW] = selection.value.view.name
         saved[KEY_DATE] = selection.value.date.toEpochDay()
-    }
-
-    private fun restoreSelection(): Selection {
-        val view = saved.get<String>(KEY_VIEW)
-            ?.let { name -> CalendarView.entries.firstOrNull { it.name == name } }
-        val date = saved.get<Long>(KEY_DATE)?.let(LocalDate::ofEpochDay)
-        return Selection(view ?: navigation.initial(), date ?: today())
     }
 
     private companion object {

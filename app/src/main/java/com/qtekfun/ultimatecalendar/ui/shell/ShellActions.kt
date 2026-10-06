@@ -24,6 +24,8 @@ data class ShellActions(
     val onInvitations: () -> Unit = {},
     val onNewEvent: () -> Unit = {},
     val onSettings: () -> Unit = {},
+    /** The calendar permission dialog closed: read the calendars again. */
+    val onCalendarPermissionAnswered: () -> Unit = {},
     /** Opens the setup assistant again (RF-01, RF-10). */
     val onSetup: () -> Unit = {},
     /** A tap on an event: T19 opens its detail. */

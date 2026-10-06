@@ -9,8 +9,8 @@ import com.qtekfun.ultimatecalendar.data.auth.SignedInAccount
 import com.qtekfun.ultimatecalendar.data.local.entity.CalendarSettingsEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.DavAccountEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.DavCalendarEntity
-import com.qtekfun.ultimatecalendar.data.local.entity.DefaultCalendarEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.NotifiedInvitationEntity
+import com.qtekfun.ultimatecalendar.data.local.entity.PendingCalendarOverrideEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.PendingOperationEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.ReRemindEntity
 import com.qtekfun.ultimatecalendar.data.local.inMemoryDatabase
@@ -311,9 +311,6 @@ class CalDavAccountRepositoryTest {
             // left alone.
             db.calendarSettingsDao().save(CalendarSettingsEntity(mine.value, "Mine", null, false))
             db.calendarSettingsDao().save(CalendarSettingsEntity(7, "Google", null, null))
-            db.calendarSettingsDao().saveDefaultCalendar(
-                DefaultCalendarEntity(calendarId = mine.value)
-            )
             db.notifiedInvitationDao().replaceAll(
                 listOf(notified(mine.value, 1), notified(7, 2))
             )
@@ -330,21 +327,50 @@ class CalDavAccountRepositoryTest {
             assertEquals(emptyList<PendingOperationEntity>(), queue.all(id))
             assertEquals(1, queue.all(otherAccount).size)
             assertEquals(listOf(7L), db.calendarSettingsDao().all().map { it.calendarId })
-            assertNull(db.calendarSettingsDao().observeDefaultCalendar().first())
             assertEquals(listOf(7L), db.notifiedInvitationDao().all().map { it.calendarId })
             assertEquals(listOf(7L), db.reRemindDao().all().map { it.calendarId })
         }
 
     @Test
-    fun `a default calendar of another source survives signing out`() = runBlocking {
-        active.value = signedIn
-        calendar(account(), "Mine")
-        db.calendarSettingsDao().saveDefaultCalendar(DefaultCalendarEntity(calendarId = 7))
+    fun `signing out forgets the overrides waiting for this account but not another's`() =
+        runBlocking {
+            active.value = signedIn
+            val id = account()
+            calendar(id, "Mine")
+            val mine = "ana@cloud.example.com"
+            db.pendingCalendarOverrideDao().save(
+                listOf(
+                    PendingCalendarOverrideEntity(mine, "Work", "Job", null, null),
+                    PendingCalendarOverrideEntity("bob@other.example", "Work", "Bob", null, null)
+                )
+            )
 
-        repository.signOut()
+            repository.signOut()
 
-        assertEquals(7L, db.calendarSettingsDao().observeDefaultCalendar().first())
-    }
+            assertEquals(
+                listOf("bob@other.example"),
+                db.pendingCalendarOverrideDao().all().map { it.accountName }
+            )
+        }
+
+    @Test
+    fun `signing out before the first sync still forgets the overrides waiting for it`() =
+        runBlocking {
+            // No row for the account yet: the sync that creates it never ran.
+            active.value = signedIn
+            db.pendingCalendarOverrideDao().save(
+                listOf(
+                    PendingCalendarOverrideEntity("ana@cloud.example.com", "Work", "Job", 1, null)
+                )
+            )
+
+            repository.signOut()
+
+            assertEquals(
+                emptyList<PendingCalendarOverrideEntity>(),
+                db.pendingCalendarOverrideDao().all()
+            )
+        }
 
     @Test
     fun `signing out without a stored account still forgets the login`() = runBlocking {

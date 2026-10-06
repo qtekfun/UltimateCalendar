@@ -88,6 +88,7 @@ fun ShellScreen(
             onPrevious = viewModel::previous,
             onNext = viewModel::next,
             onSetCalendarVisible = viewModel::setCalendarVisible,
+            onCalendarPermissionAnswered = viewModel::calendarPermissionAnswered,
             onSaveCalendarLook = looks::save
         ),
         detailPane = detailPane
@@ -190,12 +191,17 @@ private fun ShellScaffold(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
-            ShellTopBar(
-                state,
-                actions,
-                onOpenDrawer = onOpenDrawer,
-                showMenu = layout.navigation == NavigationStyle.MODAL_DRAWER
-            )
+            Column {
+                ShellTopBar(
+                    state,
+                    actions,
+                    onOpenDrawer = onOpenDrawer,
+                    showMenu = layout.navigation == NavigationStyle.MODAL_DRAWER
+                )
+                if (state.calendarPermissionMissing) {
+                    CalendarPermissionBanner(onResult = actions.onCalendarPermissionAnswered)
+                }
+            }
         },
         floatingActionButton = {
             CreateFab(expanded = fab.expanded || wide, onClick = actions.onNewEvent)

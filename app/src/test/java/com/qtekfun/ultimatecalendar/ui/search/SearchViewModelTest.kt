@@ -7,7 +7,6 @@ import app.cash.turbine.test
 import com.qtekfun.ultimatecalendar.data.calendar.CalendarRepository
 import com.qtekfun.ultimatecalendar.data.local.dao.CalendarSettingsDao
 import com.qtekfun.ultimatecalendar.data.local.entity.CalendarSettingsEntity
-import com.qtekfun.ultimatecalendar.data.local.entity.DefaultCalendarEntity
 import com.qtekfun.ultimatecalendar.data.search.SearchRepository
 import com.qtekfun.ultimatecalendar.data.source.CalendarSource
 import com.qtekfun.ultimatecalendar.data.source.FakeCalendarSource
@@ -359,7 +358,6 @@ class SearchViewModelTest {
     /** The calendar settings in memory, so nothing here waits for a real thread. */
     private class MemoryDao : CalendarSettingsDao {
         private val rows = MutableStateFlow(emptyMap<Long, CalendarSettingsEntity>())
-        private val default = MutableStateFlow<Long?>(null)
 
         override fun observeAll(): Flow<List<CalendarSettingsEntity>> = rows.map {
             it.values.toList()
@@ -375,16 +373,6 @@ class SearchViewModelTest {
 
         override suspend fun clear(calendarId: Long) {
             rows.value -= calendarId
-        }
-
-        override fun observeDefaultCalendar(): Flow<Long?> = default
-
-        override suspend fun saveDefaultCalendar(default: DefaultCalendarEntity) {
-            this.default.value = default.calendarId
-        }
-
-        override suspend fun clearDefaultCalendar() {
-            default.value = null
         }
     }
 

@@ -89,13 +89,103 @@ class CompositeCalendarSourceTest {
     }
 
     @Test
-    fun `a missing permission is reported even when CalDAV has calendars`() = runTest {
+    fun `a missing permission leaves the CalDAV calendars and is told apart`() = runTest {
         val denied = CalendarResult.Failure(CalendarError.PermissionDenied)
         coEvery { provider.calendars() } returns denied
         coEvery { caldav.calendars() } returns CalendarResult.Success(listOf(calendar(cloud)))
 
-        assertEquals(denied, source.calendars())
+        assertEquals(listOf(cloud), source.calendars().getOrNull()!!.map { it.id })
+        assertTrue(source.denied.value)
     }
+
+    @Test
+    fun `a missing permission leaves the subscriptions when there is no CalDAV account`() =
+        runTest {
+            val feed = SubscriptionIds.calendar(9)
+            coEvery { provider.calendars() } returns
+                CalendarResult.Failure(CalendarError.PermissionDenied)
+            coEvery { caldav.calendars() } returns CalendarResult.Success(emptyList())
+            coEvery { feeds.calendars() } returns CalendarResult.Success(listOf(calendar(feed)))
+
+            assertEquals(listOf(feed), source.calendars().getOrNull()!!.map { it.id })
+        }
+
+    @Test
+    fun `a missing permission is the answer when no source has a calendar`() = runTest {
+        val denied = CalendarResult.Failure(CalendarError.PermissionDenied)
+        coEvery { provider.calendars() } returns denied
+        coEvery { caldav.calendars() } returns CalendarResult.Success(emptyList())
+
+        assertTrue(source.calendars() === denied)
+        assertTrue(source.denied.value)
+    }
+
+    @Test
+    fun `a missing permission is the answer when the others failed too`() = runTest {
+        val denied = CalendarResult.Failure(CalendarError.PermissionDenied)
+        coEvery { provider.calendars() } returns denied
+        coEvery { caldav.calendars() } returns
+            CalendarResult.Failure(CalendarError.SourceFailure("db"))
+
+        assertTrue(source.calendars() === denied)
+    }
+
+    @Test
+    fun `access is granted until the provider says otherwise and again once it answers`() =
+        runTest {
+            coEvery { caldav.calendars() } returns CalendarResult.Success(emptyList())
+            assertEquals(false, source.denied.value)
+
+            coEvery { provider.calendars() } returns
+                CalendarResult.Failure(CalendarError.PermissionDenied)
+            source.calendars()
+            assertTrue(source.denied.value)
+
+            coEvery { provider.calendars() } returns CalendarResult.Success(listOf(calendar(phone)))
+            source.calendars()
+            assertEquals(false, source.denied.value)
+
+            // Another failure of the provider is not a missing permission.
+            coEvery { provider.calendars() } returns
+                CalendarResult.Failure(CalendarError.SourceFailure("gone"))
+            source.calendars()
+            assertEquals(false, source.denied.value)
+        }
+
+    @Test
+    fun `without the permission, CalDAV events still come when every calendar is asked`() =
+        runTest {
+            val denied = CalendarResult.Failure(CalendarError.PermissionDenied)
+            val event = instance(cloudEvent, cloud, start)
+            coEvery { provider.instances(range, null) } returns denied
+            coEvery { caldav.instances(range, null) } returns ok(event)
+
+            assertEquals(listOf(event), source.instances(range).getOrNull())
+        }
+
+    @Test
+    fun `a CalDAV calendar without events in the range is not a missing permission`() = runTest {
+        coEvery { provider.instances(range, null) } returns
+            CalendarResult.Failure(CalendarError.PermissionDenied)
+        coEvery { caldav.instances(range, null) } returns ok()
+        coEvery { caldav.calendars() } returns CalendarResult.Success(listOf(calendar(cloud)))
+
+        assertEquals(
+            CalendarResult.Success(emptyList<EventInstance>()),
+            source.instances(range)
+        )
+    }
+
+    @Test
+    fun `an empty answer is a missing permission when there is no CalDAV calendar or feed`() =
+        runTest {
+            val denied = CalendarResult.Failure(CalendarError.PermissionDenied)
+            coEvery { provider.instances(range, null) } returns denied
+            coEvery { caldav.instances(range, null) } returns ok()
+            coEvery { caldav.calendars() } returns CalendarResult.Success(emptyList())
+
+            assertTrue(source.instances(range) === denied)
+        }
 
     @Test
     fun `a failure of one source leaves the calendars of the other`() = runTest {

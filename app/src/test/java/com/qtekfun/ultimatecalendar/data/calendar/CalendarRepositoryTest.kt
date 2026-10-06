@@ -8,6 +8,7 @@ import com.qtekfun.ultimatecalendar.data.local.UltimateCalendarDatabase
 import com.qtekfun.ultimatecalendar.data.local.inMemoryDatabase
 import com.qtekfun.ultimatecalendar.data.source.CalendarSource
 import com.qtekfun.ultimatecalendar.data.source.FakeCalendarSource
+import com.qtekfun.ultimatecalendar.data.source.ProviderAccess
 import com.qtekfun.ultimatecalendar.domain.model.CalendarAccess
 import com.qtekfun.ultimatecalendar.domain.model.CalendarAccount
 import com.qtekfun.ultimatecalendar.domain.model.CalendarId
@@ -20,13 +21,17 @@ import com.qtekfun.ultimatecalendar.domain.model.TimeRange
 import com.qtekfun.ultimatecalendar.domain.result.CalendarError
 import com.qtekfun.ultimatecalendar.domain.result.CalendarResult
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import java.time.Instant
 import java.time.ZoneId
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -196,69 +201,87 @@ class CalendarRepositoryTest {
     }
 
     @Test
-    fun `the default calendar is the first visible one that accepts events`() = runTest {
-        repository.defaultCalendar().test {
+    fun `the automatic default calendar is the first visible one that accepts events`() = runTest {
+        repository.automaticDefaultCalendar().test {
             assertEquals(work, awaitItem().value())
         }
     }
 
     @Test
-    fun `the default calendar is the chosen one while it still accepts events`() = runTest {
-        val other = calendar(4, "Family", CalendarAccess.EDIT)
-        source.addCalendar(other)
-
-        repository.defaultCalendar().test {
-            assertEquals(work, awaitItem().value())
-
-            repository.setDefaultCalendar(other.id)
-            assertEquals(other, awaitItem().value())
-
-            repository.setDefaultCalendar(holidays.id)
-            assertEquals(work, awaitItem().value())
-
-            repository.setDefaultCalendar(null)
-            assertEquals(work, awaitItem().value())
-        }
-    }
-
-    @Test
-    fun `the default calendar is the first writable one when every writable calendar is hidden`() =
+    fun `the automatic default calendar is a hidden one when every writable calendar is hidden`() =
         runTest {
             repository.saveSettings(work.id, CalendarSettings(visible = false))
 
-            repository.defaultCalendar().test {
+            repository.automaticDefaultCalendar().test {
                 val found = awaitItem().value()
                 assertEquals(work.id, found.id)
             }
         }
 
     @Test
-    fun `the default calendar prefers a visible one over a hidden one`() = runTest {
+    fun `the automatic default calendar prefers a visible one over a hidden one`() = runTest {
         repository.saveSettings(work.id, CalendarSettings(visible = false))
         source.addCalendar(calendar(5, "Visible", CalendarAccess.CONTRIBUTE))
 
-        repository.defaultCalendar().test {
+        repository.automaticDefaultCalendar().test {
             assertEquals(CalendarId(5), awaitItem().value().id)
         }
     }
 
     @Test
-    fun `the default calendar fails with not found when none accepts events`() = runTest {
+    fun `the automatic default calendar fails with not found when none accepts events`() = runTest {
         val readOnly = FakeCalendarSource(listOf(holidays))
         val readOnlyRepository =
             CalendarRepository(readOnly, database.calendarSettingsDao(), Dispatchers.Unconfined)
 
-        readOnlyRepository.defaultCalendar().test {
+        readOnlyRepository.automaticDefaultCalendar().test {
             assertEquals(CalendarResult.Failure(CalendarError.NotFound), awaitItem())
         }
     }
 
     @Test
-    fun `the default calendar shows the local name and color`() = runTest {
+    fun `the automatic default calendar shows the local name and color`() = runTest {
         repository.saveSettings(work.id, CalendarSettings(displayName = "Job"))
 
-        repository.defaultCalendar().test {
+        repository.automaticDefaultCalendar().test {
             assertEquals("Job", awaitItem().value().displayName)
+        }
+    }
+
+    @Test
+    fun `refreshing reads the calendars again even when nothing changed`() = runTest {
+        val counting = mockk<CalendarSource>()
+        every { counting.changes } returns emptyFlow()
+        coEvery { counting.calendars() } returns CalendarResult.Success(listOf(work))
+        val counted =
+            CalendarRepository(counting, database.calendarSettingsDao(), Dispatchers.Unconfined)
+
+        counted.calendars().test {
+            assertEquals(listOf(work), awaitItem().value())
+
+            counted.refresh()
+
+            assertEquals(listOf(work), awaitItem().value())
+            coVerify(exactly = 2) { counting.calendars() }
+        }
+    }
+
+    @Test
+    fun `the provider is denied only when the source says so`() = runTest {
+        assertEquals(false, repository.providerDenied().first())
+
+        val denied = MutableStateFlow(true)
+        val telling = CalendarRepository(
+            object : CalendarSource by source, ProviderAccess {
+                override val denied: StateFlow<Boolean> = denied
+            },
+            database.calendarSettingsDao(),
+            Dispatchers.Unconfined
+        )
+        telling.providerDenied().test {
+            assertEquals(true, awaitItem())
+            denied.value = false
+            assertEquals(false, awaitItem())
         }
     }
 
@@ -274,7 +297,7 @@ class CalendarRepositoryTest {
         failing.calendars().test { assertEquals(failure, awaitItem()) }
         failing.visibleCalendars().test { assertEquals(failure, awaitItem()) }
         failing.instances(range).test { assertEquals(failure, awaitItem()) }
-        failing.defaultCalendar().test { assertEquals(failure, awaitItem()) }
+        failing.automaticDefaultCalendar().test { assertEquals(failure, awaitItem()) }
     }
 
     @Test

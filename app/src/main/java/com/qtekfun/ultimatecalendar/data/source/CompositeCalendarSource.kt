@@ -18,6 +18,9 @@ import com.qtekfun.ultimatecalendar.domain.search.SearchableEvent
 import java.time.Instant
 import java.time.ZoneOffset
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.merge
 
 /**
@@ -27,19 +30,30 @@ import kotlinx.coroutines.flow.merge
  * the answers are the provider's, unchanged.
  *
  * A CalDAV or subscription failure never hides the provider's calendars, and a provider failure
- * other than a missing permission never hides theirs.
+ * never hides theirs, a missing calendar permission included: the app can run on a CalDAV
+ * account alone. [PermissionDenied][CalendarError.PermissionDenied] is the answer only when the
+ * provider is denied and no other source has a calendar to show; [providerAccess] tells the
+ * shell about the denial either way.
  */
 @Suppress("TooManyFunctions")
 class CompositeCalendarSource(
     private val provider: CalendarSource,
     private val caldav: CalendarSource,
     private val subscriptions: CalendarSource
-) : CalendarSource {
+) : CalendarSource,
+    ProviderAccess {
+    private val providerDenied = MutableStateFlow(false)
+
+    override val denied: StateFlow<Boolean> = providerDenied.asStateFlow()
+
     override val changes: Flow<Unit>
         get() = merge(provider.changes, caldav.changes, subscriptions.changes)
 
-    override suspend fun calendars(): CalendarResult<List<CalendarInfo>> =
-        merged(provider.calendars(), listOf(caldav.calendars(), subscriptions.calendars())) { it }
+    override suspend fun calendars(): CalendarResult<List<CalendarInfo>> {
+        val fromProvider = provider.calendars()
+        providerDenied.value = fromProvider.isDenied()
+        return merged(fromProvider, listOf(caldav.calendars(), subscriptions.calendars())) { it }
+    }
 
     override suspend fun instances(
         range: TimeRange,
@@ -128,9 +142,12 @@ class CompositeCalendarSource(
 
     /**
      * The answers as one. The provider's answer is returned as it is when the other sources have
-     * nothing to add, so that without an account or a subscription nothing changes.
+     * nothing to add, so that without an account or a subscription nothing changes. A provider
+     * that is denied is left out when the others have something; when they have not, the answer
+     * is "denied" only if none of them has a calendar either (a CalDAV calendar with no event in
+     * the range is an empty answer, not a missing permission).
      */
-    private fun <T> merged(
+    private suspend fun <T> merged(
         fromProvider: CalendarResult<List<T>>,
         others: List<CalendarResult<List<T>>>,
         order: (List<T>) -> List<T>
@@ -138,7 +155,7 @@ class CompositeCalendarSource(
         val extra = others.flatMap { (it as? CalendarResult.Success)?.value.orEmpty() }
         return when {
             fromProvider is CalendarResult.Failure ->
-                if (fromProvider.error != CalendarError.PermissionDenied && extra.isNotEmpty()) {
+                if (extra.isNotEmpty() || emptyButNotDenied(fromProvider, others)) {
                     CalendarResult.Success(order(extra))
                 } else {
                     fromProvider
@@ -152,4 +169,23 @@ class CompositeCalendarSource(
             else -> fromProvider
         }
     }
+
+    /**
+     * A denied provider next to sources that answered, and have a calendar though none of its
+     * events: the empty answer is theirs.
+     */
+    private suspend fun <T> emptyButNotDenied(
+        fromProvider: CalendarResult<List<T>>,
+        others: List<CalendarResult<List<T>>>
+    ): Boolean = fromProvider.isDenied() &&
+        others.any { it is CalendarResult.Success } &&
+        otherCalendarsExist()
+
+    private suspend fun otherCalendarsExist(): Boolean =
+        listOf(caldav.calendars(), subscriptions.calendars()).any {
+            (it as? CalendarResult.Success)?.value?.isNotEmpty() == true
+        }
+
+    private fun CalendarResult<*>.isDenied() =
+        this is CalendarResult.Failure && error == CalendarError.PermissionDenied
 }

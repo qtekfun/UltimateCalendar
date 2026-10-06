@@ -8,7 +8,6 @@ import androidx.room3.Insert
 import androidx.room3.OnConflictStrategy
 import androidx.room3.Query
 import com.qtekfun.ultimatecalendar.data.local.entity.CalendarSettingsEntity
-import com.qtekfun.ultimatecalendar.data.local.entity.DefaultCalendarEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -27,13 +26,4 @@ interface CalendarSettingsDao {
 
     @Query("DELETE FROM calendar_settings WHERE calendarId = :calendarId")
     suspend fun clear(calendarId: Long)
-
-    @Query("SELECT calendarId FROM default_calendar")
-    fun observeDefaultCalendar(): Flow<Long?>
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun saveDefaultCalendar(default: DefaultCalendarEntity)
-
-    @Query("DELETE FROM default_calendar")
-    suspend fun clearDefaultCalendar()
 }

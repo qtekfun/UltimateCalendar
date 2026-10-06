@@ -5,6 +5,7 @@ package com.qtekfun.ultimatecalendar.data.settings.backup
 
 import com.qtekfun.ultimatecalendar.data.local.UltimateCalendarDatabase
 import com.qtekfun.ultimatecalendar.data.local.entity.CalendarSettingsEntity
+import com.qtekfun.ultimatecalendar.data.local.entity.PendingCalendarOverrideEntity
 import com.qtekfun.ultimatecalendar.data.local.inMemoryDatabase
 import com.qtekfun.ultimatecalendar.data.settings.AppSettings
 import com.qtekfun.ultimatecalendar.data.settings.FakePreferences
@@ -43,6 +44,7 @@ class CalendarOverridesBackupTest {
     private fun backupOf(vararg calendars: CalendarInfo) = CalendarOverridesBackup(
         FakeCalendarSource(calendars.toList()),
         database.calendarSettingsDao(),
+        database.pendingCalendarOverrideDao(),
         Dispatchers.Unconfined
     )
 
@@ -82,9 +84,9 @@ class CalendarOverridesBackupTest {
     @Test
     fun `apply finds the calendar on the new phone under a different id`() = runTest {
         val entry = BackupCalendar("com.google", "ana@gmail.com", "Family", "Casa", 5, true)
-        val missing = backupOf(calendar(42, google, "Family")).apply(listOf(entry))
+        val applied = backupOf(calendar(42, google, "Family")).apply(listOf(entry))
 
-        assertEquals(0, missing)
+        assertEquals(OverridesApplied(), applied)
         assertEquals(
             CalendarSettingsEntity(42, "Casa", 5, true),
             database.calendarSettingsDao().find(42)
@@ -100,7 +102,7 @@ class CalendarOverridesBackupTest {
             BackupCalendar("bitfire.at.davdroid", "someone@else", "Family", "y", null, null)
         )
 
-        assertEquals(2, onPhone.apply(entries))
+        assertEquals(OverridesApplied(missing = 2), onPhone.apply(entries))
         assertEquals(listOf(1L), database.calendarSettingsDao().all().map { it.calendarId })
     }
 
@@ -109,8 +111,61 @@ class CalendarOverridesBackupTest {
         val twins = backupOf(calendar(1, google, "Same"), calendar(2, google, "Same"))
         val entry = BackupCalendar("com.google", "ana@gmail.com", "Same", "x", null, null)
 
-        assertEquals(1, twins.apply(listOf(entry)))
+        assertEquals(OverridesApplied(missing = 1), twins.apply(listOf(entry)))
         assertTrue(database.calendarSettingsDao().all().isEmpty())
+    }
+
+    private val caldav = CalendarAccount("ana@cloud.example.com", CalendarAccount.CALDAV_TYPE)
+
+    @Test
+    fun `apply keeps the overrides of the signed-in CalDAV account's missing calendars waiting`() =
+        runTest {
+            val entries = listOf(
+                BackupCalendar(caldav.type, caldav.name, "Work", "Job", 5, false),
+                BackupCalendar(caldav.type, "bob@other.example", "Work", "x", null, null),
+                BackupCalendar("com.google", caldav.name, "Work", "y", null, null)
+            )
+
+            val applied = backupOf().apply(entries, calDavAccount = caldav.name)
+
+            // Only the signed-in CalDAV account's calendar can still appear; the rest are missing.
+            assertEquals(OverridesApplied(missing = 2, waiting = 1), applied)
+            assertEquals(
+                listOf(PendingCalendarOverrideEntity(caldav.name, "Work", "Job", 5, false)),
+                database.pendingCalendarOverrideDao().all()
+            )
+            assertTrue(database.calendarSettingsDao().all().isEmpty())
+        }
+
+    @Test
+    fun `apply without a signed-in CalDAV account counts its calendars as missing`() = runTest {
+        val entry = BackupCalendar(caldav.type, caldav.name, "Work", "Job", 5, false)
+
+        assertEquals(OverridesApplied(missing = 1), backupOf().apply(listOf(entry), null))
+        assertTrue(database.pendingCalendarOverrideDao().all().isEmpty())
+    }
+
+    @Test
+    fun `apply uses a CalDAV calendar that is already there and does not park it`() = runTest {
+        val entry = BackupCalendar(caldav.type, caldav.name, "Work", "Job", 5, false)
+
+        val applied = backupOf(calendar(9, caldav, "Work")).apply(listOf(entry), caldav.name)
+
+        assertEquals(OverridesApplied(), applied)
+        assertEquals(
+            CalendarSettingsEntity(9, "Job", 5, false),
+            database.calendarSettingsDao().find(9)
+        )
+        assertTrue(database.pendingCalendarOverrideDao().all().isEmpty())
+    }
+
+    @Test
+    fun `apply does not park an ambiguous CalDAV name`() = runTest {
+        val entry = BackupCalendar(caldav.type, caldav.name, "Work", "Job", null, null)
+        val twins = backupOf(calendar(1, caldav, "Work"), calendar(2, caldav, "Work"))
+
+        assertEquals(OverridesApplied(missing = 1), twins.apply(listOf(entry), caldav.name))
+        assertTrue(database.pendingCalendarOverrideDao().all().isEmpty())
     }
 
     @Test

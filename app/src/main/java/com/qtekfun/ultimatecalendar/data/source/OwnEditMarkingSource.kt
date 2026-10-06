@@ -9,6 +9,9 @@ import com.qtekfun.ultimatecalendar.domain.model.EventDraft
 import com.qtekfun.ultimatecalendar.domain.model.EventId
 import com.qtekfun.ultimatecalendar.domain.result.CalendarResult
 import java.time.Instant
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * The source the app's own screens write through: before changing or deleting an event it flags
@@ -17,7 +20,12 @@ import java.time.Instant
  * because the provider announces the change as soon as it is made; a failed write takes it back.
  */
 class OwnEditMarkingSource(private val delegate: CalendarSource, private val marks: OwnEditMarks) :
-    CalendarSource by delegate {
+    CalendarSource by delegate,
+    ProviderAccess {
+    /** The wrapped source's access state; a source that cannot tell is never denied. */
+    override val denied: StateFlow<Boolean> =
+        (delegate as? ProviderAccess)?.denied ?: MutableStateFlow(false).asStateFlow()
+
     override suspend fun update(event: Event): CalendarResult<Unit> =
         marked(event.id) { delegate.update(event) }
 
