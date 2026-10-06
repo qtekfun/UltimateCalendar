@@ -12,8 +12,8 @@ UltimateCalendar has no servers, no analytics, no ads and no telemetry. Your cal
 | Permission | Why |
 |---|---|
 | Internet (`INTERNET`) | Reach the CalDAV server you sign in to and the subscription addresses you add, and nothing else. Unused until you add one of them. Syncs wait for a connection and for a battery that is not low (WorkManager, which also uses the system's network-state permission for this). |
-| Read / write calendar | Show your events, create and edit them, answer invitations. |
-| Notifications | Reminders, new invitations and (optional) changes or cancellations. |
+| Read / write calendar (`READ_CALENDAR`, `WRITE_CALENDAR`) | Show your events, create and edit them, answer invitations. |
+| Notifications (`POST_NOTIFICATIONS`) | Reminders, new invitations and (optional) changes or cancellations. |
 | Alarms & reminders (`USE_EXACT_ALARM` / `SCHEDULE_EXACT_ALARM`) | Deliver reminders exactly on time. |
 | Run at startup (`RECEIVE_BOOT_COMPLETED`) | Reschedule reminders after a reboot or an update. |
 | Ignore battery optimisations (`REQUEST_IGNORE_BATTERY_OPTIMIZATIONS`, optional) | Lets you exempt the app from battery savers that delay reminders. Asked only from the setup guide, and you can say no. |
@@ -21,7 +21,8 @@ UltimateCalendar has no servers, no analytics, no ads and no telemetry. Your cal
 | Query installed apps (`<queries>`, 12 known calendar apps) | The setup guide checks whether another calendar app is installed, so it can tell you how to turn off its duplicate reminders. Nothing is read beyond whether those packages exist, and nothing leaves the phone. |
 | Read sync settings (`READ_SYNC_SETTINGS`) | Before asking an account to sync, the app checks whether that account has calendar sync turned on, so it does not wake accounts that would do nothing. It only reads the on/off state. |
 | Network state (`ACCESS_NETWORK_STATE`) | Lets the periodic invitation check skip sync requests while the phone has no connection. It reads whether a network exists, nothing about what you do on it. |
-| Contacts (optional) | Suggest attendees' addresses while inviting. Never uploaded. |
+| Keep awake (`WAKE_LOCK`) | Added by the background-work library: keeps the processor awake for the few seconds a check, a sync or a reminder takes to run. |
+| Contacts (`READ_CONTACTS`, optional) | Suggest attendees' addresses while inviting. Never uploaded. |
 
 Settings backups are encrypted with a password you choose and saved where you decide. A backup can optionally include your CalDAV sign-in (the switch “Include my CalDAV sign-in”, off unless you turn it on): then the app password is inside the encrypted content of the file, never outside it, and whoever has the file and the passphrase could use it, so keep both safe. Restoring such a backup checks the password against your server before it is stored, again encrypted with the Android Keystore; if the server refuses it, the rest of the backup is restored and you are asked to sign in again.
 
