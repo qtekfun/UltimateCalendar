@@ -4,7 +4,6 @@
     "deny": [
       "Bash(git push --force:*)",
       "Bash(git push -f:*)",
-      "Bash(gh pr merge:*)",
       "Bash(./gradlew connectedDebugAndroidTest:*)",
       "Bash(./gradlew connectedAndroidTest:*)"
     ]

@@ -43,8 +43,8 @@ if re.search(r"\bgradlew\b.*\bconnected\w*AndroidTest\b", cmd):
     block("connected*AndroidTest uninstalls the app and wipes data on the author's phone; "
           "use installDebug installDebugAndroidTest + adb shell am instrument (CLAUDE.md, Comandos). "
           "CI runs it on an emulator.")
-if re.search(r"\bgh\s+(pr\s+merge|api\b.*rulesets)", cmd):
-    block("the user merges PRs and manages rulesets.")
+if re.search(r"\bgh\s+api\b.*rulesets", cmd):
+    block("the user manages rulesets.")
 if re.search(r"\bgh\s+release\b", cmd):
     block("releases are created by release-please in CI.")
 sys.exit(0)
