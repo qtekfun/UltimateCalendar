@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 UltimateCalendar contributors
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<resources>
+    <string name="month_untitled">(No title)</string>
+    <string name="month_failed">Events could not be read</string>
+    <string name="month_time_range">%1$s to %2$s</string>
+    <string name="month_more">+%1$d</string>
+    <plurals name="month_more_description">
+        <item quantity="one">%1$d more event, show the day</item>
+        <item quantity="other">%1$d more events, show the day</item>
+    </plurals>
+    <plurals name="month_day_events">
+        <item quantity="one">%1$s, %2$d event</item>
+        <item quantity="other">%1$s, %2$d events</item>
+    </plurals>
+    <string name="month_day_no_events">%1$s, no events</string>
+    <string name="month_open_day">Open the day</string>
+    <string name="month_create_here">Create an event on this day</string>
+    <string name="month_open_event">Event</string>
+    <string name="month_day_sheet_open">Open day</string>
+</resources>

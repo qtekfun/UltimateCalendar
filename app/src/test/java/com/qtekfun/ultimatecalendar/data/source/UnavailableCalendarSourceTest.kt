@@ -27,6 +27,7 @@ class UnavailableCalendarSourceTest {
         val results = listOf(
             source.calendars(),
             source.instances(TimeRange(at, at.plusSeconds(1))),
+            source.search("budget"),
             source.event(EventId(1)),
             source.create(draft),
             source.update(draft.toEvent(EventId(1))),
