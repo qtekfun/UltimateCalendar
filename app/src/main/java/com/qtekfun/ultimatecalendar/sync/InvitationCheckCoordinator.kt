@@ -31,7 +31,8 @@ class InvitationCheckCoordinator @Inject constructor(
     /** Schedules the periodic job and watches the source and the app opening until [scope] ends. */
     @OptIn(FlowPreview::class)
     fun start(scope: CoroutineScope) {
-        scope.launch { intervalChanged() }
+        // Replaces the periodic job now and whenever Settings changes the interval.
+        scope.launch { settings.intervals.collect { scheduler.apply(it) } }
         // A burst of provider changes (a sync writes many rows) is one check. It does not ask
         // for another sync: that would make a sync cause another sync.
         scope.launch {
@@ -49,9 +50,6 @@ class InvitationCheckCoordinator @Inject constructor(
 
     /** Pull to refresh: checks now, after asking the accounts to sync, and tells how it went. */
     suspend fun checkNow(): InvitationCheckOutcome = checker.check(true)
-
-    /** Settings changed the interval: the periodic job is replaced (or removed if manual). */
-    suspend fun intervalChanged() = scheduler.apply(settings.interval())
 
     private companion object {
         const val CHANGES_DEBOUNCE_MS = 5_000L

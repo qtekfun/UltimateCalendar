@@ -6,6 +6,7 @@ package com.qtekfun.ultimatecalendar.di
 import com.qtekfun.ultimatecalendar.data.invitations.InvitationResponses
 import com.qtekfun.ultimatecalendar.data.invitations.NotifiedInvitations
 import com.qtekfun.ultimatecalendar.data.invitations.SourceInvitationResponses
+import com.qtekfun.ultimatecalendar.data.settings.RepositoryInvitationCheckSettings
 import com.qtekfun.ultimatecalendar.data.settings.SettingsRepository
 import com.qtekfun.ultimatecalendar.data.source.CalendarSource
 import com.qtekfun.ultimatecalendar.data.source.UnavailableCalendarSource
@@ -19,7 +20,6 @@ import com.qtekfun.ultimatecalendar.notify.AndroidInvitationNotifications
 import com.qtekfun.ultimatecalendar.notify.ChangeNotificationSettings
 import com.qtekfun.ultimatecalendar.notify.InvitationNotificationSurface
 import com.qtekfun.ultimatecalendar.notify.SystemInvitationNotifier
-import com.qtekfun.ultimatecalendar.sync.CheckInterval
 import com.qtekfun.ultimatecalendar.sync.InvitationCheckScheduler
 import com.qtekfun.ultimatecalendar.sync.InvitationCheckSettings
 import com.qtekfun.ultimatecalendar.sync.InvitationChecker
@@ -32,20 +32,11 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import java.time.Clock
 import java.util.Optional
-import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
 
-/** The defaults until the settings screen (T23) binds its own: every 15 minutes, no aliases. */
-class DefaultInvitationCheckSettings @Inject constructor() : InvitationCheckSettings {
-    override suspend fun interval(): CheckInterval = CheckInterval.QUARTER_HOUR
-
-    override suspend fun aliases(): Set<String> = emptySet()
-}
-
 /**
- * The bindings of the invitation check (T08). Each one marked "replaced by" is a placeholder for
- * a later task: that task deletes the line here and binds its own implementation.
+ * The bindings of the invitation check (T08).
  */
 @Module
 @InstallIn(SingletonComponent::class)
@@ -59,9 +50,8 @@ interface InvitationCheckBindingsModule {
     @Binds
     fun responses(responses: SourceInvitationResponses): InvitationResponses
 
-    // Replaced by T23 (settings).
     @Binds
-    fun settings(settings: DefaultInvitationCheckSettings): InvitationCheckSettings
+    fun settings(settings: RepositoryInvitationCheckSettings): InvitationCheckSettings
 
     @Binds
     fun syncRequester(requester: ProviderSyncRequester): SourceSyncRequester

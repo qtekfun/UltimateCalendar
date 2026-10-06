@@ -116,7 +116,7 @@ class CalendarOverridesBackupTest {
     @Test
     fun `overrides travel inside the encrypted backup and an old backup still opens`() {
         val passphrase = "correct horse".toCharArray()
-        val settings = SettingsRepository(FakePreferences(), FakePreferences())
+        val settings = SettingsRepository(FakePreferences(), FakePreferences(), FakePreferences())
         val entry = BackupCalendar("com.google", "ana@gmail.com", "Family", "Casa", 5, false)
 
         val file = SettingsBackup(settings).export(passphrase, listOf(entry))
