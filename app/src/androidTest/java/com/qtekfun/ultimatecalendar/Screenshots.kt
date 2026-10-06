@@ -149,6 +149,8 @@ class Screenshots {
         driver.openEvent(week.detailTitle)
         driver.waitForText("Liam Novak")
         snap(locale, "4_event_detail", driver.capture())
+        driver.editOpenEvent()
+        snap(locale, "8_event_editor", driver.capture())
         driver.back()
         driver.openInvitations(pending = 2)
         driver.waitForText(week.secondInvitationTitle)

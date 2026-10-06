@@ -82,6 +82,12 @@ class AppDriver(private val compose: ComposeTestRule, base: Context, locale: Loc
         compose.waitForIdle()
     }
 
+    /** Opens the editor from the detail of an event. */
+    fun editOpenEvent() {
+        compose.onNodeWithContentDescription(l10n.getString(R.string.detail_edit)).performClick()
+        waitForText(l10n.getString(R.string.editor_title_edit))
+    }
+
     fun string(id: Int): String = l10n.getString(id)
 
     fun waitForText(text: String) = waitUntil { has(hasText(text)) }
