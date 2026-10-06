@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 UltimateCalendar contributors
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<resources>
+    <string name="drag_tooltip">%1$s, %2$s</string>
+    <string name="drag_moved">Evento movido a %1$s</string>
+    <string name="drag_resized">El evento ahora termina a las %1$s</string>
+    <string name="drag_failed">No se pudo cambiar el evento. Se queda donde estaba.</string>
+    <string name="drag_undo_failed">No se pudo deshacer el cambio.</string>
+    <string name="drag_read_only">Este calendario no permite editar, así que sus eventos no se pueden mover.</string>
+    <string name="drag_scope_title">Mover evento repetido</string>
+    <string name="drag_scope_confirm">Mover</string>
+    <string name="drag_scope_local_note">\"Solo este evento\" no se ofrece en calendarios guardados en este teléfono.</string>
+    <string name="drag_action_earlier">Mover 15 minutos antes</string>
+    <string name="drag_action_later">Mover 15 minutos después</string>
+    <string name="drag_action_longer">Alargar 15 minutos</string>
+    <string name="drag_action_shorter">Acortar 15 minutos</string>
+    <string name="drag_action_day_earlier">Mover un día antes</string>
+    <string name="drag_action_day_later">Mover un día después</string>
+</resources>

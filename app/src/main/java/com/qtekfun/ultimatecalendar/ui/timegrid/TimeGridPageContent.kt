@@ -27,6 +27,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,22 +39,27 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import com.qtekfun.ultimatecalendar.R
 import com.qtekfun.ultimatecalendar.domain.model.EventInstance
 import com.qtekfun.ultimatecalendar.domain.timegrid.AllDayLanes
 import com.qtekfun.ultimatecalendar.domain.timegrid.TimeGridLayout
 import com.qtekfun.ultimatecalendar.domain.timegrid.TimeGridPage
 import com.qtekfun.ultimatecalendar.domain.timegrid.TimeScale
+import com.qtekfun.ultimatecalendar.domain.timegrid.TimedBlock
 import com.qtekfun.ultimatecalendar.ui.components.DayBadge
 import com.qtekfun.ultimatecalendar.ui.components.DayBadgeState
 import java.time.LocalDate
@@ -73,7 +79,9 @@ private val BLOCK_GAP = 1.dp
 /** What a page of the grid tells its owner. */
 internal data class GridCallbacks(
     val onOpenEvent: (EventInstance) -> Unit = {},
-    val onCreateAt: (LocalDateTime) -> Unit = {}
+    val onCreateAt: (LocalDateTime) -> Unit = {},
+    /** Picking events up to move them or change their duration (T18). */
+    val editing: GridEditing = GridEditing()
 )
 
 /** What differs between the views that share this page: the Week view sets both. */
@@ -98,17 +106,27 @@ internal fun TimeGridPageContent(
     scroll: ScrollState,
     callbacks: GridCallbacks,
     modifier: Modifier = Modifier,
-    options: GridOptions = GridOptions()
+    options: GridOptions = GridOptions(),
+    drag: PageDrag? = null
 ) {
     val metrics = rememberGridMetrics()
+    val ui = rememberPageDragUi(page, now.zone, drag)
     BoxWithConstraints(modifier) {
         val available = maxWidth - metrics.gutter
         val daysWidth = maxOf(available, metrics.minDayWidth * page.days.size)
         val sideways = rememberScrollState()
+        SideEffect {
+            ui.surface?.let {
+                it.page = ui.page
+                it.scale = metrics.scale
+                it.zone = now.zone
+                it.sideways = sideways
+            }
+        }
         Column {
             val days = DaysLayout(metrics, daysWidth, sideways)
             DayHeaders(page, now, days, options.weekNumber)
-            AllDayStripContent(page, days, callbacks, options.allDayRowLimit)
+            AllDayStripContent(ui, days, callbacks, options.allDayRowLimit)
             if (failed) {
                 Text(
                     stringResource(R.string.timegrid_failed),
@@ -116,7 +134,7 @@ internal fun TimeGridPageContent(
                     color = MaterialTheme.colorScheme.error
                 )
             }
-            TimeGridBody(page, now, days, scroll, callbacks)
+            TimeGridBody(ui, now, days, scroll, callbacks)
         }
     }
 }
@@ -194,7 +212,7 @@ private fun WeekNumberCell(weekNumber: Int?, modifier: Modifier) {
 
 @Composable
 private fun TimeGridBody(
-    page: TimeGridPage,
+    ui: PageDragUi,
     now: GridNow,
     days: DaysLayout,
     scroll: ScrollState,
@@ -202,10 +220,15 @@ private fun TimeGridBody(
 ) {
     val metrics = days.metrics
     val height = metrics.scale.totalHeight.dp
-    Row(Modifier.fillMaxWidth().verticalScroll(scroll)) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .onPlaced { ui.surface?.viewport = it }
+            .verticalScroll(scroll)
+    ) {
         HourLabels(metrics, Modifier.width(metrics.gutter).height(height))
         DaysArea(days.sideways, Modifier.weight(1f).height(height)) {
-            DayColumns(page, now, metrics, callbacks, Modifier.width(days.width).height(height))
+            DayColumns(ui, now, metrics, callbacks, Modifier.width(days.width).height(height))
         }
     }
 }
@@ -234,17 +257,19 @@ private fun HourLabels(metrics: GridMetrics, modifier: Modifier) {
 
 @Composable
 private fun DayColumns(
-    page: TimeGridPage,
+    ui: PageDragUi,
     now: GridNow,
     metrics: GridMetrics,
     callbacks: GridCallbacks,
     modifier: Modifier
 ) {
+    val page = ui.page
     val lineColor = MaterialTheme.colorScheme.outlineVariant
     val scale = metrics.scale
     val dayCount = page.days.size
     BoxWithConstraints(
         modifier
+            .onPlaced { ui.surface?.columns = it }
             .drawBehind { drawGridLines(scale, dayCount, lineColor) }
             .pointerInput(page.days, scale) {
                 detectTapGestures { tap ->
@@ -261,8 +286,11 @@ private fun DayColumns(
     ) {
         val dayWidth = maxWidth / dayCount
         val minHeight = scale.offsetOf(TimeGridLayout.MIN_DURATION.toMinutes().toInt())
+        val lifted = page.timed.filter { it.instance == ui.ghost }
         page.timed.forEach { block ->
             val columnWidth = dayWidth / block.columns
+            val isGhost = block in lifted
+            val actions = moveActions(block.instance, ui, now.zone)
             TimedEventBlock(
                 block,
                 now.zone,
@@ -276,9 +304,13 @@ private fun DayColumns(
                         columnWidth * block.span - BLOCK_GAP,
                         scale.heightOf(block.startMinute, block.endMinute, minHeight).dp
                     )
+                    .zIndex(if (isGhost) 1f else 0f)
+                    .semantics { customActions = actions },
+                lifted = isGhost
             )
         }
         NowLine(page, now, scale, dayWidth)
+        TooltipOver(lifted.firstOrNull(), ui.tooltip, scale, dayWidth)
     }
 }
 

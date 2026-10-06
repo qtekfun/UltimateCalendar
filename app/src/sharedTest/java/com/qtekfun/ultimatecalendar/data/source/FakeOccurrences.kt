@@ -7,6 +7,7 @@ import com.qtekfun.ultimatecalendar.domain.model.Event
 import com.qtekfun.ultimatecalendar.domain.model.EventTime
 import com.qtekfun.ultimatecalendar.domain.recurrence.Frequency
 import com.qtekfun.ultimatecalendar.domain.recurrence.RecurrenceRules
+import com.qtekfun.ultimatecalendar.domain.recurrence.Until
 import java.time.DayOfWeek
 import java.time.Duration
 import java.time.Instant
@@ -19,7 +20,7 @@ import java.time.temporal.TemporalAdjusters
 /** One occurrence of an event: when it originally starts (UTC) and its time. */
 data class Occurrence(val originalStart: Instant, val time: EventTime)
 
-/** Expands the daily and weekly COUNT rules the contract uses. */
+/** Expands the daily and weekly rules with a COUNT or an UNTIL that the contract and the editor use. */
 object FakeOccurrences {
     private const val MAX_DAYS = 20_000
 
@@ -38,7 +39,8 @@ object FakeOccurrences {
                 .filter { matches(rule.frequency, rule.interval, first, it, days) }
                 .map { shifted(event.time, it) }
                 .takeWhile { before == null || it.startIn(ZoneOffset.UTC).isBefore(before) }
-                .take(requireNotNull(rule.count))
+                .takeWhile { rule.until == null || !isAfter(it, rule.until) }
+                .take(rule.count ?: Int.MAX_VALUE)
                 .map { Occurrence(it.startIn(ZoneOffset.UTC), it) }
                 .toList()
         }
@@ -58,6 +60,12 @@ object FakeOccurrences {
             val weeks = ChronoUnit.WEEKS.between(first.with(monday), date.with(monday))
             weeks % interval == 0L && date.dayOfWeek in days
         }
+    }
+
+    /** Whether [time] starts after the last day or moment [until] allows. */
+    private fun isAfter(time: EventTime, until: Until): Boolean = when (until) {
+        is Until.Moment -> time.startIn(ZoneOffset.UTC).isAfter(until.at)
+        is Until.Day -> firstDate(time).isAfter(until.date)
     }
 
     private fun firstDate(time: EventTime): LocalDate = when (time) {

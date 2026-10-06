@@ -21,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
@@ -41,6 +42,7 @@ import com.qtekfun.ultimatecalendar.ui.agenda.AgendaScreen
 import com.qtekfun.ultimatecalendar.ui.components.AnimatedPeriod
 import com.qtekfun.ultimatecalendar.ui.components.CalendarSnackbarHost
 import com.qtekfun.ultimatecalendar.ui.components.CreateFab
+import com.qtekfun.ultimatecalendar.ui.components.LocalSnackbarHost
 import com.qtekfun.ultimatecalendar.ui.components.PeriodKey
 import com.qtekfun.ultimatecalendar.ui.components.WindowWidth
 import com.qtekfun.ultimatecalendar.ui.components.currentWindowWidth
@@ -117,44 +119,46 @@ fun ShellContent(
             backPush.floatValue = 0f
         }
     }
-    ModalNavigationDrawer(
-        modifier = modifier,
-        drawerState = drawer,
-        drawerContent = {
-            ShellDrawer(
-                state,
-                actions,
-                onClose = { scope.launch { drawer.close() } },
-                modifier = Modifier
-                    .graphicsLayer { translationX = -BACK_SLIDE_PX * backPush.floatValue }
-                    .alpha(1f - BACK_FADE * backPush.floatValue)
-            )
-        }
-    ) {
-        Scaffold(
-            containerColor = MaterialTheme.colorScheme.surface,
-            topBar = {
-                ShellTopBar(state, actions, onOpenDrawer = { scope.launch { drawer.open() } })
-            },
-            floatingActionButton = {
-                CreateFab(expanded = fab.expanded || wide, onClick = actions.onNewEvent)
-            },
-            snackbarHost = { CalendarSnackbarHost(snackbarHost) }
-        ) { padding ->
-            Box(Modifier.fillMaxSize().nestedScroll(fab.connection), Alignment.TopCenter) {
-                AnimatedPeriod(
-                    PeriodKey(
-                        state.view,
-                        if (state.view in
-                            PAGED_VIEWS
-                        ) {
-                            LocalDate.ofEpochDay(0)
-                        } else {
-                            state.date
-                        }
-                    ),
-                    Modifier.widthIn(max = Dimens.contentMaxWidth).fillMaxSize()
-                ) { period -> content(period, padding) }
+    CompositionLocalProvider(LocalSnackbarHost provides snackbarHost) {
+        ModalNavigationDrawer(
+            modifier = modifier,
+            drawerState = drawer,
+            drawerContent = {
+                ShellDrawer(
+                    state,
+                    actions,
+                    onClose = { scope.launch { drawer.close() } },
+                    modifier = Modifier
+                        .graphicsLayer { translationX = -BACK_SLIDE_PX * backPush.floatValue }
+                        .alpha(1f - BACK_FADE * backPush.floatValue)
+                )
+            }
+        ) {
+            Scaffold(
+                containerColor = MaterialTheme.colorScheme.surface,
+                topBar = {
+                    ShellTopBar(state, actions, onOpenDrawer = { scope.launch { drawer.open() } })
+                },
+                floatingActionButton = {
+                    CreateFab(expanded = fab.expanded || wide, onClick = actions.onNewEvent)
+                },
+                snackbarHost = { CalendarSnackbarHost(snackbarHost) }
+            ) { padding ->
+                Box(Modifier.fillMaxSize().nestedScroll(fab.connection), Alignment.TopCenter) {
+                    AnimatedPeriod(
+                        PeriodKey(
+                            state.view,
+                            if (state.view in
+                                PAGED_VIEWS
+                            ) {
+                                LocalDate.ofEpochDay(0)
+                            } else {
+                                state.date
+                            }
+                        ),
+                        Modifier.widthIn(max = Dimens.contentMaxWidth).fillMaxSize()
+                    ) { period -> content(period, padding) }
+                }
             }
         }
     }
