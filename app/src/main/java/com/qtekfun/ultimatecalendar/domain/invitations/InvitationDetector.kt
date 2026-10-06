@@ -3,8 +3,6 @@
 
 package com.qtekfun.ultimatecalendar.domain.invitations
 
-import com.qtekfun.ultimatecalendar.domain.model.Attendee
-import com.qtekfun.ultimatecalendar.domain.model.CalendarId
 import com.qtekfun.ultimatecalendar.domain.model.CalendarInfo
 import com.qtekfun.ultimatecalendar.domain.model.Event
 import com.qtekfun.ultimatecalendar.domain.recurrence.RecurrenceRules
@@ -26,7 +24,7 @@ class InvitationDetector(private val clock: Clock) {
         val states = LinkedHashMap<InvitationKey, EventState>()
         val pending = mutableListOf<Invitation>()
         for (event in events) {
-            val me = attendeeOf(event, owners, aliases)
+            val me = selfAttendee(event, owners, aliases)
             val state = EventState(isFuture(event), me?.status)
             val key = InvitationKey(event.calendarId, event.id)
             states[key] = state
@@ -65,15 +63,6 @@ class InvitationDetector(private val clock: Clock) {
             cancelled = cancelled,
             answeredElsewhere = answered
         )
-    }
-
-    private fun attendeeOf(
-        event: Event,
-        owners: Map<CalendarId, String?>,
-        aliases: Set<String>
-    ): Attendee? {
-        val me = aliases + listOfNotNull(owners[event.calendarId])
-        return event.attendees.firstOrNull { it.isOneOf(me) }
     }
 
     private fun isFuture(event: Event): Boolean {

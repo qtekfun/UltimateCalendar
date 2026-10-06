@@ -125,6 +125,76 @@ class InvitationNotificationPlannerTest {
         }
     }
 
+    private fun attended(
+        changed: List<InvitationChange> = emptyList(),
+        cancelled: List<Invitation> = emptyList(),
+        dropped: List<InvitationKey> = emptyList()
+    ) = changes().withAttended(AttendedChanges(changed, cancelled, dropped))
+
+    @Test
+    fun `a moved event the user goes to is announced only when changes are on`() {
+        val change = InvitationChange(invitation(1), invitation(1, "Moved"))
+
+        assertTrue(
+            InvitationNotificationPlanner.plan(attended(changed = listOf(change)), off).isEmpty()
+        )
+        assertEquals(
+            listOf(NotificationOp.ShowMoved(invitation(1, "Moved"))),
+            InvitationNotificationPlanner.plan(
+                attended(changed = listOf(change)),
+                ChangeNotifications(changes = true, cancellations = false)
+            )
+        )
+        assertTrue(
+            InvitationNotificationPlanner.plan(
+                attended(changed = listOf(change)),
+                ChangeNotifications(changes = false, cancellations = true)
+            ).isEmpty()
+        )
+    }
+
+    @Test
+    fun `a cancelled event the user goes to clears its notes and says so only if asked`() {
+        val gone = invitation(3)
+
+        assertEquals(
+            listOf(NotificationOp.ClearChanges(gone.key)),
+            InvitationNotificationPlanner.plan(attended(cancelled = listOf(gone)), off)
+        )
+        assertEquals(
+            listOf(NotificationOp.ClearChanges(gone.key), NotificationOp.ShowCancelled(gone)),
+            InvitationNotificationPlanner.plan(attended(cancelled = listOf(gone)), on)
+        )
+    }
+
+    @Test
+    fun `an event no longer followed only loses its notes, whatever the settings`() {
+        val key = invitation(5).key
+        for (settings in listOf(off, on)) {
+            assertEquals(
+                listOf(NotificationOp.ClearChanges(key)),
+                InvitationNotificationPlanner.plan(attended(dropped = listOf(key)), settings)
+            )
+        }
+    }
+
+    @Test
+    fun `attended changes make the changes not empty and keep the invitation ones`() {
+        val base = changes(new = listOf(invitation(1)))
+        val key = invitation(2).key
+
+        val both = base.withAttended(AttendedChanges(emptyList(), emptyList(), listOf(key)))
+
+        assertEquals(base.new, both.new)
+        assertEquals(listOf(key), both.attendedDropped)
+        assertFalse(both.isEmpty)
+        assertTrue(attended().isEmpty)
+        assertFalse(attended(cancelled = listOf(invitation(3))).isEmpty)
+        assertFalse(
+            attended(changed = listOf(InvitationChange(invitation(1), invitation(1)))).isEmpty
+        )
+    }
+
     @Test
     fun `all categories together keep new first and cancellations last`() {
         val plan = InvitationNotificationPlanner.plan(

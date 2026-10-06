@@ -26,6 +26,9 @@ interface InvitationNotificationSurface {
     /** Tells, on the changes channel, that the organizer cancelled the event. */
     fun showCancelled(invitation: Invitation)
 
+    /** Removes the notes on the changes channel about an event (moved, cancelled), if shown. */
+    fun clearChanges(key: InvitationKey)
+
     /** Removes the notification that asks for an answer, if it is on screen. */
     fun cancel(key: InvitationKey)
 

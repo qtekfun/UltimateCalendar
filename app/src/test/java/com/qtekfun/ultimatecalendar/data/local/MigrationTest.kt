@@ -8,6 +8,7 @@ import androidx.room3.Room
 import androidx.sqlite.SQLiteConnection
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import androidx.sqlite.execSQL
+import com.qtekfun.ultimatecalendar.data.local.entity.AttendedEventEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.CalendarSettingsEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.DavAccountEntity
 import com.qtekfun.ultimatecalendar.data.local.entity.DavCalendarEntity
@@ -96,6 +97,7 @@ class MigrationTest {
             assertCalDavTablesWork(database)
             assertReRemindTableWorks(database)
             assertSubscriptionTablesWork(database)
+            assertAttendedTableWorks(database)
             assertPendingOverridesWork(database)
         } finally {
             database.close()
@@ -198,11 +200,11 @@ class MigrationTest {
     }
 
     @Test
-    fun `version 6 swaps the default calendar table for the pending overrides one`(
+    fun `version 7 swaps the default calendar table for the pending overrides one in 8`(
         @TempDir dir: File
     ) = runTest {
         val file = File(dir, "calendar.db")
-        createVersion(6, file)
+        createVersion(7, file)
         val before = BundledSQLiteDriver().open(file.path)
         try {
             before.execSQL("INSERT INTO default_calendar (id, calendarId) VALUES (0, 7)")
@@ -285,6 +287,39 @@ class MigrationTest {
         dao.apply(listOf(shown, waiting), emptyList())
         dao.apply(listOf(waiting.copy(at = 300)), listOf(shown))
         assertEquals(listOf(waiting.copy(at = 300)), dao.all())
+    }
+
+    @Test
+    fun `version 6 keeps its data and the migration to 7 adds the attended events table`(
+        @TempDir dir: File
+    ) = runTest {
+        val file = File(dir, "calendar.db")
+        createVersion(6, file)
+
+        val database = open(file)
+        try {
+            assertEquals(
+                listOf(NotifiedInvitationEntity(7, 9, "Lunch", false, 1, 2, "UTC", null, null)),
+                database.notifiedInvitationDao().all()
+            )
+            assertEquals(
+                CalendarSettingsEntity(7, "Work", 255, false),
+                database.calendarSettingsDao().find(7)
+            )
+            assertAttendedTableWorks(database)
+        } finally {
+            database.close()
+        }
+    }
+
+    private suspend fun assertAttendedTableWorks(database: UltimateCalendarDatabase) {
+        val dao = database.attendedEventDao()
+        assertEquals(emptyList<AttendedEventEntity>(), dao.all())
+        val timed = AttendedEventEntity(7, 9, "Lunch", false, 1, 2, "UTC", "abc", false)
+        val allDay = AttendedEventEntity(7, 10, "Trip", true, 20_000, 20_002, null, "", false)
+        dao.replaceAll(listOf(timed, allDay))
+        dao.markOwnEdit(9, true)
+        assertEquals(setOf(timed.copy(ownEdit = true), allDay), dao.all().toSet())
     }
 
     /** The new tables accept rows, keep them apart by account and cascade on delete. */

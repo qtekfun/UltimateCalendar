@@ -162,6 +162,7 @@ class CalDavAccountRepository @Inject constructor(
                     val cleanup = database.accountCleanupDao()
                     cleanup.clearSettings(ids)
                     cleanup.clearNotified(ids)
+                    cleanup.clearAttended(ids)
                     cleanup.clearReReminders(ids)
                 }
                 // Calendars, events and the queue go with the account (foreign keys).

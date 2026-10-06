@@ -3,8 +3,10 @@
 
 package com.qtekfun.ultimatecalendar.di
 
+import com.qtekfun.ultimatecalendar.data.invitations.OwnEditMarks
 import com.qtekfun.ultimatecalendar.data.source.CalendarSource
 import com.qtekfun.ultimatecalendar.data.source.CompositeCalendarSource
+import com.qtekfun.ultimatecalendar.data.source.OwnEditMarkingSource
 import com.qtekfun.ultimatecalendar.data.source.ProviderAccess
 import com.qtekfun.ultimatecalendar.data.source.ProviderCalendarSource
 import com.qtekfun.ultimatecalendar.data.source.caldav.CalDavCalendarSource
@@ -58,7 +60,11 @@ interface CalendarSourceModule {
         ): CompositeCalendarSource = CompositeCalendarSource(provider, caldav, subscriptions)
 
         @Provides
-        fun calendarSource(composite: CompositeCalendarSource): CalendarSource = composite
+        @Singleton
+        fun calendarSource(
+            composite: CompositeCalendarSource,
+            ownEdits: OwnEditMarks
+        ): CalendarSource = OwnEditMarkingSource(composite, ownEdits)
 
         @Provides
         fun providerAccess(composite: CompositeCalendarSource): ProviderAccess = composite

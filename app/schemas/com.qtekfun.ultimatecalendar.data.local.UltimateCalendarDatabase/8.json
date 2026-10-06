@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 7,
-    "identityHash": "297214a0a35dd7446041de9ce674e96d",
+    "version": 8,
+    "identityHash": "10b8888a790e965739371546ef454fb8",
     "entities": [
       {
         "tableName": "calendar_settings",
@@ -34,30 +34,6 @@
           "autoGenerate": false,
           "columnNames": [
             "calendarId"
-          ]
-        }
-      },
-      {
-        "tableName": "default_calendar",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `calendarId` INTEGER NOT NULL, PRIMARY KEY(`id`))",
-        "fields": [
-          {
-            "fieldPath": "id",
-            "columnName": "id",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "calendarId",
-            "columnName": "calendarId",
-            "affinity": "INTEGER",
-            "notNull": true
-          }
-        ],
-        "primaryKey": {
-          "autoGenerate": false,
-          "columnNames": [
-            "id"
           ]
         }
       },
@@ -188,6 +164,46 @@
           "columnNames": [
             "calendarId",
             "eventId"
+          ]
+        }
+      },
+      {
+        "tableName": "pending_calendar_override",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`accountName` TEXT NOT NULL, `calendarName` TEXT NOT NULL, `displayName` TEXT, `color` INTEGER, `visible` INTEGER, PRIMARY KEY(`accountName`, `calendarName`))",
+        "fields": [
+          {
+            "fieldPath": "accountName",
+            "columnName": "accountName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "calendarName",
+            "columnName": "calendarName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "displayName",
+            "columnName": "displayName",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "color",
+            "columnName": "color",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "visible",
+            "columnName": "visible",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "accountName",
+            "calendarName"
           ]
         }
       },
@@ -1055,7 +1071,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '297214a0a35dd7446041de9ce674e96d')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '10b8888a790e965739371546ef454fb8')"
     ]
   }
 }

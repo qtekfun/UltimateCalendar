@@ -7,6 +7,7 @@ import android.content.Context
 import androidx.room3.Room
 import androidx.sqlite.driver.AndroidSQLiteDriver
 import com.qtekfun.ultimatecalendar.data.local.UltimateCalendarDatabase
+import com.qtekfun.ultimatecalendar.data.local.dao.AttendedEventDao
 import com.qtekfun.ultimatecalendar.data.local.dao.CalendarSettingsDao
 import com.qtekfun.ultimatecalendar.data.local.dao.NotifiedInvitationDao
 import com.qtekfun.ultimatecalendar.data.local.dao.PendingCalendarOverrideDao
@@ -47,6 +48,10 @@ object DatabaseModule {
     @Provides
     fun notifiedInvitationDao(database: UltimateCalendarDatabase): NotifiedInvitationDao =
         database.notifiedInvitationDao()
+
+    @Provides
+    fun attendedEventDao(database: UltimateCalendarDatabase): AttendedEventDao =
+        database.attendedEventDao()
 
     @Provides
     fun reRemindDao(database: UltimateCalendarDatabase): ReRemindDao = database.reRemindDao()
