@@ -7,7 +7,9 @@ import android.Manifest
 import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.ParcelFileDescriptor
 import android.provider.CalendarContract
 import android.provider.CalendarContract.Calendars
 import androidx.test.platform.app.InstrumentationRegistry
@@ -40,10 +42,7 @@ class ProviderCalendarSourceContractTest(private val scenario: Scenario) {
 
     @Before
     fun setUp() {
-        val automation = InstrumentationRegistry.getInstrumentation().uiAutomation
-        listOf(Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR).forEach {
-            automation.grantRuntimePermission(context.packageName, it)
-        }
+        grantCalendarPermissions()
         deleteTestCalendars()
         val writable = createCalendar("Mine", Calendars.CAL_ACCESS_OWNER, CalendarAccess.OWNER)
         val readOnly = createCalendar("Holidays", Calendars.CAL_ACCESS_READ, CalendarAccess.READ)
@@ -57,6 +56,19 @@ class ProviderCalendarSourceContractTest(private val scenario: Scenario) {
 
     @After
     fun tearDown() = deleteTestCalendars()
+
+    /** Grants the calendar permissions through the shell and checks that they took effect. */
+    private fun grantCalendarPermissions() {
+        val automation = InstrumentationRegistry.getInstrumentation().uiAutomation
+        listOf(Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR).forEach {
+            val output = ParcelFileDescriptor.AutoCloseInputStream(
+                automation.executeShellCommand("pm grant ${context.packageName} $it")
+            ).use { stream -> stream.readBytes().decodeToString() }
+            check(context.checkSelfPermission(it) == PackageManager.PERMISSION_GRANTED) {
+                "could not grant $it to ${context.packageName}: $output"
+            }
+        }
+    }
 
     @Test
     fun scenarioHolds() = runBlocking { scenario.run(underTest) }
