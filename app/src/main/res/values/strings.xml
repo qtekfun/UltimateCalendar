@@ -5,4 +5,12 @@
 -->
 <resources>
     <string name="app_name" translatable="false">UltimateCalendar</string>
+    <string name="reminder_channel">Event reminders</string>
+    <string name="reminder_text_timed">Starts %1$s</string>
+    <string name="reminder_text_all_day">All day</string>
+    <string name="reminder_missed_text">%1$s · missed at %2$s</string>
+    <string name="keep_alive_channel">Robust mode</string>
+    <string name="keep_alive_title">Reminders protected</string>
+    <string name="keep_alive_text">UltimateCalendar stays running so your reminders arrive on time. It does not use the network.</string>
+    <string name="keep_alive_turn_off">Turn off</string>
 </resources>

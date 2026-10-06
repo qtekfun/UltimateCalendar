@@ -18,18 +18,21 @@ Reglas: una tarea cada vez, en su rama `feat/<tarea>`, con `./gradlew check` en 
   - *Verificación:* informe con resultados por cuenta en `SPEC.md` §9; fixtures en `app/src/test/resources/provider-fixtures/{google,davx5}/`.
 - [ ] **T02b Fiabilidad de avisos**: copiar la solución de UltimateTasks (planificador, receptor, `BootReceiver`, latido, modo robusto, recuperación) como esqueleto y medir en ColorOS con la app cerrada y el móvil en reposo.
   - *Verificación:* informe con retrasos medidos; decisión en `SPEC.md` §9.
+  - *Resultado:* esqueleto de código hecho (planificador, recuperación, latido, receptores, `BootReceiver`, modo robusto; `domain.reminders` al 100 % de líneas y ramas). Pendiente para el autor: las mediciones en ColorOS y la decisión en `SPEC.md` §9.
 
 ## Fase 1 — Datos y arnés
 - [x] **T03 Modelo de dominio**: cuenta, calendario (color, acceso, visible, propietario), evento, instancia, asistente (rol, estado), aviso, repetición. Tipos sellados para errores (`CalendarResult`). `Clock` inyectable.
   - *Resultado:* hecho. Modelo en `domain/model` (ids tipados, cuenta, calendario con `CalendarAccess`, `EventTime` con eventos de todo el día como fechas, evento, instancia, asistente, aviso), `CalendarResult`/`CalendarError` en `domain/result`, y `RecurrenceRule`/`RecurrenceRules` (RRULE) copiados de UltimateTasks con sus tests. El `Clock` inyectable ya está en `TimeModule` (T00). La expansión de repeticiones no se copia: es de la fase 6.
-- [ ] **T04 Abstracción `CalendarSource`** + **`FakeCalendarSource`** en memoria + **suite de contrato** `CalendarSourceContract` (leer rangos, crear, editar, borrar, responder, repeticiones, excepciones, asistentes).
+- [x] **T04 Abstracción `CalendarSource`** + **`FakeCalendarSource`** en memoria + **suite de contrato** `CalendarSourceContract` (leer rangos, crear, editar, borrar, responder, repeticiones, excepciones, asistentes).
   - *Verificación:* la suite pasa contra el fake.
+  - *Resultado:* hecho. `CalendarSource` en `data/source` (calendarios, instancias, crear/editar/borrar, editar o cancelar una instancia, responder, `changes`); `FakeCalendarSource` y `CalendarSourceContract` (16 escenarios) en `src/test`, de momento; T05 los reutilizará en `androidTest` (hay que compartir el directorio o copiarlos, ver SPEC §9). "Este y los siguientes" no es una operación de la fuente: la compone el dominio (T09) con `update`, `editInstance`, `cancelInstance` y `create`.
 - [ ] **T05 `ProviderCalendarSource`**: lectura con `Instances` por rango, escritura como cliente normal (sin `CALLER_IS_SYNCADAPTER`), asistentes, avisos, excepciones (`CONTENT_EXCEPTION_URI`), `ContentObserver` como `Flow`. Respeta columnas de sincronización y propiedades extendidas ajenas.
   - *Verificación:* la suite de contrato pasa en el emulador contra el proveedor real con una cuenta local de pruebas; fixtures de Google y DAVx5 de T02 se leen igual que en el teléfono.
 - [ ] **T06 Repositorio y caché de lectura**: flujos por rango de fechas para las vistas, calendarios visibles, calendario por defecto, ajustes locales de calendario (nombre/color) en Room.
 
 ## Fase 2 — Lógica
-- [ ] **T07 Detector de invitaciones**: "yo" por calendario + alias; pendientes = asistente propio `NEEDS-ACTION` en eventos futuros de cualquier calendario; diferencias entre ejecuciones (nueva, cambiada, cancelada, respondida en otro sitio). **100 % de cobertura.**
+- [x] **T07 Detector de invitaciones**: "yo" por calendario + alias; pendientes = asistente propio `NEEDS-ACTION` en eventos futuros de cualquier calendario; diferencias entre ejecuciones (nueva, cambiada, cancelada, respondida en otro sitio). **100 % de cobertura.**
+  *Resultado:* `InvitationDetector(clock)` en `domain/invitations`: `scan` (pendientes + estado de cada evento) y `diff` (nueva, cambiada, cancelada, respondida en otro sitio); 100 % líneas y ramas.
 - [ ] **T08 Comprobación periódica**: WorkManager con intervalo de Ajustes, `requestSync` (según T02), ejecución al abrir/refrescar/`ContentObserver`; registro de lo ya notificado en Room.
 - [x] **T09 Lógica de repeticiones**: editar/borrar "solo este / este y los siguientes / todos" (corte de `RRULE` con `UNTIL`, excepciones, nueva serie). Presets y personalizado copiados del editor de UltimateTasks. **100 % de cobertura en la división.**
   *Resultado:* `RecurrenceRule.until` pasa a `Until` (`Day` para todo el día, `Moment` UTC para eventos con hora); `RecurrenceSplitter` devuelve `SeriesChange` (sin expandir repeticiones: el llamador da `occurrencesBefore` para `COUNT`); presets y `CustomRepeat` copiados de UltimateTasks.
