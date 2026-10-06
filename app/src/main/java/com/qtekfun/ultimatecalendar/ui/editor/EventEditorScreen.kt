@@ -180,12 +180,9 @@ private fun TitleField(title: String, onChange: (String) -> Unit) {
     TextField(
         value = title,
         onValueChange = onChange,
-        placeholder = {
-            Text(
-                stringResource(R.string.editor_title_hint),
-                style = MaterialTheme.typography.headlineSmall
-            )
-        },
+        // A label, not a placeholder: a screen reader says a label, and says nothing for a hint
+        // that disappears when the field is empty and focused.
+        label = { Text(stringResource(R.string.editor_title_hint)) },
         textStyle = MaterialTheme.typography.headlineSmall,
         keyboardOptions = KeyboardOptions(
             capitalization = KeyboardCapitalization.Sentences,

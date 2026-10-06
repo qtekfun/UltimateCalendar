@@ -31,7 +31,9 @@ internal object SemanticsAudit {
         out: MutableList<String>
     ) {
         val config = node.config
-        if (config.getOrNull(SemanticsProperties.HideFromAccessibility) == null) {
+        // Nodes with no bounds are not on screen (scrolled away, collapsed): nobody can reach them.
+        val onScreen = !node.boundsInRoot.isEmpty
+        if (onScreen && config.getOrNull(SemanticsProperties.HideFromAccessibility) == null) {
             val actionable = config.contains(SemanticsActions.OnClick) ||
                 config.contains(SemanticsProperties.ToggleableState)
             val words = words(node)
@@ -40,8 +42,10 @@ internal object SemanticsAudit {
                 out += "silent actionable node $label"
             }
             if (actionable && !allowSmall) {
-                val width = node.size.width / density.density
-                val height = node.size.height / density.density
+                // The touch bounds are what Android exposes to accessibility services: Compose widens
+                // small Material controls (a 40 dp icon button) to the 48 dp minimum.
+                val width = node.touchBoundsInRoot.width / density.density
+                val height = node.touchBoundsInRoot.height / density.density
                 if (width < MIN_DP || height < MIN_DP) {
                     out += "small actionable node $label: $width x $height dp"
                 }

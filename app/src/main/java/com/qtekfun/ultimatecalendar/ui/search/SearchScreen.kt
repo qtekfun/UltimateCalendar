@@ -156,7 +156,7 @@ private fun SearchField(text: String, callbacks: SearchCallbacks) {
             value = text,
             onValueChange = callbacks.onTextChange,
             modifier = Modifier.weight(1f).focusRequester(focus),
-            placeholder = { Text(stringResource(R.string.search_hint)) },
+            label = { Text(stringResource(R.string.search_hint)) },
             singleLine = true,
             trailingIcon = if (text.isNotEmpty()) {
                 {

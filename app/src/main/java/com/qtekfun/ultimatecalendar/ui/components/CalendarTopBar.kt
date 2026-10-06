@@ -39,6 +39,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -160,7 +161,9 @@ private fun InvitationsTray(count: Int, onClick: () -> Unit) {
         BadgedBox(
             badge = {
                 if (count > 0) {
-                    Badge { Text(if (count > MAX_BADGE) "$MAX_BADGE+" else count.toString()) }
+                    Badge(Modifier.clearAndSetSemantics {}) {
+                        Text(if (count > MAX_BADGE) "$MAX_BADGE+" else count.toString())
+                    }
                 }
             }
         ) {
