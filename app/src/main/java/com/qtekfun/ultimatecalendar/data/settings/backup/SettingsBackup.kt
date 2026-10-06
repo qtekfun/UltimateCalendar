@@ -20,7 +20,7 @@ import kotlinx.serialization.json.Json
 const val BACKUP_FORMAT = 1
 
 /** Version of what is inside; settings added later are optional, so older backups still open. */
-const val BACKUP_CONTENT_VERSION = 2
+const val BACKUP_CONTENT_VERSION = 3
 
 private const val APP_ID = "UltimateCalendar"
 
@@ -30,16 +30,19 @@ data class BackupFile(val app: String = APP_ID, val format: Int = BACKUP_FORMAT,
 
 /**
  * What is sealed: the settings, what only lives on this phone for each calendar (version 2; a
- * version 1 backup has none) and, if the user chose it (T37), the CalDAV session beside them.
+ * version 1 backup has none), the calendar subscriptions with their addresses (version 3; older
+ * backups have none) and, if the user chose it (T37), the CalDAV session beside them.
  */
 @Serializable
 data class BackupContent(
     val version: Int = BACKUP_CONTENT_VERSION,
     val settings: BackupSettings,
     val calendars: List<BackupCalendar> = emptyList(),
+    val subscriptions: List<BackupSubscription> = emptyList(),
     /**
-     * The CalDAV sign-in, only if the user chose to include it (T37). Optional, so the content
-     * version stays 2: an older app ignores the field, and a backup without it restores as before.
+     * The CalDAV sign-in, only if the user chose to include it (T37). Optional, so it needs no
+     * new content version: an older app ignores the field, and a backup without it restores as
+     * before.
      */
     val caldav: BackupSession? = null
 )
@@ -87,12 +90,14 @@ data class BackupSettings(
 /** How a restore went. */
 sealed interface RestoreResult {
     /**
-     * The settings are back; [calendars] are the calendar overrides still to be applied and
-     * [session] is the CalDAV sign-in the backup carried, still to be checked against its server
-     * by [CalDavSessionBackup] (null when the backup has none).
+     * The settings are back; [subscriptions] are still to be subscribed to and [calendars] are the
+     * calendar overrides still to be applied (after the subscriptions, whose calendars they may
+     * name). [session] is the CalDAV sign-in the backup carried, still to be checked against its
+     * server by [CalDavSessionBackup] (null when the backup has none).
      */
     data class Restored(
         val calendars: List<BackupCalendar> = emptyList(),
+        val subscriptions: List<BackupSubscription> = emptyList(),
         val session: BackupSession? = null
     ) : RestoreResult
 
@@ -120,18 +125,21 @@ class SettingsBackup @Inject constructor(private val settings: SettingsRepositor
     }
 
     /**
-     * The backup file as text, with the local overrides of [calendars] beside the settings. The
-     * passphrase must pass [SettingsRules.isPassphraseAcceptable].
+     * The backup file as text, with the local overrides of [calendars] and the [subscriptions]
+     * (their addresses can be secrets, which is why they are only ever inside the sealed content)
+     * beside the settings. The passphrase must pass [SettingsRules.isPassphraseAcceptable].
      */
     fun export(
         passphrase: CharArray,
         calendars: List<BackupCalendar> = emptyList(),
+        subscriptions: List<BackupSubscription> = emptyList(),
         session: BackupSession? = null
     ): String {
         require(SettingsRules.isPassphraseAcceptable(passphrase)) { "Passphrase too short" }
         val content = BackupContent(
             settings = settings.current().toBackup(),
             calendars = calendars,
+            subscriptions = subscriptions,
             caldav = session
         )
         val sealed = BackupCrypto.seal(
@@ -167,7 +175,7 @@ class SettingsBackup @Inject constructor(private val settings: SettingsRepositor
 
             else -> {
                 settings.update { content.settings.applyTo(it) }
-                RestoreResult.Restored(content.calendars, content.caldav)
+                RestoreResult.Restored(content.calendars, content.subscriptions, content.caldav)
             }
         }
     }

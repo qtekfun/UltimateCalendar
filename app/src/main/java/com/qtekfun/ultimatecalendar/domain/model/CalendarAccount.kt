@@ -14,9 +14,14 @@ data class CalendarAccount(val name: String, val type: String) {
     /** The app's own CalDAV account (RF-12): not an Android account, the app syncs it itself. */
     val isCalDav: Boolean get() = type == CALDAV_TYPE
 
+    /** The group of the calendars the user subscribed to by address (T39): read only, no sync. */
+    val isSubscription: Boolean get() = type == SUBSCRIPTION_TYPE
+
     companion object {
         private const val LOCAL_TYPE = "LOCAL"
 
         const val CALDAV_TYPE = "com.qtekfun.ultimatecalendar.caldav"
+
+        const val SUBSCRIPTION_TYPE = "com.qtekfun.ultimatecalendar.subscription"
     }
 }

@@ -38,8 +38,32 @@ object IcsEvents {
         calendarId: CalendarId,
         eventId: EventId,
         floating: ZoneId
+    ): IcsEvent? = assemble(VeventMapper.read(calendar, floating), calendarId, eventId)
+
+    /**
+     * Every event of a feed that holds many (a subscription): the `VEVENT`s are grouped by UID,
+     * each group being one series, in the order the UIDs first appear. An event without a UID
+     * is its own series. [eventId] is given to all of them; the store decides the real ids.
+     */
+    fun readAll(
+        calendar: IcsComponent,
+        calendarId: CalendarId,
+        eventId: EventId,
+        floating: ZoneId
+    ): List<IcsEvent> {
+        val groups = LinkedHashMap<String, MutableList<VeventFields>>()
+        VeventMapper.read(calendar, floating).forEachIndexed { index, fields ->
+            val key = fields.uid.ifEmpty { "\u0000$index" }
+            groups.getOrPut(key) { mutableListOf() }.add(fields)
+        }
+        return groups.values.mapNotNull { assemble(it, calendarId, eventId) }
+    }
+
+    private fun assemble(
+        all: List<VeventFields>,
+        calendarId: CalendarId,
+        eventId: EventId
     ): IcsEvent? {
-        val all = VeventMapper.read(calendar, floating)
         val master = all.firstOrNull { it.recurrenceId == null } ?: all.firstOrNull() ?: return null
         val overrides = all.filter { it !== master && it.recurrenceId != null }.map {
             OccurrenceOverride(

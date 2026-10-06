@@ -6,10 +6,12 @@ package com.qtekfun.ultimatecalendar.sync
 import androidx.work.ListenableWorker
 import com.qtekfun.ultimatecalendar.data.auth.AccountSession
 import com.qtekfun.ultimatecalendar.data.auth.SignedInAccount
+import com.qtekfun.ultimatecalendar.data.subscriptions.SubscriptionScheduler
 import com.qtekfun.ultimatecalendar.data.sync.CompositeSyncRequester
 import com.qtekfun.ultimatecalendar.data.sync.SyncReason
 import com.qtekfun.ultimatecalendar.data.sync.SyncRequests
 import com.qtekfun.ultimatecalendar.domain.model.CalendarAccount
+import com.qtekfun.ultimatecalendar.domain.subscriptions.SchedulePlan
 import com.qtekfun.ultimatecalendar.sync.engine.SyncEngine
 import com.qtekfun.ultimatecalendar.sync.engine.SyncOutcome
 import com.qtekfun.ultimatecalendar.sync.queue.ProcessResult
@@ -151,7 +153,10 @@ class CompositeSyncRequesterTest {
     private val cloud = CalendarAccount("ana@cloud.example.com", CalendarAccount.CALDAV_TYPE)
     private val provider = mockk<ThrottledSyncRequester>()
     private val scheduler = RecordingCalDavScheduler()
-    private val requester = CompositeSyncRequester(provider, scheduler)
+    private val feeds = RecordingSubscriptionScheduler()
+    private val feedAccount =
+        CalendarAccount("subscriptions", CalendarAccount.SUBSCRIPTION_TYPE)
+    private val requester = CompositeSyncRequester(provider, scheduler, feeds)
 
     @Test
     fun `android accounts go to the system, the CalDAV account syncs when the user asks`() =
@@ -189,4 +194,52 @@ class CompositeSyncRequesterTest {
             assertEquals(emptyList<String>(), scheduler.calls)
             coVerify(exactly = 1) { provider.requestSync(any(), any()) }
         }
+
+    @Test
+    fun `subscriptions refresh when the user asks and are never handed to the system`() = runTest {
+        coEvery { provider.requestSync(setOf(google), SyncReason.MANUAL) } returns
+            SyncRequests(1, 0)
+
+        val result = requester.requestSync(setOf(google, feedAccount), SyncReason.MANUAL)
+
+        assertEquals(SyncRequests(2, 0), result)
+        assertEquals(1, feeds.refreshes)
+        assertEquals(emptyList<String>(), scheduler.calls)
+    }
+
+    @Test
+    fun `a background check leaves the subscriptions to their own periodic work`() = runTest {
+        coEvery { provider.requestSync(emptySet(), SyncReason.BACKGROUND) } returns
+            SyncRequests(0, 0)
+
+        assertEquals(
+            SyncRequests(0, 0),
+            requester.requestSync(setOf(feedAccount), SyncReason.BACKGROUND)
+        )
+        assertEquals(0, feeds.refreshes)
+    }
+
+    @Test
+    fun `CalDAV and subscriptions both start when both are asked`() = runTest {
+        coEvery { provider.requestSync(emptySet(), SyncReason.MANUAL) } returns SyncRequests(0, 0)
+
+        val result = requester.requestSync(setOf(cloud, feedAccount), SyncReason.MANUAL)
+
+        assertEquals(SyncRequests(2, 0), result)
+        assertEquals(listOf("now"), scheduler.calls)
+        assertEquals(1, feeds.refreshes)
+    }
+}
+
+class RecordingSubscriptionScheduler : SubscriptionScheduler {
+    val plans = mutableListOf<SchedulePlan>()
+    var refreshes = 0
+
+    override fun apply(plan: SchedulePlan) {
+        plans += plan
+    }
+
+    override fun refreshNow() {
+        refreshes++
+    }
 }

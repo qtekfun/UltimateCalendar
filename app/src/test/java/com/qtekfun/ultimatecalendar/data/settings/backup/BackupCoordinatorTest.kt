@@ -17,12 +17,17 @@ import com.qtekfun.ultimatecalendar.data.settings.AppSettings
 import com.qtekfun.ultimatecalendar.data.settings.FakePreferences
 import com.qtekfun.ultimatecalendar.data.settings.SettingsRepository
 import com.qtekfun.ultimatecalendar.data.settings.ThemeMode
+import com.qtekfun.ultimatecalendar.data.subscriptions.RestoredSubscriptions
+import com.qtekfun.ultimatecalendar.data.subscriptions.SubscriptionRepository
 import com.qtekfun.ultimatecalendar.data.source.FakeCalendarSource
 import com.qtekfun.ultimatecalendar.domain.model.CalendarAccess
 import com.qtekfun.ultimatecalendar.domain.model.CalendarAccount
 import com.qtekfun.ultimatecalendar.domain.model.CalendarId
 import com.qtekfun.ultimatecalendar.domain.model.CalendarInfo
 import com.qtekfun.ultimatecalendar.sync.engine.FakeCalDav
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import mockwebserver3.MockWebServer
@@ -57,6 +62,10 @@ class BackupCoordinatorTest {
         val provider =
             CalDavProvider(OkHttpClient(), { session.credentials() }, Dispatchers.Unconfined)
         val sessions = CalDavSessionBackup(session, provider, Dispatchers.Unconfined)
+        val feeds = mockk<SubscriptionRepository> {
+            coEvery { forBackup() } returns emptyList()
+            coEvery { restore(any()) } returns RestoredSubscriptions(added = 0, refused = 0)
+        }
         val coordinator = BackupCoordinator(
             SettingsBackup(settings),
             CalendarOverridesBackup(
@@ -75,6 +84,7 @@ class BackupCoordinatorTest {
                 Dispatchers.Unconfined
             ),
             sessions,
+            feeds,
             Dispatchers.Unconfined
         )
 
@@ -206,11 +216,29 @@ class BackupCoordinatorTest {
                     Dispatchers.Unconfined
                 ),
                 new.sessions,
+                new.feeds,
                 Dispatchers.Unconfined
             )
 
             val outcome = bare.restore(file, passphrase)
 
             assertEquals(1, outcome.missingCalendars)
+        }
+
+    @Test
+    fun `subscriptions travel with the backup, and refused ones are counted with the missing calendars`() =
+        runBlocking {
+            val feed = BackupSubscription("Work", "https://cal.example.com/work.ics")
+            val old = Phone()
+            coEvery { old.feeds.forBackup() } returns listOf(feed)
+            val file = old.coordinator.export(passphrase, includeSession = false)
+            val new = Phone()
+            coEvery { new.feeds.restore(listOf(feed)) } returns
+                RestoredSubscriptions(added = 0, refused = 2)
+
+            val outcome = new.coordinator.restore(file, passphrase)
+
+            assertEquals(2, outcome.missingCalendars)
+            coVerify { new.feeds.restore(listOf(feed)) }
         }
 }

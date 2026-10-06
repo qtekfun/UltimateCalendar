@@ -85,7 +85,6 @@ class SettingsBackupSessionTest {
 
         val content = json.decodeFromString<BackupContent>(plain!!.decodeToString())
 
-        assertEquals(2, BACKUP_CONTENT_VERSION)
         assertEquals(BACKUP_CONTENT_VERSION, content.version)
         assertEquals(session, content.caldav)
     }
