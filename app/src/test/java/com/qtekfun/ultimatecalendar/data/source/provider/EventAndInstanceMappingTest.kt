@@ -236,6 +236,15 @@ class InstanceMappingTest {
     }
 
     @Test
+    fun `an instance knows whether its event lists attendees`() {
+        val listed = row(Instances.HAS_ATTENDEE_DATA to 1L)
+
+        assertTrue(requireNotNull(InstanceMapping.toInstance(listed, range)).hasAttendees)
+        assertFalse(requireNotNull(InstanceMapping.toInstance(row(), range)).hasAttendees)
+        assertTrue(Instances.HAS_ATTENDEE_DATA in InstanceMapping.projection)
+    }
+
+    @Test
     fun `a single event is not recurring`() {
         assertFalse(requireNotNull(InstanceMapping.toInstance(row(), range)).isRecurring)
     }

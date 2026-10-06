@@ -32,6 +32,16 @@ class NavState {
         newEvent = true
     }
 
+    /** Back to the shell: what a widget tap starts from. */
+    fun closeAll() {
+        search = false
+        invitations = false
+        settings = false
+        eventDetail = false
+        help = false
+        closeEditor()
+    }
+
     fun closeEditor() {
         newEvent = false
         editorRequest = null

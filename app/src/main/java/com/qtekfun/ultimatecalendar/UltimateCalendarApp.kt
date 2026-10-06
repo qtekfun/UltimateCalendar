@@ -11,11 +11,13 @@ import com.qtekfun.ultimatecalendar.notify.ReRemindCoordinator
 import com.qtekfun.ultimatecalendar.notify.ReminderCoordinator
 import com.qtekfun.ultimatecalendar.sync.InvitationCheckCoordinator
 import com.qtekfun.ultimatecalendar.sync.InvitationWorkerFactory
+import com.qtekfun.ultimatecalendar.widget.WidgetRefresher
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 @HiltAndroidApp
 class UltimateCalendarApp :
@@ -32,6 +34,9 @@ class UltimateCalendarApp :
 
     @Inject
     lateinit var invitationChecks: InvitationCheckCoordinator
+
+    @Inject
+    lateinit var widgets: WidgetRefresher
 
     @Inject
     lateinit var workerFactory: InvitationWorkerFactory
@@ -54,6 +59,13 @@ class UltimateCalendarApp :
         // The periodic invitation check, and the checks the provider's changes and the app
         // opening start (RF-06).
         invitationChecks.start(scope)
-        registerActivityLifecycleCallbacks(OnActivityStarted(invitationChecks::onAppOpened))
+        // The home-screen widgets follow the calendar while the process lives (T38).
+        widgets.start(scope)
+        registerActivityLifecycleCallbacks(
+            OnActivityStarted {
+                invitationChecks.onAppOpened()
+                scope.launch { widgets.refreshAll() }
+            }
+        )
     }
 }

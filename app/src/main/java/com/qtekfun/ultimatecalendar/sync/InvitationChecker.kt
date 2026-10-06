@@ -170,10 +170,11 @@ class InvitationChecker(
     /**
      * Only an event where the source says the user is an attendee can be an invitation, so the
      * rest is not read one by one (thousands of reads). The user's own aliases are not known to
-     * the source, so with aliases every event is read.
+     * the source, so with aliases every event that lists attendees is read: one without any cannot
+     * be an invitation.
      */
     private fun candidates(instances: List<EventInstance>, aliases: Set<String>) = instances
-        .filter { aliases.isNotEmpty() || it.selfStatus != null }
+        .filter { it.selfStatus != null || (aliases.isNotEmpty() && it.hasAttendees) }
         .map { it.eventId }
         .distinct()
 

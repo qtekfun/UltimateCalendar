@@ -6,6 +6,7 @@ package com.qtekfun.ultimatecalendar.ui.timegrid
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.qtekfun.ultimatecalendar.data.calendar.CalendarRepository
+import com.qtekfun.ultimatecalendar.di.IoDispatcher
 import com.qtekfun.ultimatecalendar.domain.navigation.DateRange
 import com.qtekfun.ultimatecalendar.domain.result.CalendarResult
 import com.qtekfun.ultimatecalendar.domain.timegrid.TimeGridLayout
@@ -16,12 +17,14 @@ import java.time.Clock
 import java.time.Instant
 import java.time.ZoneId
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 
 /** What one page of a day grid shows; [failed] when the events could not be read. */
@@ -33,13 +36,15 @@ data class GridNow(val instant: Instant, val zone: ZoneId)
 /**
  * Feeds the Day and 3 days views (RF-03): the page of any range of days, read from
  * [CalendarRepository.instances] and laid out by [TimeGridLayout], and the clock of the "now"
- * line. The pager asks for the pages it shows; nothing is expanded or computed in the UI.
+ * line. The layout runs off the main thread. The pager asks for the pages it shows; nothing is
+ * expanded or computed in the UI.
  */
 @HiltViewModel
 class TimeGridViewModel @Inject constructor(
     private val repository: CalendarRepository,
     private val clock: Clock,
-    private val zone: SystemZone
+    private val zone: SystemZone,
+    @IoDispatcher private val layoutDispatcher: CoroutineDispatcher
 ) : ViewModel() {
     /** The instant and zone now, renewed at every minute change. */
     val now: StateFlow<GridNow> = flow {
@@ -67,7 +72,7 @@ class TimeGridViewModel @Inject constructor(
                 TimeGridLayout.build(range, zone.current(), instances.value, colors)
             )
         }
-    }
+    }.flowOn(layoutDispatcher)
 
     private fun current() = GridNow(clock.instant(), zone.current())
 

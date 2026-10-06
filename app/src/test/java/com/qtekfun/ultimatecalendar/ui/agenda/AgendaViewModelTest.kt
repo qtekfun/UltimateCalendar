@@ -79,7 +79,7 @@ class AgendaViewModelTest {
     }
 
     private fun viewModel(repository: CalendarRepository = this.repository) =
-        AgendaViewModel(repository, clock, SystemZone { madrid })
+        AgendaViewModel(repository, clock, SystemZone { madrid }, Dispatchers.Unconfined)
 
     private suspend fun add(calendar: CalendarInfo, title: String, day: LocalDate, hour: Int = 9) =
         source.create(

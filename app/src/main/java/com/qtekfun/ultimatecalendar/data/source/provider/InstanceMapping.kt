@@ -28,6 +28,7 @@ internal object InstanceMapping {
         Instances.RDATE,
         Instances.ORIGINAL_ID,
         Instances.SELF_ATTENDEE_STATUS,
+        Instances.HAS_ATTENDEE_DATA,
         Instances.STATUS
     )
 
@@ -67,7 +68,8 @@ internal object InstanceMapping {
                 location = row.text(Instances.EVENT_LOCATION)?.ifEmpty { null },
                 color = row.int(Instances.EVENT_COLOR)?.let { CalendarMapping.opaque(it) },
                 isRecurring = EventMapping.repeats(row) || row.long(Instances.ORIGINAL_ID) != null,
-                selfStatus = selfStatusOf(row.int(Instances.SELF_ATTENDEE_STATUS))
+                selfStatus = selfStatusOf(row.int(Instances.SELF_ATTENDEE_STATUS)),
+                hasAttendees = row.flag(Instances.HAS_ATTENDEE_DATA)
             )
         } else {
             null
