@@ -136,7 +136,6 @@ class Screenshots {
     private fun captureTablet(locale: StoreLocale) {
         files.reset(locale.store, kind)
         val week = prepare(locale)
-        week.events.forEach(provider::add)
         provider.add(week.secondInvitation)
         val driver = AppDriver(compose, context, locale.locale)
         DeviceTools.shell("cmd uimode night no")
