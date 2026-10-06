@@ -14,7 +14,6 @@ import org.junit.jupiter.api.TestFactory
 
 /** The phone's time zone or clock changes: TIMEZONE_CHANGED and TIME_SET plan everything again. */
 class ClockAndZoneChangeTest {
-    private val madrid = ZoneId.of("Europe/Madrid")
     private val start = "2026-10-08T10:00:00Z"
 
     /** The all-day reminder of 10 October "a day before at 9:00" in each zone, by hand. */

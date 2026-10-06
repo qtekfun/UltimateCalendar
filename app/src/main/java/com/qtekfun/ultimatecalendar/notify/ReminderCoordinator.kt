@@ -25,6 +25,7 @@ import kotlinx.coroutines.withTimeoutOrNull
  * of the clock or time zone.
  */
 @Singleton
+@Suppress("LongParameterList")
 class ReminderCoordinator @Inject constructor(
     private val events: ReminderEventSource,
     private val settings: ReminderSettingsSource,
