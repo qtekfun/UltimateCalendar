@@ -45,6 +45,7 @@ import com.qtekfun.ultimatecalendar.ui.components.PeriodKey
 import com.qtekfun.ultimatecalendar.ui.components.WindowWidth
 import com.qtekfun.ultimatecalendar.ui.components.currentWindowWidth
 import com.qtekfun.ultimatecalendar.ui.components.rememberFabScrollState
+import com.qtekfun.ultimatecalendar.ui.month.MonthScreen
 import com.qtekfun.ultimatecalendar.ui.theme.Dimens
 import com.qtekfun.ultimatecalendar.ui.theme.Spacing
 import com.qtekfun.ultimatecalendar.ui.timegrid.TimeGridScreen
@@ -97,8 +98,7 @@ fun ShellContent(
 
             CalendarView.AGENDA -> AgendaScreen(state, actions, modifier)
 
-            // T17 replaces this with the Month view.
-            else -> ViewPlaceholder(period, state.firstDayOfWeek, actions, modifier)
+            CalendarView.MONTH -> MonthScreen(state, actions, modifier)
         }
     }
 ) {
@@ -161,37 +161,13 @@ fun ShellContent(
 }
 
 /** Views that move through their own days: the shell only fades when they are chosen. */
-private val PAGED_VIEWS = setOf(CalendarView.DAY, CalendarView.THREE_DAYS, CalendarView.AGENDA)
+private val PAGED_VIEWS = setOf(
+    CalendarView.DAY,
+    CalendarView.THREE_DAYS,
+    CalendarView.WEEK,
+    CalendarView.AGENDA,
+    CalendarView.MONTH
+)
 
 private const val BACK_SLIDE_PX = 48f
 private const val BACK_FADE = 0.3f
-
-/** Stands in for the views until T14-T17 land. */
-@Composable
-private fun ViewPlaceholder(
-    period: PeriodKey,
-    firstDayOfWeek: DayOfWeek,
-    actions: ShellActions,
-    modifier: Modifier
-) {
-    val format = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
-    val range = ViewPeriods.range(period.view, period.date, firstDayOfWeek)
-    val last = range.endExclusive.minusDays(1)
-    Column(
-        modifier.fillMaxSize().padding(Spacing.l),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(stringResource(period.view.label()), style = MaterialTheme.typography.headlineMedium)
-        Text("${range.start.format(format)} - ${last.format(format)}")
-        Text(stringResource(R.string.shell_coming_soon))
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(Spacing.s)
-        ) {
-            TextButton(onClick = actions.onPrevious) {
-                Text(stringResource(R.string.shell_previous))
-            }
-            TextButton(onClick = actions.onNext) { Text(stringResource(R.string.shell_next)) }
-        }
-    }
-}

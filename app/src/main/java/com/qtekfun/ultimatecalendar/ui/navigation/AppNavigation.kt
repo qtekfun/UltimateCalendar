@@ -12,7 +12,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.qtekfun.ultimatecalendar.R
+import com.qtekfun.ultimatecalendar.domain.detail.EventRef
 import com.qtekfun.ultimatecalendar.notify.NotificationRoute
+import com.qtekfun.ultimatecalendar.ui.detail.EventDetailScreen
 import com.qtekfun.ultimatecalendar.ui.invitations.InvitationsScreen
 import com.qtekfun.ultimatecalendar.ui.settings.SettingsScreen
 import com.qtekfun.ultimatecalendar.ui.shell.ShellActions
@@ -25,16 +27,7 @@ import com.qtekfun.ultimatecalendar.ui.shell.ShellScreen
 @Composable
 fun AppNavigation(routes: NotificationRoutes = remember { NotificationRoutes() }) {
     val nav = rememberSaveable(saver = NavState.Saver) { NavState() }
-    // A tapped notification (RF-07): the summary opens the tray, an invitation opens its detail.
-    val requested by routes.pending.collectAsStateWithLifecycle()
-    LaunchedEffect(requested) {
-        when (requested) {
-            NotificationRoute.Inbox -> nav.invitations = true
-            is NotificationRoute.Event -> nav.eventDetail = true
-            null -> return@LaunchedEffect
-        }
-        routes.consume()
-    }
+    OpenRequestedRoute(routes, nav)
     // T12: the first-run wizard (RF-01) becomes the first branch of this `when`.
     when {
         // T22: Search replaces this placeholder.
@@ -44,14 +37,31 @@ fun AppNavigation(routes: NotificationRoutes = remember { NotificationRoutes() }
         nav.newEvent -> Placeholder(R.string.shell_new_event) { nav.newEvent = false }
 
         // The detail comes before the tray, so back from the detail returns to the tray.
-        // T19: the event detail replaces this placeholder.
-        nav.eventDetail -> Placeholder(R.string.timegrid_event_detail) { nav.eventDetail = false }
+        nav.eventDetail -> {
+            val ref = nav.detailRef
+            if (ref == null) {
+                nav.eventDetail = false
+            } else {
+                // T20: the editor replaces this placeholder; it will take the occurrence.
+                EventDetailScreen(
+                    ref = ref,
+                    onBack = { nav.eventDetail = false },
+                    onEdit = {
+                        nav.eventDetail = false
+                        nav.newEvent = true
+                    }
+                )
+            }
+        }
 
         nav.invitations -> {
             BackHandler { nav.invitations = false }
             InvitationsScreen(
                 onBack = { nav.invitations = false },
-                onOpen = { nav.eventDetail = true }
+                onOpen = {
+                    nav.detailRef = it
+                    nav.eventDetail = true
+                }
             )
         }
 
@@ -70,11 +80,33 @@ fun AppNavigation(routes: NotificationRoutes = remember { NotificationRoutes() }
                 onInvitations = { nav.invitations = true },
                 onSettings = { nav.settings = true },
                 onHelp = { nav.help = true },
-                onOpenEvent = { nav.eventDetail = true },
+                onOpenEvent = {
+                    nav.detailRef = EventRef.of(it)
+                    nav.eventDetail = true
+                },
                 // T20: the editor will take the tapped time; for now it opens the same placeholder.
                 onCreateAt = { nav.newEvent = true }
             )
         )
+    }
+}
+
+/** A tapped notification (RF-07): the summary opens the tray, an invitation opens its detail. */
+@Composable
+private fun OpenRequestedRoute(routes: NotificationRoutes, nav: NavState) {
+    val requested by routes.pending.collectAsStateWithLifecycle()
+    LaunchedEffect(requested) {
+        when (val route = requested) {
+            NotificationRoute.Inbox -> nav.invitations = true
+
+            is NotificationRoute.Event -> {
+                nav.detailRef = route.ref
+                nav.eventDetail = true
+            }
+
+            null -> return@LaunchedEffect
+        }
+        routes.consume()
     }
 }
 

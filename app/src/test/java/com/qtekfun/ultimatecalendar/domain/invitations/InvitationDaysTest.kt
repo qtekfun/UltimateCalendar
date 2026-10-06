@@ -3,6 +3,7 @@
 
 package com.qtekfun.ultimatecalendar.domain.invitations
 
+import com.qtekfun.ultimatecalendar.domain.detail.EventRef
 import com.qtekfun.ultimatecalendar.domain.model.CalendarId
 import com.qtekfun.ultimatecalendar.domain.model.EventId
 import com.qtekfun.ultimatecalendar.domain.model.EventTime
@@ -116,6 +117,20 @@ class InvitationDaysTest {
         val days = InvitationDays.group(listOf(trip, timed(2, "2026-06-11T10:00:00Z")), madrid)
         assertEquals(2, days.size)
         assertEquals(listOf(trip), days[0].invitations)
+    }
+
+    @Test
+    fun `the detail opens the occurrence of the invitation, timed or all-day`() {
+        val timed = timed(7, "2026-06-10T13:00:00Z", hours = 2)
+        assertEquals(
+            EventRef(EventId(7), 1_781_096_400_000, 1_781_103_600_000, allDay = false),
+            timed.detailRef()
+        )
+        val holiday = allDay(8, "2026-06-10", days = 2)
+        assertEquals(
+            EventRef(EventId(8), 1_781_049_600_000, 1_781_222_400_000, allDay = true),
+            holiday.detailRef()
+        )
     }
 
     private val uk = Locale.UK

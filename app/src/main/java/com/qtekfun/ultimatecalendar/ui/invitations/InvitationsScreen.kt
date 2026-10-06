@@ -42,11 +42,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.qtekfun.ultimatecalendar.R
+import com.qtekfun.ultimatecalendar.domain.detail.EventRef
 import com.qtekfun.ultimatecalendar.domain.invitations.Invitation
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationAnswer
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationDay
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationKey
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationTimeText
+import com.qtekfun.ultimatecalendar.domain.invitations.detailRef
 import com.qtekfun.ultimatecalendar.domain.model.CalendarId
 import com.qtekfun.ultimatecalendar.domain.model.EventId
 import com.qtekfun.ultimatecalendar.domain.model.EventTime
@@ -74,7 +76,7 @@ import java.time.format.FormatStyle
 @Composable
 fun InvitationsScreen(
     onBack: () -> Unit,
-    onOpen: (InvitationKey) -> Unit,
+    onOpen: (EventRef) -> Unit,
     viewModel: InvitationsViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -115,7 +117,7 @@ private fun InvitationAnswer.message(): Int = when (this) {
 /** What the tray can ask of whoever shows it. */
 internal class InvitationsActions(
     val onBack: () -> Unit,
-    val onOpen: (InvitationKey) -> Unit,
+    val onOpen: (EventRef) -> Unit,
     val onAnswer: (Invitation, InvitationAnswer) -> Unit,
     val onRefresh: () -> Unit
 ) {
@@ -178,7 +180,7 @@ private fun EmptyTray() {
 @Composable
 private fun InvitationList(
     days: List<InvitationDay>,
-    onOpen: (InvitationKey) -> Unit,
+    onOpen: (EventRef) -> Unit,
     onAnswer: (Invitation, InvitationAnswer) -> Unit
 ) {
     val locale = LocalLocale.current.platformLocale
@@ -207,7 +209,7 @@ private fun InvitationList(
                 InvitationCard(
                     invitation = invitation,
                     whenText = InvitationTimeText.format(invitation.time, zone, locale),
-                    onOpen = { onOpen(invitation.key) },
+                    onOpen = { onOpen(invitation.detailRef()) },
                     onAnswer = { onAnswer(invitation, it) }
                 )
             }

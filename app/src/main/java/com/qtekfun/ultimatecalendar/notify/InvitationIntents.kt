@@ -5,6 +5,7 @@ package com.qtekfun.ultimatecalendar.notify
 
 import android.content.Context
 import android.content.Intent
+import com.qtekfun.ultimatecalendar.domain.detail.EventRef
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationAnswer
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationKey
 import com.qtekfun.ultimatecalendar.domain.model.CalendarId
@@ -16,8 +17,8 @@ sealed interface NotificationRoute {
     /** The invitation tray (the group summary). */
     data object Inbox : NotificationRoute
 
-    /** The detail of one event (one invitation). */
-    data class Event(val key: InvitationKey) : NotificationRoute
+    /** The detail of one occurrence (one invitation). */
+    data class Event(val ref: EventRef) : NotificationRoute
 }
 
 /**
@@ -31,6 +32,7 @@ object InvitationIntents {
     private const val EXTRA_EVENT = "invitation_event"
     private const val EXTRA_ANSWER = "invitation_answer"
     private const val EXTRA_INBOX = "invitation_inbox"
+    private const val EXTRA_REF = "invitation_ref"
     private const val MISSING = -1L
 
     fun open(context: Context, route: NotificationRoute): Intent =
@@ -40,7 +42,7 @@ object InvitationIntents {
             .also { intent ->
                 when (route) {
                     NotificationRoute.Inbox -> intent.putExtra(EXTRA_INBOX, true)
-                    is NotificationRoute.Event -> putKey(intent, route.key)
+                    is NotificationRoute.Event -> intent.putExtra(EXTRA_REF, route.ref.encode())
                 }
             }
 
@@ -48,7 +50,7 @@ object InvitationIntents {
     fun routeOf(intent: Intent): NotificationRoute? = when {
         intent.action != ACTION_OPEN -> null
         intent.getBooleanExtra(EXTRA_INBOX, false) -> NotificationRoute.Inbox
-        else -> keyOf(intent)?.let(NotificationRoute::Event)
+        else -> EventRef.decode(intent.getStringExtra(EXTRA_REF))?.let(NotificationRoute::Event)
     }
 
     fun answer(context: Context, key: InvitationKey, answer: InvitationAnswer): Intent =

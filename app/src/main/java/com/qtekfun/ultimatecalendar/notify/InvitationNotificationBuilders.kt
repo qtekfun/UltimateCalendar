@@ -13,6 +13,7 @@ import com.qtekfun.ultimatecalendar.domain.invitations.InvitationAnswer
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationKey
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationTimeText
 import com.qtekfun.ultimatecalendar.domain.invitations.NotificationTags
+import com.qtekfun.ultimatecalendar.domain.invitations.detailRef
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Locale
 import java.util.Objects
@@ -44,7 +45,7 @@ class InvitationNotificationBuilders @Inject constructor(
             .setContentText(details.first())
             .setSubText(invitation.organizer)
             .setStyle(NotificationCompat.BigTextStyle().bigText(details.joinToString("\n")))
-            .setContentIntent(open(NotificationRoute.Event(invitation.key)))
+            .setContentIntent(open(NotificationRoute.Event(invitation.detailRef())))
             .setCategory(NotificationCompat.CATEGORY_EVENT)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setGroup(GROUP)
