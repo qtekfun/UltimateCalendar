@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 UltimateCalendar contributors
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<resources>
+    <!-- Editor de eventos (RF-05) -->
+    <string name="editor_title_new">Nuevo evento</string>
+    <string name="editor_title_edit">Editar evento</string>
+    <string name="editor_save">Guardar</string>
+    <string name="editor_close">Cerrar sin guardar</string>
+    <string name="editor_loading">Cargando</string>
+    <string name="editor_title_hint">Añadir título</string>
+    <string name="editor_all_day">Todo el día</string>
+    <string name="editor_start_date">Fecha de inicio, %1$s</string>
+    <string name="editor_start_time">Hora de inicio, %1$s</string>
+    <string name="editor_end_date">Fecha de fin, %1$s</string>
+    <string name="editor_end_time">Hora de fin, %1$s</string>
+    <string name="editor_ok">Aceptar</string>
+    <string name="editor_cancel">Cancelar</string>
+    <string name="editor_pick_time">Elegir hora</string>
+    <string name="editor_zone">Zona horaria: %1$s</string>
+    <string name="editor_zone_title">Zona horaria</string>
+    <string name="editor_zone_search">Buscar zonas horarias</string>
+    <string name="editor_zone_none">Ninguna zona horaria coincide</string>
+    <string name="editor_zone_hint">Las horas no cambian al cambiar de zona</string>
+    <string name="editor_zone_device">%1$s (este teléfono)</string>
+    <string name="editor_location">Añadir lugar</string>
+    <string name="editor_description">Añadir descripción</string>
+    <string name="editor_calendar">Calendario: %1$s</string>
+    <string name="editor_calendar_pick">Elegir calendario</string>
+    <string name="editor_calendar_locked">Un evento se queda en su calendario</string>
+    <string name="editor_color">Color del evento: %1$s</string>
+    <string name="editor_color_pick">Elegir el color del evento</string>
+    <string name="editor_color_default">Color del calendario</string>
+    <string name="editor_color_tomato">Tomate</string>
+    <string name="editor_color_flamingo">Flamenco</string>
+    <string name="editor_color_tangerine">Mandarina</string>
+    <string name="editor_color_banana">Plátano</string>
+    <string name="editor_color_sage">Salvia</string>
+    <string name="editor_color_basil">Albahaca</string>
+    <string name="editor_color_peacock">Pavo real</string>
+    <string name="editor_color_blueberry">Arándano</string>
+    <string name="editor_color_lavender">Lavanda</string>
+    <string name="editor_color_grape">Uva</string>
+    <string name="editor_color_graphite">Grafito</string>
+    <string name="editor_availability">Mostrarme como: %1$s</string>
+    <string name="editor_busy">Ocupado</string>
+    <string name="editor_free">Libre</string>
+    <string name="editor_tentative">Provisional</string>
+
+    <!-- Avisos -->
+    <string name="editor_reminders">Avisos</string>
+    <string name="editor_add_reminder">Añadir un aviso</string>
+    <string name="editor_remove_reminder">Quitar aviso: %1$s</string>
+    <string name="editor_reminder_custom">Personalizado…</string>
+    <string name="editor_reminder_custom_title">Aviso personalizado</string>
+    <string name="editor_reminder_amount">Número</string>
+    <string name="editor_reminder_unit">Unidad</string>
+    <string name="editor_unit_minutes">Minutos</string>
+    <string name="editor_unit_hours">Horas</string>
+    <string name="editor_unit_days">Días</string>
+    <string name="editor_unit_weeks">Semanas</string>
+    <string name="editor_reminder_on_day">Ese mismo día</string>
+    <string name="editor_reminder_email">%1$s, por correo</string>
+    <string name="editor_reminder_sms">%1$s, por mensaje de texto</string>
+    <string name="editor_reminder_all_day_time">Los avisos de todo el día suenan a las %1$s (se cambia en Ajustes)</string>
+    <string name="editor_reminders_full">Un evento puede tener hasta 5 avisos</string>
+
+    <!-- Repetición -->
+    <string name="editor_repeat">Repetir: %1$s</string>
+    <string name="editor_repeat_title">Repetir</string>
+    <string name="editor_repeat_never">No se repite</string>
+    <string name="editor_repeat_daily">Todos los días</string>
+    <string name="editor_repeat_weekdays">Todos los días laborables (lun–vie)</string>
+    <string name="editor_repeat_weekly">Cada semana</string>
+    <string name="editor_repeat_biweekly">Cada 2 semanas</string>
+    <string name="editor_repeat_monthly">Cada mes</string>
+    <string name="editor_repeat_quarterly">Cada 3 meses</string>
+    <string name="editor_repeat_half_yearly">Cada 6 meses</string>
+    <string name="editor_repeat_yearly">Cada año</string>
+    <string name="editor_repeat_custom">Personalizado…</string>
+    <string name="editor_repeat_unsupported">Regla personalizada (se conserva tal cual)</string>
+    <string name="editor_custom_title">Repetición personalizada</string>
+    <string name="editor_custom_every">Repetir cada</string>
+    <string name="editor_custom_interval">Intervalo</string>
+    <string name="editor_custom_unit">Unidad</string>
+    <plurals name="editor_unit_day">
+        <item quantity="one">día</item>
+        <item quantity="many">días</item>
+        <item quantity="other">días</item>
+    </plurals>
+    <plurals name="editor_unit_week">
+        <item quantity="one">semana</item>
+        <item quantity="many">semanas</item>
+        <item quantity="other">semanas</item>
+    </plurals>
+    <plurals name="editor_unit_month">
+        <item quantity="one">mes</item>
+        <item quantity="many">meses</item>
+        <item quantity="other">meses</item>
+    </plurals>
+    <plurals name="editor_unit_year">
+        <item quantity="one">año</item>
+        <item quantity="many">años</item>
+        <item quantity="other">años</item>
+    </plurals>
+    <string name="editor_custom_on_days">Repetir los</string>
+    <string name="editor_custom_monthly_day">Cada mes el día %1$d</string>
+    <string name="editor_custom_monthly_nth">Cada mes el %1$s %2$s</string>
+    <string name="editor_ordinal_1">primer</string>
+    <string name="editor_ordinal_2">segundo</string>
+    <string name="editor_ordinal_3">tercer</string>
+    <string name="editor_ordinal_4">cuarto</string>
+    <string name="editor_ordinal_last">último</string>
+    <string name="editor_custom_ends">Termina</string>
+    <string name="editor_end_never">Nunca</string>
+    <string name="editor_end_on">El día</string>
+    <string name="editor_end_after">Después de</string>
+    <string name="editor_end_count">Número de veces</string>
+    <string name="editor_end_until_date">Último día, %1$s</string>
+    <plurals name="editor_times">
+        <item quantity="one">%d vez</item>
+        <item quantity="many">%d de veces</item>
+        <item quantity="other">%d veces</item>
+    </plurals>
+    <plurals name="editor_sum_daily">
+        <item quantity="one">Todos los días</item>
+        <item quantity="many">Cada %1$d de días</item>
+        <item quantity="other">Cada %1$d días</item>
+    </plurals>
+    <plurals name="editor_sum_weekly">
+        <item quantity="one">Cada semana: %2$s</item>
+        <item quantity="many">Cada %1$d de semanas: %2$s</item>
+        <item quantity="other">Cada %1$d semanas: %2$s</item>
+    </plurals>
+    <plurals name="editor_sum_monthly_day">
+        <item quantity="one">Cada mes el día %2$d</item>
+        <item quantity="many">Cada %1$d de meses el día %2$d</item>
+        <item quantity="other">Cada %1$d meses el día %2$d</item>
+    </plurals>
+    <plurals name="editor_sum_monthly_nth">
+        <item quantity="one">Cada mes el %2$s %3$s</item>
+        <item quantity="many">Cada %1$d de meses el %2$s %3$s</item>
+        <item quantity="other">Cada %1$d meses el %2$s %3$s</item>
+    </plurals>
+    <plurals name="editor_sum_yearly">
+        <item quantity="one">Cada año el %2$s</item>
+        <item quantity="many">Cada %1$d de años el %2$s</item>
+        <item quantity="other">Cada %1$d años el %2$s</item>
+    </plurals>
+    <string name="editor_sum_until">%1$s, hasta el %2$s</string>
+    <string name="editor_sum_count">%1$s, %2$s</string>
+
+    <!-- Invitados -->
+    <string name="editor_guests">Invitados</string>
+    <string name="editor_guest_add">Añadir invitados (correos)</string>
+    <string name="editor_guest_add_button">Añadir invitado</string>
+    <string name="editor_guest_invalid">«%1$s» no es un correo electrónico</string>
+    <string name="editor_guest_remove">Quitar invitado: %1$s</string>
+    <string name="editor_organizer">Organizador: %1$s</string>
+    <string name="editor_guests_hint">Las invitaciones las envía la cuenta del calendario, no esta aplicación.</string>
+    <string name="editor_contacts_allow">Sugerir invitados de los contactos</string>
+    <string name="editor_contacts_hint">Opcional. Los contactos solo se leen para sugerir correos mientras escribes.</string>
+    <string name="editor_guest_suggestion">Añadir a %1$s</string>
+
+    <!-- Preguntas -->
+    <string name="editor_scope_title">Editar evento repetido</string>
+    <string name="editor_scope_this">Solo este evento</string>
+    <string name="editor_scope_following">Este y los siguientes</string>
+    <string name="editor_scope_all">Todos los eventos</string>
+    <string name="editor_scope_local_note">«Solo este evento» no está disponible en calendarios del dispositivo.</string>
+    <string name="editor_discard_title">¿Descartar los cambios?</string>
+    <string name="editor_discard_text">Los cambios de este evento no se han guardado.</string>
+    <string name="editor_discard">Descartar</string>
+    <string name="editor_keep_editing">Seguir editando</string>
+
+    <!-- Problemas -->
+    <string name="editor_issue_end_before_start">El evento termina antes de empezar.</string>
+    <string name="editor_issue_repeat_before_start">La repetición termina antes de que empiece el evento.</string>
+    <string name="editor_issue_no_calendar">Elige un calendario donde guardar el evento.</string>
+    <string name="editor_error_permission">Se denegó el acceso al calendario. Permítelo en los ajustes del teléfono y vuelve a intentarlo.</string>
+    <string name="editor_error_read_only">Este calendario no permite cambios.</string>
+    <string name="editor_error_not_found">El evento o su calendario ya no existe.</string>
+    <string name="editor_error_invalid">El calendario no aceptó el evento. Revisa los campos y vuelve a intentarlo.</string>
+    <string name="editor_error_failure">No se pudo acceder al calendario. Tus cambios siguen aquí; vuelve a intentarlo.</string>
+    <string name="editor_failed_no_calendar">Ningún calendario admite eventos nuevos. Añade o activa un calendario primero.</string>
+    <string name="editor_failed_not_found">Este evento ya no existe.</string>
+    <string name="editor_failed_read_only">Este evento está en un calendario que no se puede cambiar.</string>
+    <string name="editor_failed_permission">Se denegó el acceso al calendario. Permítelo en los ajustes del teléfono.</string>
+    <string name="editor_failed_source">No se pudo leer el calendario. Inténtalo más tarde.</string>
+</resources>

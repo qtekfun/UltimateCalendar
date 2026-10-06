@@ -3,7 +3,7 @@
 
 package com.qtekfun.ultimatecalendar.domain.editor
 
-import com.qtekfun.ultimatecalendar.domain.model.CalendarId
+import com.qtekfun.ultimatecalendar.domain.model.CalendarInfo
 import com.qtekfun.ultimatecalendar.domain.model.Reminder
 import com.qtekfun.ultimatecalendar.domain.settings.SettingsRules
 import java.time.LocalDate
@@ -95,7 +95,11 @@ fun EventForm.withZone(newZone: ZoneId): EventForm = copy(
     end = existing(end, newZone)
 )
 
-fun EventForm.withCalendar(id: CalendarId): EventForm = copy(calendarId = id)
+/** Moves the event to [calendar]; a color it cannot keep there goes back to the calendar's. */
+fun EventForm.withCalendar(calendar: CalendarInfo): EventForm = copy(
+    calendarId = calendar.id,
+    color = color.takeIf { EventColorSupport.supports(calendar) }
+)
 
 fun EventForm.withReminder(reminder: Reminder): EventForm = when {
     reminder in reminders || reminders.size >= SettingsRules.MAX_REMINDERS -> this
