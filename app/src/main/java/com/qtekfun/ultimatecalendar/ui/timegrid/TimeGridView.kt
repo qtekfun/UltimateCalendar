@@ -31,6 +31,7 @@ import com.qtekfun.ultimatecalendar.domain.navigation.PeriodPages
 import com.qtekfun.ultimatecalendar.domain.navigation.ViewPeriods
 import com.qtekfun.ultimatecalendar.domain.navigation.WeekNumbers
 import com.qtekfun.ultimatecalendar.domain.timegrid.TimeScale
+import com.qtekfun.ultimatecalendar.ui.adaptive.WithAdaptiveGridScale
 import com.qtekfun.ultimatecalendar.ui.shell.ShellActions
 import com.qtekfun.ultimatecalendar.ui.shell.ShellUiState
 import com.qtekfun.ultimatecalendar.ui.theme.rememberReduceMotion
@@ -66,16 +67,18 @@ fun TimeGridScreen(
             override fun page(range: DateRange) = viewModel.page(range)
         }
     }
-    MoveFlow(moves) { editing, pending ->
-        TimeGridView(
-            state = state,
-            now = now,
-            pages = pages,
-            callbacks = GridCallbacks(actions.onOpenEvent, actions.onCreateAt, editing),
-            onSelectDate = actions.onSelectDate,
-            modifier = modifier,
-            pending = pending
-        )
+    WithAdaptiveGridScale {
+        MoveFlow(moves) { editing, pending ->
+            TimeGridView(
+                state = state,
+                now = now,
+                pages = pages,
+                callbacks = GridCallbacks(actions.onOpenEvent, actions.onCreateAt, editing),
+                onSelectDate = actions.onSelectDate,
+                modifier = modifier,
+                pending = pending
+            )
+        }
     }
 }
 

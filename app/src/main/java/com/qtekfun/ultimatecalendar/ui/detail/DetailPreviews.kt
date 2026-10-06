@@ -91,6 +91,27 @@ private fun Preview(detail: EventDetail, responding: AttendeeStatus? = null) {
     }
 }
 
+/** An unanswered invitation, the detail the adaptive previews put beside the Agenda. */
+@Composable
+internal fun InvitationDetailPreviewContent() {
+    val resources = LocalResources.current
+    val locale = LocalConfiguration.current.locales[0]
+    Column(Modifier.verticalScroll(rememberScrollState())) {
+        DetailBody(
+            EventDetails.build(
+                Invitation,
+                Calendar,
+                Invitation.time,
+                Madrid,
+                listOf("alex@example.org")
+            ),
+            DetailWords(ResourceWords(resources), locale),
+            null,
+            DetailActions()
+        )
+    }
+}
+
 @ComponentPreviews
 @Composable
 internal fun InvitationDetailPreview() {
