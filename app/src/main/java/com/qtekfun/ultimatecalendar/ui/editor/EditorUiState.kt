@@ -48,6 +48,9 @@ enum class LoadFailure {
     }
 }
 
+/** What a "dismiss" closes: a question, the save error, or the flag on the guests field. */
+enum class Dismissal { PROMPT, SAVE_ERROR, INVALID_GUEST }
+
 /** The whole state of the editor screen (RF-05). */
 sealed interface EditorUiState {
     data object Loading : EditorUiState

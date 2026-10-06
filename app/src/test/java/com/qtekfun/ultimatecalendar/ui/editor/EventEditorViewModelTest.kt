@@ -276,7 +276,7 @@ class EventEditorViewModelTest {
         model.leave()
         assertEquals(EditorPrompt.DISCARD, model.ready().prompt)
 
-        model.dismiss()
+        model.dismiss(Dismissal.PROMPT)
         assertNull(model.ready().prompt)
         assertEquals("Draft", model.ready().form.title)
 
@@ -353,7 +353,7 @@ class EventEditorViewModelTest {
         assertEquals(typed, state.form)
         assertTrue(state.canSave)
 
-        model.dismiss()
+        model.dismiss(Dismissal.SAVE_ERROR)
         assertNull(model.ready().saveError)
         assertEquals(typed, model.ready().form)
     }
@@ -502,7 +502,7 @@ class EventEditorViewModelTest {
         assertEquals("carol", model.ready().invalidGuest)
         assertEquals(2, model.ready().form.guests.size)
 
-        model.dismiss()
+        model.dismiss(Dismissal.INVALID_GUEST)
         assertNull(model.ready().invalidGuest)
     }
 
@@ -560,7 +560,7 @@ class EventEditorViewModelTest {
         val model = viewModel()
 
         model.edit { it.copy(title = "x") }
-        model.dismiss()
+        model.dismiss(Dismissal.PROMPT)
         model.save()
         model.save(RecurrenceScope.ALL)
 

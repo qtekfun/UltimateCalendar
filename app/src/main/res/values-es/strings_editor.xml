@@ -5,7 +5,6 @@
 -->
 <resources>
     <!-- Editor de eventos (RF-05) -->
-    <string name="editor_title_new">Nuevo evento</string>
     <string name="editor_title_edit">Editar evento</string>
     <string name="editor_save">Guardar</string>
     <string name="editor_close">Cerrar sin guardar</string>
@@ -23,12 +22,10 @@
     <string name="editor_zone_title">Zona horaria</string>
     <string name="editor_zone_search">Buscar zonas horarias</string>
     <string name="editor_zone_none">Ninguna zona horaria coincide</string>
-    <string name="editor_zone_hint">Las horas no cambian al cambiar de zona</string>
     <string name="editor_zone_device">%1$s (este teléfono)</string>
     <string name="editor_location">Añadir lugar</string>
     <string name="editor_description">Añadir descripción</string>
     <string name="editor_calendar">Calendario: %1$s</string>
-    <string name="editor_calendar_pick">Elegir calendario</string>
     <string name="editor_calendar_locked">Un evento se queda en su calendario</string>
     <string name="editor_color">Color del evento: %1$s</string>
     <string name="editor_color_pick">Elegir el color del evento</string>
@@ -50,13 +47,11 @@
     <string name="editor_tentative">Provisional</string>
 
     <!-- Avisos -->
-    <string name="editor_reminders">Avisos</string>
     <string name="editor_add_reminder">Añadir un aviso</string>
     <string name="editor_remove_reminder">Quitar aviso: %1$s</string>
     <string name="editor_reminder_custom">Personalizado…</string>
     <string name="editor_reminder_custom_title">Aviso personalizado</string>
     <string name="editor_reminder_amount">Número</string>
-    <string name="editor_reminder_unit">Unidad</string>
     <string name="editor_unit_minutes">Minutos</string>
     <string name="editor_unit_hours">Horas</string>
     <string name="editor_unit_days">Días</string>
@@ -69,7 +64,6 @@
 
     <!-- Repetición -->
     <string name="editor_repeat">Repetir: %1$s</string>
-    <string name="editor_repeat_title">Repetir</string>
     <string name="editor_repeat_never">No se repite</string>
     <string name="editor_repeat_daily">Todos los días</string>
     <string name="editor_repeat_weekdays">Todos los días laborables (lun–vie)</string>
@@ -118,7 +112,6 @@
     <string name="editor_end_on">El día</string>
     <string name="editor_end_after">Después de</string>
     <string name="editor_end_count">Número de veces</string>
-    <string name="editor_end_until_date">Último día, %1$s</string>
     <plurals name="editor_times">
         <item quantity="one">%d vez</item>
         <item quantity="many">%d de veces</item>
@@ -153,7 +146,6 @@
     <string name="editor_sum_count">%1$s, %2$s</string>
 
     <!-- Invitados -->
-    <string name="editor_guests">Invitados</string>
     <string name="editor_guest_add">Añadir invitados (correos)</string>
     <string name="editor_guest_add_button">Añadir invitado</string>
     <string name="editor_guest_invalid">«%1$s» no es un correo electrónico</string>

@@ -62,7 +62,7 @@ class EventSaver @Inject constructor(private val source: CalendarSource) {
                 change.event.toDraft()
             )
 
-            is SeriesChange.Split -> split(target, change)
+            is SeriesChange.Split -> split(change)
 
             // Editing never deletes or cancels anything: the splitter does not return these.
             is SeriesChange.Delete, is SeriesChange.CancelOccurrence ->
@@ -70,10 +70,7 @@ class EventSaver @Inject constructor(private val source: CalendarSource) {
         }
 
     /** The new series first, then the end of the old one; if that fails, the new one goes. */
-    private suspend fun split(
-        target: EditTarget,
-        change: SeriesChange.Split
-    ): CalendarResult<Unit> {
+    private suspend fun split(change: SeriesChange.Split): CalendarResult<Unit> {
         val created = change.newSeries?.let { source.create(it.toDraft()) }
         return when (created) {
             is CalendarResult.Failure -> created

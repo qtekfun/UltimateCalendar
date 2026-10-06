@@ -33,8 +33,9 @@ private val IconColumn = 24.dp
 
 /**
  * One line of the editor: an optional leading [icon] (decorative: the text says the rest),
- * or a [leading] composable in its place, then the [content]. With [onClick] the whole row is one 48 dp target described by
- * [description]; it grows with the font size rather than clipping.
+ * or a [leading] composable in its place, then the [content]. With [onClick] the whole row is
+ * one 48 dp target described by [description]; it grows with the font size rather than
+ * clipping.
  */
 @Composable
 internal fun EditorRow(

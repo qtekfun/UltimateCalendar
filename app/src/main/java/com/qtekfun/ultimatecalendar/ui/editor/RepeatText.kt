@@ -21,6 +21,9 @@ import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 
 private const val LAST = -1
+private const val SECOND = 2
+private const val THIRD = 3
+private const val FOURTH = 4
 
 @Composable
 internal fun presetName(preset: RepeatPreset): String = stringResource(
@@ -64,9 +67,9 @@ internal fun monthlyDayText(day: MonthlyDay): String = when (day) {
 private fun ordinalName(ordinal: Int): String = stringResource(
     when (ordinal) {
         LAST -> R.string.editor_ordinal_last
-        2 -> R.string.editor_ordinal_2
-        3 -> R.string.editor_ordinal_3
-        4 -> R.string.editor_ordinal_4
+        SECOND -> R.string.editor_ordinal_2
+        THIRD -> R.string.editor_ordinal_3
+        FOURTH -> R.string.editor_ordinal_4
         else -> R.string.editor_ordinal_1
     }
 )

@@ -36,13 +36,6 @@ import com.qtekfun.ultimatecalendar.domain.editor.withoutGuest
 import com.qtekfun.ultimatecalendar.domain.model.Attendee
 import com.qtekfun.ultimatecalendar.ui.theme.Spacing
 
-/** What the guests section asks of the editor. */
-internal data class GuestActions(
-    val onAdd: (String) -> Boolean,
-    val onType: (String) -> Unit,
-    val onContactsAnswer: (String) -> Unit
-)
-
 /**
  * The organizer (read-only), the invited people as removable rows, and a field to add more by
  * email. Contact suggestions appear only once the optional permission is granted, which the
@@ -71,6 +64,7 @@ internal fun GuestsSection(
         showIcon = state.organizer == null && state.form.guests.isEmpty(),
         onTextChange = { typed ->
             text = typed
+            if (state.invalidGuest != null) actions.onClearInvalid()
             actions.onType(typed)
             // A comma, semicolon or space ends an address, as in a pasted list.
             if (endsAnAddress(typed) && actions.onAdd(typed)) text = ""

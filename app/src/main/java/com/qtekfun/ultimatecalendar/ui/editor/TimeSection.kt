@@ -51,20 +51,23 @@ internal fun TimeSection(
     var picker by rememberSaveable { mutableStateOf<Picker?>(null) }
     AllDaySwitch(form.allDay) { value -> onChange { it.withAllDay(value) } }
     DateTimeRow(
-        date = formatDate(form.startDate),
-        time = formatTime(form.start.toLocalTime()).takeUnless { form.allDay },
-        dateDescription = R.string.editor_start_date,
-        timeDescription = R.string.editor_start_time,
-        onDate = { picker = Picker.START_DATE },
-        onTime = { picker = Picker.START_TIME }
+        date = PickerField(
+            formatDate(form.startDate),
+            R.string.editor_start_date
+        ) { picker = Picker.START_DATE },
+        time = PickerField(
+            formatTime(form.start.toLocalTime()),
+            R.string.editor_start_time
+        ) { picker = Picker.START_TIME }.takeUnless { form.allDay }
     )
     DateTimeRow(
-        date = formatDate(form.endDate),
-        time = formatTime(form.end.toLocalTime()).takeUnless { form.allDay },
-        dateDescription = R.string.editor_end_date,
-        timeDescription = R.string.editor_end_time,
-        onDate = { picker = Picker.END_DATE },
-        onTime = { picker = Picker.END_TIME }
+        date = PickerField(formatDate(form.endDate), R.string.editor_end_date) {
+            picker = Picker.END_DATE
+        },
+        time = PickerField(
+            formatTime(form.end.toLocalTime()),
+            R.string.editor_end_time
+        ) { picker = Picker.END_TIME }.takeUnless { form.allDay }
     )
     if (FormIssue.END_BEFORE_START in form.issues) {
         ProblemText(issueText(FormIssue.END_BEFORE_START))
@@ -75,29 +78,41 @@ internal fun TimeSection(
             RowText(form.zone.id.replace('_', ' '))
         }
     }
+    OpenPicker(picker, form, device, onChange) { picker = null }
+}
+
+/** The dialog of the picker that is open, if any. */
+@Composable
+private fun OpenPicker(
+    picker: Picker?,
+    form: EventForm,
+    device: ZoneId,
+    onChange: ((EventForm) -> EventForm) -> Unit,
+    onDismiss: () -> Unit
+) {
     when (picker) {
         Picker.START_DATE -> EditorDatePicker(
             form.startDate,
             { date -> onChange { it.withStartDate(date) } },
-            { picker = null }
+            onDismiss
         )
 
         Picker.END_DATE -> EditorDatePicker(
             form.endDate,
             { date -> onChange { it.withEndDate(date) } },
-            { picker = null }
+            onDismiss
         )
 
         Picker.START_TIME -> EditorTimePicker(
             form.start.toLocalTime(),
             { time -> onChange { it.withStartTime(time) } },
-            { picker = null }
+            onDismiss
         )
 
         Picker.END_TIME -> EditorTimePicker(
             form.end.toLocalTime(),
             { time -> onChange { it.withEndTime(time) } },
-            { picker = null }
+            onDismiss
         )
 
         Picker.ZONE -> ZonePicker(
@@ -105,7 +120,7 @@ internal fun TimeSection(
             device = device,
             at = form.start.toInstant(),
             onPick = { zone -> onChange { it.withZone(zone) } },
-            onDismiss = { picker = null }
+            onDismiss = onDismiss
         )
 
         null -> Unit
@@ -127,40 +142,30 @@ private fun AllDaySwitch(checked: Boolean, onChange: (Boolean) -> Unit) {
     }
 }
 
+/** The text of a date or time button, how a screen reader names it, and what it does. */
+private class PickerField(val text: String, val description: Int, val onClick: () -> Unit)
+
 /** A date and, for timed events, a time: two 48 dp targets on one line. */
 @Composable
-private fun DateTimeRow(
-    date: String,
-    time: String?,
-    dateDescription: Int,
-    timeDescription: Int,
-    onDate: () -> Unit,
-    onTime: () -> Unit
-) {
+private fun DateTimeRow(date: PickerField, time: PickerField?) {
     EditorRow(icon = null) {
-        PickerText(date, stringResource(dateDescription, date), onDate, Modifier.weight(1f))
-        if (time != null) {
-            PickerText(time, stringResource(timeDescription, time), onTime)
-        }
+        PickerText(date, Modifier.weight(1f))
+        if (time != null) PickerText(time)
     }
 }
 
 @Composable
-private fun PickerText(
-    text: String,
-    description: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
+private fun PickerText(field: PickerField, modifier: Modifier = Modifier) {
+    val description = stringResource(field.description, field.text)
     Box(
         modifier
             .heightIn(min = Dimens.minTouch)
-            .clickable(role = Role.Button, onClick = onClick)
+            .clickable(role = Role.Button, onClick = field.onClick)
             .semantics { contentDescription = description },
         contentAlignment = Alignment.CenterStart
     ) {
         Text(
-            text,
+            field.text,
             style = MaterialTheme.typography.bodyLarge,
             modifier = Modifier.padding(horizontal = Spacing.s)
         )

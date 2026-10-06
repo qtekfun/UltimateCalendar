@@ -83,20 +83,12 @@ fun EventEditorRoute(
             guests = GuestActions(
                 onAdd = viewModel::addGuests,
                 onType = viewModel::suggestGuests,
-                onContactsAnswer = viewModel::suggestGuests
+                onContactsAnswer = viewModel::suggestGuests,
+                onClearInvalid = { viewModel.dismiss(Dismissal.INVALID_GUEST) }
             )
         )
     )
 }
-
-/** Everything the screen can ask of the ViewModel; the screen itself has no state. */
-internal data class EditorActions(
-    val onEdit: ((EventForm) -> EventForm) -> Unit,
-    val onSave: (RecurrenceScope?) -> Unit,
-    val onLeave: (Boolean) -> Unit,
-    val onDismiss: () -> Unit,
-    val guests: GuestActions
-)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -112,42 +104,13 @@ internal fun EventEditorScreen(
     LaunchedEffect(error) {
         if (error != null) {
             snackbar.showSnackbar(error)
-            actions.onDismiss()
+            actions.onDismiss(Dismissal.SAVE_ERROR)
         }
     }
     Scaffold(
         modifier = modifier,
         containerColor = MaterialTheme.colorScheme.surface,
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        stringResource(
-                            if (ready?.isNew ==
-                                false
-                            ) {
-                                R.string.editor_title_edit
-                            } else {
-                                R.string.editor_title_new
-                            }
-                        ),
-                        modifier = Modifier.semantics { heading() }
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = { actions.onLeave(false) }) {
-                        Icon(Icons.Filled.Close, stringResource(R.string.editor_close))
-                    }
-                },
-                actions = {
-                    Button(
-                        onClick = { actions.onSave(null) },
-                        enabled = ready?.canSave == true,
-                        modifier = Modifier.padding(end = Spacing.s)
-                    ) { Text(stringResource(R.string.editor_save)) }
-                }
-            )
-        },
+        topBar = { EditorTopBar(ready, actions) },
         snackbarHost = { CalendarSnackbarHost(snackbar) }
     ) { padding ->
         Box(
@@ -226,5 +189,28 @@ private fun TitleField(title: String, onChange: (String) -> Unit) {
             unfocusedContainerColor = Color.Transparent
         ),
         modifier = Modifier.fillMaxWidth().padding(horizontal = Spacing.s)
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun EditorTopBar(ready: EditorUiState.Ready?, actions: EditorActions) {
+    val title = if (ready?.isNew == false) R.string.editor_title_edit else R.string.shell_new_event
+    TopAppBar(
+        title = {
+            Text(stringResource(title), modifier = Modifier.semantics { heading() })
+        },
+        navigationIcon = {
+            IconButton(onClick = { actions.onLeave(false) }) {
+                Icon(Icons.Filled.Close, stringResource(R.string.editor_close))
+            }
+        },
+        actions = {
+            Button(
+                onClick = { actions.onSave(null) },
+                enabled = ready?.canSave == true,
+                modifier = Modifier.padding(end = Spacing.s)
+            ) { Text(stringResource(R.string.editor_save)) }
+        }
     )
 }

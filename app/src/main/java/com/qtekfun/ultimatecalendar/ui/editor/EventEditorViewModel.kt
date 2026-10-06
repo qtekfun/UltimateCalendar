@@ -107,8 +107,14 @@ class EventEditorViewModel @Inject constructor(
         }
     }
 
-    /** Closes whatever question or error is showing. */
-    fun dismiss() = updateReady { it.copy(prompt = null, saveError = null, invalidGuest = null) }
+    /** Closes the question, the save error or the invalid-guest flag. */
+    fun dismiss(what: Dismissal) = updateReady {
+        when (what) {
+            Dismissal.PROMPT -> it.copy(prompt = null)
+            Dismissal.SAVE_ERROR -> it.copy(saveError = null)
+            Dismissal.INVALID_GUEST -> it.copy(invalidGuest = null)
+        }
+    }
 
     /**
      * Back, up or the system gesture. With unsaved changes it asks first; [discard] answers yes

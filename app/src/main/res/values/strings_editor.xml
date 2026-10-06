@@ -5,7 +5,6 @@
 -->
 <resources>
     <!-- Event editor (RF-05) -->
-    <string name="editor_title_new">New event</string>
     <string name="editor_title_edit">Edit event</string>
     <string name="editor_save">Save</string>
     <string name="editor_close">Close without saving</string>
@@ -23,12 +22,10 @@
     <string name="editor_zone_title">Time zone</string>
     <string name="editor_zone_search">Search time zones</string>
     <string name="editor_zone_none">No time zone matches</string>
-    <string name="editor_zone_hint">Times stay the same when you change the zone</string>
     <string name="editor_zone_device">%1$s (this phone)</string>
     <string name="editor_location">Add location</string>
     <string name="editor_description">Add description</string>
     <string name="editor_calendar">Calendar: %1$s</string>
-    <string name="editor_calendar_pick">Choose a calendar</string>
     <string name="editor_calendar_locked">An event stays in its calendar</string>
     <string name="editor_color">Event color: %1$s</string>
     <string name="editor_color_pick">Choose an event color</string>
@@ -50,13 +47,11 @@
     <string name="editor_tentative">Tentative</string>
 
     <!-- Reminders -->
-    <string name="editor_reminders">Reminders</string>
     <string name="editor_add_reminder">Add a reminder</string>
     <string name="editor_remove_reminder">Remove reminder: %1$s</string>
     <string name="editor_reminder_custom">Custom…</string>
     <string name="editor_reminder_custom_title">Custom reminder</string>
     <string name="editor_reminder_amount">Number</string>
-    <string name="editor_reminder_unit">Unit</string>
     <string name="editor_unit_minutes">Minutes</string>
     <string name="editor_unit_hours">Hours</string>
     <string name="editor_unit_days">Days</string>
@@ -69,7 +64,6 @@
 
     <!-- Repeat -->
     <string name="editor_repeat">Repeat: %1$s</string>
-    <string name="editor_repeat_title">Repeat</string>
     <string name="editor_repeat_never">Does not repeat</string>
     <string name="editor_repeat_daily">Every day</string>
     <string name="editor_repeat_weekdays">Every weekday (Mon–Fri)</string>
@@ -118,7 +112,6 @@
     <string name="editor_end_on">On date</string>
     <string name="editor_end_after">After</string>
     <string name="editor_end_count">Number of times</string>
-    <string name="editor_end_until_date">Last day, %1$s</string>
     <plurals name="editor_times">
         <item quantity="one">%d time</item>
         <item quantity="many">%d times</item>
@@ -153,7 +146,6 @@
     <string name="editor_sum_count">%1$s, %2$s</string>
 
     <!-- Guests -->
-    <string name="editor_guests">Guests</string>
     <string name="editor_guest_add">Add guests (email addresses)</string>
     <string name="editor_guest_add_button">Add guest</string>
     <string name="editor_guest_invalid">“%1$s” is not an email address</string>

@@ -18,9 +18,10 @@ import java.time.temporal.ChronoUnit
 /** Builds the form for a new event, or for an existing one. */
 object EventForms {
     private const val SLOT_MINUTES = 30L
+    private const val DEFAULT_HOUR = 9
 
     /** The time a new all-day event gets when the user turns "All day" off. */
-    private val DEFAULT_TIME = LocalTime.of(9, 0)
+    private val DEFAULT_TIME = LocalTime.of(DEFAULT_HOUR, 0)
 
     /**
      * [moment] rounded up to the next half hour (and left alone when it is on one), seconds

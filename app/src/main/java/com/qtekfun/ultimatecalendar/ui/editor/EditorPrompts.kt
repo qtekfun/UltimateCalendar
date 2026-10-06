@@ -28,12 +28,12 @@ internal fun EditorPrompts(state: EditorUiState.Ready, actions: EditorActions) {
         EditorPrompt.SCOPE -> ScopeDialog(
             scopes = state.scopes,
             onPick = actions.onSave,
-            onDismiss = actions.onDismiss
+            onDismiss = { actions.onDismiss(Dismissal.PROMPT) }
         )
 
         EditorPrompt.DISCARD -> DiscardDialog(
             onDiscard = { actions.onLeave(true) },
-            onDismiss = actions.onDismiss
+            onDismiss = { actions.onDismiss(Dismissal.PROMPT) }
         )
 
         null -> Unit

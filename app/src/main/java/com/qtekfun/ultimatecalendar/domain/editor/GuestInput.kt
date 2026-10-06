@@ -22,8 +22,16 @@ sealed interface GuestInput {
          */
         fun add(form: EventForm, text: String): GuestInput {
             val pieces = text.split(SEPARATORS).map { it.trim() }.filter { it.isNotEmpty() }
-            if (pieces.isEmpty()) return Invalid(text)
-            val addresses = pieces.map { SettingsRules.alias(it) ?: return Invalid(it) }.distinct()
+            val addresses = pieces.map { SettingsRules.alias(it) }
+            val bad = addresses.indexOf(null)
+            return when {
+                pieces.isEmpty() -> Invalid(text)
+                bad >= 0 -> Invalid(pieces[bad])
+                else -> invite(form, addresses.filterNotNull().distinct())
+            }
+        }
+
+        private fun invite(form: EventForm, addresses: List<String>): GuestInput {
             val taken = form.attendees.map { it.email } + listOfNotNull(form.organizer)
                 .map(Attendee::normalize)
             val fresh = addresses.filterNot { it in taken }
