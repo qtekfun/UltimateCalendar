@@ -218,6 +218,9 @@ class ReminderRig(
         if (to.isAfter(clock.now)) clock.now = to
     }
 
+    /** The system delivers the alarm of [reminder] (again, if it already rang). */
+    suspend fun redeliver(reminder: PlannedReminder) = ring(reminder)
+
     private suspend fun ring(reminder: PlannedReminder) {
         if (Snoozes.isSnooze(reminder.id)) {
             recovery.fireSnoozed(reminder)
@@ -280,12 +283,16 @@ class ReminderRig(
     }
 }
 
-/** Runs [body] on a phone that starts at [start] in [zone], with the app already running. */
+/**
+ * Runs [body] on a phone that starts at [start] in [zone], with the app already running unless
+ * [started] is false (a fresh install, for [ReminderRig.start] to be called by the test).
+ */
 @OptIn(ExperimentalCoroutinesApi::class)
 fun rigTest(
     start: String,
     zone: String,
     settings: ReminderSettings = ReminderSettings(),
+    started: Boolean = true,
     body: suspend ReminderRig.() -> Unit
 ) = runTest {
     val rig = ReminderRig(
@@ -294,7 +301,7 @@ fun rigTest(
         UnconfinedTestDispatcher(testScheduler),
         settings
     )
-    rig.start()
+    if (started) rig.start()
     try {
         rig.body()
     } finally {
