@@ -9,6 +9,7 @@ import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.platform.app.InstrumentationRegistry
 import com.qtekfun.ultimatecalendar.ui.MainActivity
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -39,7 +40,8 @@ class StartupTest {
     @Test
     fun firstRunShowsTheWizardThenTheApp() {
         compose.onNodeWithText("Set up UltimateCalendar").assertIsDisplayed()
-        compose.onNodeWithText("Done").performClick()
+        // The button ends a scrolling page: below the fold on a small screen.
+        compose.onNodeWithText("Done").performScrollTo().performClick()
         // The shell's "Create" button, found by its description: the grid may have scrolled to the
         // current hour already, which collapses the button to its icon.
         compose.onNodeWithContentDescription("Create").assertIsDisplayed()
