@@ -99,8 +99,9 @@ Reglas: una tarea cada vez, en su rama `feat/<tarea>`, con `./gradlew check` en 
 - [ ] **T36 `CalDavCalendarSource`**: la suite de contrato pasa con MockWebServer; planificación en el servidor para invitar y responder.
 - [ ] **T37 Login y gestión de la cuenta CalDAV** en la UI; la copia de seguridad incluye la sesión opcional.
 
-## Después del MVP (backlog, no implementar aún)
-- Widget de pantalla de inicio (agenda y mes).
-- Suscripciones `webcal`/ICS.
-- Invitaciones desde el correo (IMAP).
-- Recordar de nuevo invitaciones sin responder.
+## Fase 7 — Extras (pasan al plan el 2026-10-06, por decisión del autor; antes "Después del MVP")
+- [ ] **T38 Widget de pantalla de inicio** (agenda y mes): sin dependencias nuevas si es posible (`RemoteViews`); si se usa `androidx.glance`, comprobar la licencia (Apache-2.0) y anotarlo. Datos del `CalendarRepository`, tema claro/oscuro/AMOLED y colores dinámicos, tamaños redimensionables, toque en un evento abre el detalle y en el encabezado la app, actualización por el `ContentObserver` y por alarma a medianoche, sin red.
+  - *Verificación:* vista previa de los tamaños; pruebas de la lógica de qué se muestra; comprobado en emulador.
+- [ ] **T39 Suscripciones `webcal`/ICS de solo lectura**: añadir una URL, descargar con el cliente HTTP de T33 (HTTPS, ETag/If-Modified-Since), leer con el lector iCalendar y mostrarlas como calendario local de solo lectura (Room), refresco periódico configurable. Requiere declarar `INTERNET` y revisar `PRIVACY.md` (se coordina con T36/T37). Depende de T33 y T34.
+- [ ] **T40 Recordar de nuevo las invitaciones sin responder**: opción en Ajustes (desactivada / un día antes / una hora antes / ambas), usando el detector de T07 y el registro de T08, sin duplicar avisos. **100 % en la lógica nueva de `domain.invitations`.**
+- [ ] **T41 Invitaciones desde el correo (IMAP)**: **pendiente de confirmar con el autor antes de empezar**, porque guarda las credenciales de un buzón de correo y abre la red a un servidor más; si se hace, cifrado con Keystore, solo lectura, y `PRIVACY.md` actualizado.
