@@ -106,10 +106,18 @@ internal object EventMapping {
     )
 
     /**
+     * The columns of a new exception of a series. The provider copies the calendar and the rule
+     * from the series and refuses ("Exceptions can't overwrite ...") a `CALENDAR_ID`, a `DTEND`
+     * or a rule: the length of the occurrence goes in `DURATION`.
+     */
+    fun toExceptionValues(draft: EventDraft): ProviderRow =
+        toValues(draft, repeats = true) - Events.RRULE - Events.DTEND
+
+    /**
      * The `Events` columns that store [draft] (everything but the calendar and the organizer).
      * Absent optional fields are written as null so an update clears them.
      */
-    fun toValues(draft: EventDraft): ProviderRow {
+    fun toValues(draft: EventDraft, repeats: Boolean = draft.rrule != null): ProviderRow {
         val values = mutableMapOf<String, Any?>(
             Events.TITLE to draft.title,
             Events.EVENT_LOCATION to draft.location,
@@ -120,7 +128,7 @@ internal object EventMapping {
             Events.HAS_ALARM to if (draft.reminders.isEmpty()) 0 else 1,
             Events.HAS_ATTENDEE_DATA to if (draft.attendees.isEmpty()) 0 else 1
         )
-        values += EventTimeMapping.write(draft.time, repeats = draft.rrule != null)
+        values += EventTimeMapping.write(draft.time, repeats)
         return values
     }
 }

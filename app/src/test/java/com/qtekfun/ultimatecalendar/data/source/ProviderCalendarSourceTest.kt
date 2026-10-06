@@ -32,6 +32,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
@@ -378,10 +379,15 @@ class ProviderCalendarSourceTest {
             val exception = ops[0] as ProviderOp.InsertException
             assertEquals(1L, exception.eventId)
             assertEquals("Moved", exception.values[Events.TITLE])
-            assertEquals(null, exception.values[Events.RRULE])
+            assertFalse(
+                exception.values.keys.any {
+                    it in
+                        setOf(Events.RRULE, Events.DTEND, Events.CALENDAR_ID)
+                }
+            )
+            assertEquals("P3600S", exception.values[Events.DURATION])
             assertEquals(noon.toEpochMilli(), exception.values[Events.ORIGINAL_INSTANCE_TIME])
             assertEquals(Events.STATUS_CONFIRMED, exception.values[Events.STATUS])
-            assertEquals(OWNED, exception.values[Events.CALENDAR_ID])
             assertEquals(0, (ops[1] as ProviderOp.Insert).parentOp)
         }
 

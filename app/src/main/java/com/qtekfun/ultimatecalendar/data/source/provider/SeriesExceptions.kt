@@ -23,7 +23,7 @@ internal class SeriesExceptions(private val store: ProviderStore) {
         val originalMs = originalStart.toEpochMilli()
         val existing = store.exceptionOf(id, originalMs)
         if (existing == null && !store.hasInstance(id, originalMs)) abort(CalendarError.NotFound)
-        val values = valuesOf(series, originalMs, edit)
+        val values = valuesOf(existing, originalMs, edit)
         store.write(
             if (existing == null) {
                 listOf<ProviderOp>(ProviderOp.InsertException(id.value, values)) +
@@ -35,17 +35,16 @@ internal class SeriesExceptions(private val store: ProviderStore) {
         )
     }
 
-    private fun valuesOf(series: ProviderRow, originalMs: Long, edit: EventDraft?): ProviderRow =
-        if (edit == null) {
-            mapOf(
-                Events.STATUS to Events.STATUS_CANCELED,
-                Events.ORIGINAL_INSTANCE_TIME to originalMs
-            )
-        } else {
-            EventMapping.toValues(edit.copy(rrule = null)) + mapOf(
-                Events.CALENDAR_ID to series.long(Events.CALENDAR_ID),
-                Events.STATUS to Events.STATUS_CONFIRMED,
-                Events.ORIGINAL_INSTANCE_TIME to originalMs
-            )
+    private fun valuesOf(existing: Long?, originalMs: Long, edit: EventDraft?): ProviderRow {
+        val fields = when {
+            edit == null -> mapOf(Events.STATUS to Events.STATUS_CANCELED)
+
+            existing == null -> EventMapping.toExceptionValues(edit) +
+                (Events.STATUS to Events.STATUS_CONFIRMED)
+
+            else -> EventMapping.toValues(edit.copy(rrule = null)) - Events.RRULE +
+                (Events.STATUS to Events.STATUS_CONFIRMED)
         }
+        return fields + (Events.ORIGINAL_INSTANCE_TIME to originalMs)
+    }
 }
