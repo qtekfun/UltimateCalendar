@@ -32,20 +32,34 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.qtekfun.ultimatecalendar.R
+import com.qtekfun.ultimatecalendar.data.source.caldav.CalDavAccountState
 import com.qtekfun.ultimatecalendar.domain.settings.SettingsRules
+import com.qtekfun.ultimatecalendar.ui.account.CalDavAccountViewModel
 
 /** Settings → Backup: export to a file and restore from one (RF-11). */
 @Composable
-fun BackupSection(viewModel: BackupViewModel = viewModel()) {
+fun BackupSection(
+    viewModel: BackupViewModel = viewModel(),
+    accountModel: CalDavAccountViewModel = viewModel()
+) {
     var exporting by remember { mutableStateOf(false) }
     var passphrase by remember { mutableStateOf<CharArray?>(null) }
+    var withSession by remember { mutableStateOf(false) }
+    // The switch only makes sense with a CalDAV account to include.
+    val account by accountModel.state.collectAsStateWithLifecycle()
+    val signedIn = account.account is CalDavAccountState.SignedIn
     val create =
         rememberLauncherForActivityResult(
             ActivityResultContracts.CreateDocument("application/octet-stream")
         ) { uri ->
             val secret = passphrase
-            if (uri != null && secret != null) viewModel.export(uri, secret)
+            if (uri != null &&
+                secret != null
+            ) {
+                viewModel.export(uri, secret, withSession && signedIn)
+            }
             passphrase = null
+            withSession = false
         }
     val fileName = stringResource(R.string.backup_file_name)
     SettingsCard {
@@ -59,8 +73,10 @@ fun BackupSection(viewModel: BackupViewModel = viewModel()) {
     }
     if (exporting) {
         ExportDialog(
-            onExport = { secret ->
+            offerSession = signedIn,
+            onExport = { secret, includeSession ->
                 passphrase = secret
+                withSession = includeSession
                 exporting = false
                 create.launch(fileName)
             },
@@ -89,9 +105,15 @@ fun RestoreBackupButton(viewModel: BackupViewModel = viewModel()) {
 }
 
 @Composable
-private fun ExportDialog(onExport: (CharArray) -> Unit, onDismiss: () -> Unit) {
+private fun ExportDialog(
+    offerSession: Boolean,
+    onExport: (CharArray, Boolean) -> Unit,
+    onDismiss: () -> Unit
+) {
     var first by remember { mutableStateOf("") }
     var second by remember { mutableStateOf("") }
+    // Off by default: the app password in a file is something to choose on purpose.
+    var includeSession by remember { mutableStateOf(false) }
     val valid = SettingsRules.isPassphraseAcceptable(first.toCharArray()) && first == second
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -107,10 +129,20 @@ private fun ExportDialog(onExport: (CharArray) -> Unit, onDismiss: () -> Unit) {
                 )
                 PassphraseField(first, R.string.backup_passphrase) { first = it }
                 PassphraseField(second, R.string.backup_passphrase_repeat) { second = it }
+                if (offerSession) {
+                    SwitchRow(
+                        stringResource(R.string.backup_include_session),
+                        stringResource(R.string.backup_include_session_hint),
+                        includeSession
+                    ) { includeSession = it }
+                }
             }
         },
         confirmButton = {
-            TextButton(onClick = { onExport(first.toCharArray()) }, enabled = valid) {
+            TextButton(
+                onClick = { onExport(first.toCharArray(), offerSession && includeSession) },
+                enabled = valid
+            ) {
                 Text(stringResource(R.string.backup_export))
             }
         },

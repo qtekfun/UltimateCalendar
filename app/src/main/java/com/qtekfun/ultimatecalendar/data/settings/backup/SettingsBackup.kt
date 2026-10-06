@@ -30,13 +30,18 @@ data class BackupFile(val app: String = APP_ID, val format: Int = BACKUP_FORMAT,
 
 /**
  * What is sealed: the settings, what only lives on this phone for each calendar (version 2; a
- * version 1 backup has none) and, in phase 6, the optional CalDAV session beside them.
+ * version 1 backup has none) and, if the user chose it (T37), the CalDAV session beside them.
  */
 @Serializable
 data class BackupContent(
     val version: Int = BACKUP_CONTENT_VERSION,
     val settings: BackupSettings,
-    val calendars: List<BackupCalendar> = emptyList()
+    val calendars: List<BackupCalendar> = emptyList(),
+    /**
+     * The CalDAV sign-in, only if the user chose to include it (T37). Optional, so the content
+     * version stays 2: an older app ignores the field, and a backup without it restores as before.
+     */
+    val caldav: BackupSession? = null
 )
 
 /**
@@ -81,8 +86,15 @@ data class BackupSettings(
 
 /** How a restore went. */
 sealed interface RestoreResult {
-    /** The settings are back; [calendars] are the calendar overrides still to be applied. */
-    data class Restored(val calendars: List<BackupCalendar> = emptyList()) : RestoreResult
+    /**
+     * The settings are back; [calendars] are the calendar overrides still to be applied and
+     * [session] is the CalDAV sign-in the backup carried, still to be checked against its server
+     * by [CalDavSessionBackup] (null when the backup has none).
+     */
+    data class Restored(
+        val calendars: List<BackupCalendar> = emptyList(),
+        val session: BackupSession? = null
+    ) : RestoreResult
 
     /** The passphrase is wrong, or the file was altered: encryption cannot tell which. */
     data object WrongPassphrase : RestoreResult
@@ -98,7 +110,8 @@ sealed interface RestoreResult {
  * Exports and restores the app's settings (RF-11) to move to a new phone. The whole content is
  * encrypted with AES-GCM under a key derived from the user's passphrase. The default calendar
  * stays on its phone; the calendar overrides travel through [BackupCalendar] and are applied by
- * [CalendarOverridesBackup]; the CalDAV session joins the content in phase 6.
+ * [CalendarOverridesBackup]; the CalDAV session, if the user chose it, is sealed with them and
+ * checked against its server by [CalDavSessionBackup] on restore.
  */
 class SettingsBackup @Inject constructor(private val settings: SettingsRepository) {
     private val json = Json {
@@ -110,9 +123,17 @@ class SettingsBackup @Inject constructor(private val settings: SettingsRepositor
      * The backup file as text, with the local overrides of [calendars] beside the settings. The
      * passphrase must pass [SettingsRules.isPassphraseAcceptable].
      */
-    fun export(passphrase: CharArray, calendars: List<BackupCalendar> = emptyList()): String {
+    fun export(
+        passphrase: CharArray,
+        calendars: List<BackupCalendar> = emptyList(),
+        session: BackupSession? = null
+    ): String {
         require(SettingsRules.isPassphraseAcceptable(passphrase)) { "Passphrase too short" }
-        val content = BackupContent(settings = settings.current().toBackup(), calendars = calendars)
+        val content = BackupContent(
+            settings = settings.current().toBackup(),
+            calendars = calendars,
+            caldav = session
+        )
         val sealed = BackupCrypto.seal(
             json.encodeToString(content).toByteArray(),
             passphrase,
@@ -146,7 +167,7 @@ class SettingsBackup @Inject constructor(private val settings: SettingsRepositor
 
             else -> {
                 settings.update { content.settings.applyTo(it) }
-                RestoreResult.Restored(content.calendars)
+                RestoreResult.Restored(content.calendars, content.caldav)
             }
         }
     }
