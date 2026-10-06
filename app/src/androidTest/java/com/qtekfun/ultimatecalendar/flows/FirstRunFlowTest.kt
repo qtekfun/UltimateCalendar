@@ -17,7 +17,7 @@ class FirstRunFlowTest : FlowTest() {
     fun wizardDoesNotComeBackAfterDone() {
         launchApp()
         compose.onNodeWithText("Set up UltimateCalendar").assertIsDisplayed()
-        click("Done")
+        click("Done", scroll = true)
         waitForDescribed("Create")
 
         // A fresh start of the app, as when the user opens it the next day.

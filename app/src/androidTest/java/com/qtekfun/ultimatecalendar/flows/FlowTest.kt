@@ -106,9 +106,12 @@ abstract class FlowTest {
         return (windows + tree).joinToString("\n").take(SCREEN_DUMP_CHARS)
     }
 
-    protected fun click(text: String) {
+    /** Clicks the node with [text]; [scroll] first brings it into view (a small screen's wizard). */
+    protected fun click(text: String, scroll: Boolean = false) {
         waitForText(text)
-        compose.onNodeWithText(text).performClick()
+        val node = compose.onNodeWithText(text)
+        if (scroll) node.performScrollTo()
+        node.performClick()
     }
 
     /** Clicks the node described [description]; [scroll] first brings it into view in a scroller. */
@@ -124,14 +127,19 @@ abstract class FlowTest {
         node.performClick()
     }
 
-    protected fun waitForDescribed(description: String) =
-        waitUntil { compose.onAllNodes(hasContentDescription(description)).count() > 0 }
+    protected fun waitForDescribed(description: String, substring: Boolean = false) {
+        val matcher = hasContentDescription(description, substring = substring)
+        waitUntil { compose.onAllNodes(matcher).count() > 0 }
+    }
 
     protected fun waitForText(text: String) =
         waitUntil { compose.onAllNodesWithText(text).count() > 0 }
 
     /** The shell opens on the Week view: switches to the Agenda, which lists events as rows. */
     protected fun showAgenda() {
+        // The shell keeps its view while the app is open: after an editor, it may be there already.
+        waitForDescribed("Change view", substring = true)
+        if (compose.onAllNodes(hasContentDescription("Change view, now Agenda")).count() > 0) return
         clickDescribed("Change view, now Week")
         // The view menu is a popup; wide windows also show the views as tabs, with the same text.
         val item = hasText("Agenda") and hasAnyAncestor(isPopup())
