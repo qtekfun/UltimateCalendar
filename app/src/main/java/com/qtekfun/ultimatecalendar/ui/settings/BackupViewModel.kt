@@ -8,6 +8,7 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.qtekfun.ultimatecalendar.R
+import com.qtekfun.ultimatecalendar.data.settings.backup.CalendarOverridesBackup
 import com.qtekfun.ultimatecalendar.data.settings.backup.RestoreResult
 import com.qtekfun.ultimatecalendar.data.settings.backup.SettingsBackup
 import com.qtekfun.ultimatecalendar.di.IoDispatcher
@@ -30,6 +31,7 @@ import kotlinx.coroutines.withContext
 class BackupViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val backup: SettingsBackup,
+    private val calendarOverrides: CalendarOverridesBackup,
     @IoDispatcher private val io: CoroutineDispatcher
 ) : ViewModel() {
     private val mutableMessages = MutableSharedFlow<Int>(extraBufferCapacity = 1)
@@ -43,8 +45,9 @@ class BackupViewModel @Inject constructor(
 
     fun export(target: Uri, passphrase: CharArray) {
         viewModelScope.launch {
+            val overrides = calendarOverrides.collect()
             val written = withContext(io) {
-                val text = backup.export(passphrase)
+                val text = backup.export(passphrase, overrides)
                 runCatchingIo {
                     context.contentResolver.openOutputStream(target)?.use {
                         it.write(text.toByteArray())
@@ -80,13 +83,26 @@ class BackupViewModel @Inject constructor(
         val text = pending.value ?: return
         viewModelScope.launch {
             val result = withContext(io) { backup.restore(text, passphrase) }
+            // Calendars are matched by account and name; the ones this phone lacks are reported.
+            val missing = (result as? RestoreResult.Restored)
+                ?.let { calendarOverrides.apply(it.calendars) } ?: 0
             // A wrong passphrase leaves the dialog open to try again; anything else ends it.
             if (result != RestoreResult.WrongPassphrase) pending.value = null
             mutableMessages.tryEmit(
                 when (result) {
-                    RestoreResult.Restored -> R.string.backup_restored
+                    is RestoreResult.Restored ->
+                        if (missing >
+                            0
+                        ) {
+                            R.string.backup_restored_some_calendars
+                        } else {
+                            R.string.backup_restored
+                        }
+
                     RestoreResult.WrongPassphrase -> R.string.backup_wrong_passphrase
+
                     RestoreResult.Invalid -> R.string.backup_invalid
+
                     RestoreResult.NewerVersion -> R.string.backup_newer_version
                 }
             )

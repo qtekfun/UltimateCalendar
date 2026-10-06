@@ -37,6 +37,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.qtekfun.ultimatecalendar.R
 import com.qtekfun.ultimatecalendar.domain.navigation.CalendarView
 import com.qtekfun.ultimatecalendar.domain.navigation.ViewPeriods
+import com.qtekfun.ultimatecalendar.ui.agenda.AgendaScreen
 import com.qtekfun.ultimatecalendar.ui.components.AnimatedPeriod
 import com.qtekfun.ultimatecalendar.ui.components.CalendarSnackbarHost
 import com.qtekfun.ultimatecalendar.ui.components.CreateFab
@@ -91,9 +92,12 @@ fun ShellContent(
     content: @Composable (PeriodKey, PaddingValues) -> Unit = { period, padding ->
         val modifier = Modifier.fillMaxSize().padding(padding)
         when (period.view) {
-            CalendarView.DAY, CalendarView.THREE_DAYS -> TimeGridScreen(state, actions, modifier)
+            CalendarView.DAY, CalendarView.THREE_DAYS, CalendarView.WEEK ->
+                TimeGridScreen(state, actions, modifier)
 
-            // T14, T16 and T17 replace this with the Agenda, Week and Month views.
+            CalendarView.AGENDA -> AgendaScreen(state, actions, modifier)
+
+            // T17 replaces this with the Month view.
             else -> ViewPlaceholder(period, state.firstDayOfWeek, actions, modifier)
         }
     }
@@ -156,8 +160,8 @@ fun ShellContent(
     }
 }
 
-/** Views that swipe between their own days: the shell only fades when they are chosen. */
-private val PAGED_VIEWS = setOf(CalendarView.DAY, CalendarView.THREE_DAYS)
+/** Views that move through their own days: the shell only fades when they are chosen. */
+private val PAGED_VIEWS = setOf(CalendarView.DAY, CalendarView.THREE_DAYS, CalendarView.AGENDA)
 
 private const val BACK_SLIDE_PX = 48f
 private const val BACK_FADE = 0.3f

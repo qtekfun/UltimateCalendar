@@ -20,13 +20,13 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 
 // Invented data only.
-private val previewZone = ZoneId.of("Europe/Madrid")
-private val previewDay = LocalDate.of(2026, 3, 11)
-private const val BLUE = 0xFF3F51B5.toInt()
-private const val GREEN = 0xFF0B8043.toInt()
-private const val ORANGE = 0xFFF4511E.toInt()
+internal val previewZone = ZoneId.of("Europe/Madrid")
+internal val previewDay = LocalDate.of(2026, 3, 11)
+internal const val BLUE = 0xFF3F51B5.toInt()
+internal const val GREEN = 0xFF0B8043.toInt()
+internal const val ORANGE = 0xFFF4511E.toInt()
 
-private fun timed(
+internal fun timed(
     id: Long,
     title: String,
     from: LocalDateTime,
@@ -47,7 +47,7 @@ private fun timed(
     selfStatus = status
 )
 
-private fun allDay(id: Long, title: String, from: LocalDate, to: LocalDate) = EventInstance(
+internal fun allDay(id: Long, title: String, from: LocalDate, to: LocalDate) = EventInstance(
     eventId = EventId(id),
     calendarId = CalendarId(1),
     title = title,
@@ -55,7 +55,7 @@ private fun allDay(id: Long, title: String, from: LocalDate, to: LocalDate) = Ev
     color = GREEN
 )
 
-private fun at(day: Long, hour: Int, minute: Int = 0): LocalDateTime =
+internal fun at(day: Long, hour: Int, minute: Int = 0): LocalDateTime =
     previewDay.plusDays(day).atTime(hour, minute)
 
 private fun previewPage(days: Long): TimeGridPage {

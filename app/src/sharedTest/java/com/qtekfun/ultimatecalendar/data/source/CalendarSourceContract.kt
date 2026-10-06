@@ -32,7 +32,9 @@ class SourceUnderTest(
     val me: String get() = requireNotNull(writable.ownerEmail)
 }
 
-class Scenario(val name: String, val run: suspend SourceUnderTest.() -> Unit)
+class Scenario(val name: String, val run: suspend SourceUnderTest.() -> Unit) {
+    override fun toString() = name
+}
 
 /**
  * How every [CalendarSource] behaves. The same scenarios run against the fake in unit tests and,
@@ -201,7 +203,8 @@ object CalendarSourceContract {
         },
         Scenario("editing one occurrence changes only that one") {
             val id = source.create(draft(rrule = "FREQ=DAILY;COUNT=3")).value()
-            source.editInstance(id, noon.plusSeconds(DAY), draft("Moved")).value()
+            val second = noon.plusSeconds(DAY)
+            source.editInstance(id, second, draft("Moved", second)).value()
             val instances = source.instances(month).value()
             expectEquals(listOf("Lunch", "Moved", "Lunch"), instances.map { it.title }, "titles")
             expect(instances.all { it.isRecurring }, "still part of the series")
