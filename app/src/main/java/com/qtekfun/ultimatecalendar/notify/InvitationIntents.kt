@@ -59,10 +59,10 @@ object InvitationIntents {
 
     /** The invitation and answer of a button, or null if the intent is not a well-formed one. */
     fun answerOf(intent: Intent): Pair<InvitationKey, InvitationAnswer>? {
-        val key = keyOf(intent) ?: return null
-        val name = intent.getStringExtra(EXTRA_ANSWER) ?: return null
-        val answer = InvitationAnswer.entries.firstOrNull { it.name == name } ?: return null
-        return key to answer
+        val key = keyOf(intent)
+        val answer = InvitationAnswer.entries
+            .firstOrNull { it.name == intent.getStringExtra(EXTRA_ANSWER) }
+        return if (key == null || answer == null) null else key to answer
     }
 
     private fun putKey(intent: Intent, key: InvitationKey) {

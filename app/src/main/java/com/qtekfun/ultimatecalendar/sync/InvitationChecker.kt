@@ -77,6 +77,7 @@ class InvitationChecker(
         try {
             when (val calendars = source.calendars()) {
                 is CalendarResult.Failure -> calendars
+
                 is CalendarResult.Success -> {
                     val aliases = settings.aliases()
                     readEvents(null, aliases).map {

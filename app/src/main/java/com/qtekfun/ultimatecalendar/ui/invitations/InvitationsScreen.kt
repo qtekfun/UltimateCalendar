@@ -33,7 +33,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLocale
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -64,7 +65,6 @@ import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
-import java.util.Locale
 
 /**
  * The invitation tray (RF-06): every pending invitation of every calendar, soonest first and by
@@ -80,34 +80,30 @@ fun InvitationsScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     val undo = stringResource(R.string.cal_undo)
-    val context = LocalContext.current
+    val resources = LocalResources.current
     LaunchedEffect(viewModel) {
         viewModel.events.collect { event ->
             when (event) {
                 is InvitationsEvent.Answered -> {
-                    val text = context.getString(event.answer.message(), event.invitation.title)
+                    val text = resources.getString(event.answer.message(), event.invitation.title)
                     if (snackbar.showUndo(text, undo)) viewModel.undo(event.invitation)
                 }
 
                 InvitationsEvent.AnswerFailed ->
-                    snackbar.showSnackbar(context.getString(R.string.invitation_answer_failed))
+                    snackbar.showSnackbar(resources.getString(R.string.invitation_answer_failed))
 
                 InvitationsEvent.Gone ->
-                    snackbar.showSnackbar(context.getString(R.string.invitations_gone))
+                    snackbar.showSnackbar(resources.getString(R.string.invitations_gone))
 
                 InvitationsEvent.RefreshFailed ->
-                    snackbar.showSnackbar(context.getString(R.string.invitations_refresh_failed))
+                    snackbar.showSnackbar(resources.getString(R.string.invitations_refresh_failed))
             }
         }
     }
-    InvitationsContent(
-        state = state,
-        snackbar = snackbar,
-        onBack = onBack,
-        onOpen = onOpen,
-        onAnswer = viewModel::answer,
-        onRefresh = viewModel::refresh
-    )
+    val actions = remember(viewModel, onBack, onOpen) {
+        InvitationsActions(onBack, onOpen, viewModel::answer, viewModel::refresh)
+    }
+    InvitationsContent(state, snackbar, actions)
 }
 
 private fun InvitationAnswer.message(): Int = when (this) {
@@ -116,22 +112,31 @@ private fun InvitationAnswer.message(): Int = when (this) {
     InvitationAnswer.DECLINE -> R.string.invitations_answered_decline
 }
 
+/** What the tray can ask of whoever shows it. */
+internal class InvitationsActions(
+    val onBack: () -> Unit,
+    val onOpen: (InvitationKey) -> Unit,
+    val onAnswer: (Invitation, InvitationAnswer) -> Unit,
+    val onRefresh: () -> Unit
+) {
+    companion object {
+        val None = InvitationsActions({}, {}, { _, _ -> }, {})
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun InvitationsContent(
     state: InvitationsUiState,
     snackbar: SnackbarHostState,
-    onBack: () -> Unit,
-    onOpen: (InvitationKey) -> Unit,
-    onAnswer: (Invitation, InvitationAnswer) -> Unit,
-    onRefresh: () -> Unit
+    actions: InvitationsActions
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.shell_invitations)) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(onClick = actions.onBack) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(R.string.shell_back)
@@ -144,13 +149,13 @@ internal fun InvitationsContent(
     ) { padding ->
         PullToRefreshBox(
             isRefreshing = state.refreshing,
-            onRefresh = onRefresh,
+            onRefresh = actions.onRefresh,
             modifier = Modifier.padding(padding).fillMaxSize()
         ) {
             when {
                 state.loading -> EventListSkeleton()
                 state.days.isEmpty() -> EmptyTray()
-                else -> InvitationList(state.days, onOpen, onAnswer)
+                else -> InvitationList(state.days, actions.onOpen, actions.onAnswer)
             }
         }
     }
@@ -176,7 +181,7 @@ private fun InvitationList(
     onOpen: (InvitationKey) -> Unit,
     onAnswer: (Invitation, InvitationAnswer) -> Unit
 ) {
-    val locale = Locale.getDefault()
+    val locale = LocalLocale.current.platformLocale
     val zone = ZoneId.systemDefault()
     val dayFormat = remember(locale) { DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL) }
     LazyColumn(
@@ -229,7 +234,12 @@ private fun InvitationCard(
         )
     ) {
         Column(
-            Modifier.padding(start = Spacing.l, end = Spacing.s, top = Spacing.m, bottom = Spacing.s)
+            Modifier.padding(
+                start = Spacing.l,
+                end = Spacing.s,
+                top = Spacing.m,
+                bottom = Spacing.s
+            )
         ) {
             Text(
                 invitation.title,
@@ -278,14 +288,22 @@ private fun InvitationAnswer.label(): Int = when (this) {
     InvitationAnswer.DECLINE -> R.string.invitation_decline
 }
 
-private fun sample(id: Long, title: String, start: String, organizer: String?, place: String?) =
-    Invitation(
-        key = InvitationKey(CalendarId(1), EventId(id)),
-        title = title,
-        time = Instant.parse(start).let { EventTime.Timed(it, it.plusSeconds(HOUR), ZoneOffset.UTC) },
-        location = place,
-        organizer = organizer
-    )
+private fun sample(
+    id: Long,
+    title: String,
+    start: String,
+    organizer: String?,
+    place: String?,
+    calendar: Long = 1
+) = Invitation(
+    key = InvitationKey(CalendarId(calendar), EventId(id)),
+    title = title,
+    time = Instant.parse(start).let {
+        EventTime.Timed(it, it.plusSeconds(HOUR), ZoneOffset.UTC)
+    },
+    location = place,
+    organizer = organizer
+)
 
 private const val HOUR = 3_600L
 
@@ -299,7 +317,9 @@ private val previewDays = listOf(
     ),
     InvitationDay(
         LocalDate.parse("2026-06-12"),
-        listOf(sample(3, "Board game night", "2026-06-12T18:00:00Z", null, "Casa de Ana"))
+        listOf(
+            sample(2, "Board game night", "2026-06-12T18:00:00Z", null, "Casa de Ana", calendar = 2)
+        )
     )
 )
 
@@ -310,10 +330,7 @@ internal fun InvitationsContentPreview() {
         InvitationsContent(
             state = InvitationsUiState(days = previewDays, loading = false),
             snackbar = remember { SnackbarHostState() },
-            onBack = {},
-            onOpen = {},
-            onAnswer = { _, _ -> },
-            onRefresh = {}
+            actions = InvitationsActions.None
         )
     }
 }
@@ -325,10 +342,7 @@ internal fun InvitationsEmptyPreview() {
         InvitationsContent(
             state = InvitationsUiState(loading = false),
             snackbar = remember { SnackbarHostState() },
-            onBack = {},
-            onOpen = {},
-            onAnswer = { _, _ -> },
-            onRefresh = {}
+            actions = InvitationsActions.None
         )
     }
 }

@@ -31,9 +31,8 @@ fun interface InvitationResponses {
 
 /** [InvitationResponses] over a [CalendarSource]; it never throws. */
 @Singleton
-class SourceInvitationResponses @Inject constructor(
-    private val source: CalendarSource
-) : InvitationResponses {
+class SourceInvitationResponses @Inject constructor(private val source: CalendarSource) :
+    InvitationResponses {
     override suspend fun respond(key: InvitationKey, status: AttendeeStatus): ResponseOutcome =
         try {
             when (val result = source.respond(key.eventId, status)) {

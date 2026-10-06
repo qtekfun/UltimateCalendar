@@ -3,6 +3,7 @@
 
 package com.qtekfun.ultimatecalendar.ui
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -16,8 +17,10 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.qtekfun.ultimatecalendar.data.settings.SettingsRepository
 import com.qtekfun.ultimatecalendar.domain.firstrun.FirstRunFlag
+import com.qtekfun.ultimatecalendar.notify.InvitationIntents
 import com.qtekfun.ultimatecalendar.ui.firstrun.FirstRunHost
 import com.qtekfun.ultimatecalendar.ui.navigation.AppNavigation
+import com.qtekfun.ultimatecalendar.ui.navigation.NotificationRoutes
 import com.qtekfun.ultimatecalendar.ui.theme.UltimateCalendarTheme
 import com.qtekfun.ultimatecalendar.ui.theme.toThemeOptions
 import dagger.hilt.android.AndroidEntryPoint
@@ -32,8 +35,13 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var settings: SettingsRepository
 
+    @Inject
+    lateinit var routes: NotificationRoutes
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // A recreated activity (rotation) has already opened what the notification asked for.
+        if (savedInstanceState == null) publishRoute(intent)
         enableEdgeToEdge()
         setContent {
             val options by remember { settings.settings.map { it.toThemeOptions() } }
@@ -43,9 +51,18 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    FirstRunHost(firstRun) { AppNavigation() }
+                    FirstRunHost(firstRun) { AppNavigation(routes) }
                 }
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        publishRoute(intent)
+    }
+
+    private fun publishRoute(intent: Intent?) {
+        intent?.let(InvitationIntents::routeOf)?.let(routes::publish)
     }
 }

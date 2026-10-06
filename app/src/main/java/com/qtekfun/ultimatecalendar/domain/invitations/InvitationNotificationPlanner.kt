@@ -54,7 +54,11 @@ object InvitationNotificationPlanner {
             changes.new.forEach { add(NotificationOp.ShowInvitation(it, InvitationAlert.NEW)) }
             changes.changed.forEach { change ->
                 // With "changes" on, the changes channel tells it and the invitation only updates.
-                val alert = if (optional.changes) InvitationAlert.SILENT else InvitationAlert.CHANGED
+                val alert = if (optional.changes) {
+                    InvitationAlert.SILENT
+                } else {
+                    InvitationAlert.CHANGED
+                }
                 add(NotificationOp.ShowInvitation(change.current, alert))
                 if (optional.changes) add(NotificationOp.ShowMoved(change.current))
             }
