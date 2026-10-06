@@ -20,7 +20,8 @@ Reglas: una tarea cada vez, en su rama `feat/<tarea>`, con `./gradlew check` en 
   - *Verificación:* informe con retrasos medidos; decisión en `SPEC.md` §9.
 
 ## Fase 1 — Datos y arnés
-- [ ] **T03 Modelo de dominio**: cuenta, calendario (color, acceso, visible, propietario), evento, instancia, asistente (rol, estado), aviso, repetición. Tipos sellados para errores (`CalendarResult`). `Clock` inyectable.
+- [x] **T03 Modelo de dominio**: cuenta, calendario (color, acceso, visible, propietario), evento, instancia, asistente (rol, estado), aviso, repetición. Tipos sellados para errores (`CalendarResult`). `Clock` inyectable.
+  - *Resultado:* hecho. Modelo en `domain/model` (ids tipados, cuenta, calendario con `CalendarAccess`, `EventTime` con eventos de todo el día como fechas, evento, instancia, asistente, aviso), `CalendarResult`/`CalendarError` en `domain/result`, y `RecurrenceRule`/`RecurrenceRules` (RRULE) copiados de UltimateTasks con sus tests. El `Clock` inyectable ya está en `TimeModule` (T00). La expansión de repeticiones no se copia: es de la fase 6.
 - [ ] **T04 Abstracción `CalendarSource`** + **`FakeCalendarSource`** en memoria + **suite de contrato** `CalendarSourceContract` (leer rangos, crear, editar, borrar, responder, repeticiones, excepciones, asistentes).
   - *Verificación:* la suite pasa contra el fake.
 - [ ] **T05 `ProviderCalendarSource`**: lectura con `Instances` por rango, escritura como cliente normal (sin `CALLER_IS_SYNCADAPTER`), asistentes, avisos, excepciones (`CONTENT_EXCEPTION_URI`), `ContentObserver` como `Flow`. Respeta columnas de sincronización y propiedades extendidas ajenas.
