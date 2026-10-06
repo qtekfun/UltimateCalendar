@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 UltimateCalendar contributors
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<resources>
+    <string name="agenda_until">Hasta %1$s</string>
+    <string name="agenda_open_event">Abrir evento</string>
+    <string name="agenda_failed_title">No se pudieron leer los eventos</string>
+    <string name="agenda_failed_body">Comprueba que la app tiene permiso para leer tus calendarios.</string>
+</resources>

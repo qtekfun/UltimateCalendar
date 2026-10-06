@@ -37,6 +37,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.qtekfun.ultimatecalendar.R
 import com.qtekfun.ultimatecalendar.domain.navigation.CalendarView
 import com.qtekfun.ultimatecalendar.domain.navigation.ViewPeriods
+import com.qtekfun.ultimatecalendar.ui.agenda.AgendaScreen
 import com.qtekfun.ultimatecalendar.ui.components.AnimatedPeriod
 import com.qtekfun.ultimatecalendar.ui.components.CalendarSnackbarHost
 import com.qtekfun.ultimatecalendar.ui.components.CreateFab
@@ -95,10 +96,9 @@ fun ShellContent(
             CalendarView.DAY, CalendarView.THREE_DAYS, CalendarView.WEEK ->
                 TimeGridScreen(state, actions, modifier)
 
-            CalendarView.MONTH -> MonthScreen(state, actions, modifier)
+            CalendarView.AGENDA -> AgendaScreen(state, actions, modifier)
 
-            // T14 replaces this with the Agenda view.
-            else -> ViewPlaceholder(period, state.firstDayOfWeek, actions, modifier)
+            CalendarView.MONTH -> MonthScreen(state, actions, modifier)
         }
     }
 ) {
@@ -160,38 +160,13 @@ fun ShellContent(
     }
 }
 
-/** Views that swipe between their own days: the shell only fades when they are chosen. */
-private val PAGED_VIEWS = setOf(CalendarView.DAY, CalendarView.THREE_DAYS, CalendarView.MONTH)
+/** Views that move through their own days: the shell only fades when they are chosen. */
+private val PAGED_VIEWS = setOf(
+    CalendarView.DAY,
+    CalendarView.THREE_DAYS,
+    CalendarView.AGENDA,
+    CalendarView.MONTH
+)
 
 private const val BACK_SLIDE_PX = 48f
 private const val BACK_FADE = 0.3f
-
-/** Stands in for the views until T14-T17 land. */
-@Composable
-private fun ViewPlaceholder(
-    period: PeriodKey,
-    firstDayOfWeek: DayOfWeek,
-    actions: ShellActions,
-    modifier: Modifier
-) {
-    val format = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
-    val range = ViewPeriods.range(period.view, period.date, firstDayOfWeek)
-    val last = range.endExclusive.minusDays(1)
-    Column(
-        modifier.fillMaxSize().padding(Spacing.l),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(stringResource(period.view.label()), style = MaterialTheme.typography.headlineMedium)
-        Text("${range.start.format(format)} - ${last.format(format)}")
-        Text(stringResource(R.string.shell_coming_soon))
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(Spacing.s)
-        ) {
-            TextButton(onClick = actions.onPrevious) {
-                Text(stringResource(R.string.shell_previous))
-            }
-            TextButton(onClick = actions.onNext) { Text(stringResource(R.string.shell_next)) }
-        }
-    }
-}
