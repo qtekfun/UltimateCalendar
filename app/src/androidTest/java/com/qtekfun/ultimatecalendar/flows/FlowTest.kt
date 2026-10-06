@@ -7,7 +7,10 @@ import android.app.NotificationManager
 import android.content.Context
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.SemanticsNodeInteractionCollection
+import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasContentDescription
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isPopup
 import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
@@ -47,9 +50,12 @@ abstract class FlowTest {
 
     @Before
     fun prepareFlow() {
+        // The flag lives in the settings; the old preferences file it was migrated from is cleared
+        // so that a stale value cannot be migrated over it.
+        context.getSharedPreferences("first_run", Context.MODE_PRIVATE).edit().clear().commit()
+        context.getSharedPreferences("settings", Context.MODE_PRIVATE).edit()
+            .putBoolean("first_run_done", wizardDone).commit()
         hilt.inject()
-        context.getSharedPreferences("first_run", Context.MODE_PRIVATE).edit()
-            .putBoolean("wizard_shown", wizardDone).commit()
         calendars = LocalCalendars(context).also { it.setUp() }
     }
 
@@ -102,7 +108,10 @@ abstract class FlowTest {
     /** The shell opens on the Week view: switches to the Agenda, which lists events as rows. */
     protected fun showAgenda() {
         clickDescribed("Change view, now Week")
-        click("Agenda")
+        // The view menu is a popup; wide windows also show the views as tabs, with the same text.
+        val item = hasText("Agenda") and hasAnyAncestor(isPopup())
+        waitUntil { compose.onAllNodes(item).count() > 0 }
+        compose.onNode(item).performClick()
     }
 
     /** The agenda rows of the events titled [title] (their description starts with the title). */
