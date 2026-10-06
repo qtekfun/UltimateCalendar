@@ -39,8 +39,8 @@ class SettingsBackupTest {
         defaultAllDayReminders = listOf(0, 1440),
         inviteCheck = InviteCheckInterval.EVERY_15,
         ownEmails = listOf("ana@example.com"),
-        notifyChanges = false,
-        notifyCancellations = false,
+        notifyChanges = true,
+        notifyCancellations = true,
         missedWindowHours = 6,
         alarmClock = true,
         robustMode = true,
@@ -179,13 +179,13 @@ class SettingsBackupTest {
 
     @Test
     fun `an older backup with fewer settings keeps the rest as it was`() {
-        newPhone.update { it.copy(notifyChanges = false, ownEmails = listOf("keep@x.org")) }
+        newPhone.update { it.copy(notifyChanges = true, ownEmails = listOf("keep@x.org")) }
         val older = fileWith("{\"version\":1,\"settings\":{\"theme\":\"LIGHT\",\"amoled\":true}}")
         assertEquals(RestoreResult.Restored(), restorer().restore(older, passphrase))
         val settings = newPhone.current()
         assertEquals(ThemeMode.LIGHT, settings.theme)
         assertTrue(settings.amoled)
-        assertFalse(settings.notifyChanges)
+        assertTrue(settings.notifyChanges)
         assertEquals(listOf("keep@x.org"), settings.ownEmails)
     }
 
