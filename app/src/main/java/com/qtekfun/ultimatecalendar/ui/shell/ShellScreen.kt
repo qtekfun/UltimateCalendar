@@ -44,6 +44,7 @@ import com.qtekfun.ultimatecalendar.ui.components.PeriodKey
 import com.qtekfun.ultimatecalendar.ui.components.WindowWidth
 import com.qtekfun.ultimatecalendar.ui.components.currentWindowWidth
 import com.qtekfun.ultimatecalendar.ui.components.rememberFabScrollState
+import com.qtekfun.ultimatecalendar.ui.month.MonthScreen
 import com.qtekfun.ultimatecalendar.ui.theme.Dimens
 import com.qtekfun.ultimatecalendar.ui.theme.Spacing
 import com.qtekfun.ultimatecalendar.ui.timegrid.TimeGridScreen
@@ -93,7 +94,9 @@ fun ShellContent(
         when (period.view) {
             CalendarView.DAY, CalendarView.THREE_DAYS -> TimeGridScreen(state, actions, modifier)
 
-            // T14, T16 and T17 replace this with the Agenda, Week and Month views.
+            CalendarView.MONTH -> MonthScreen(state, actions, modifier)
+
+            // T14 and T16 replace this with the Agenda and Week views.
             else -> ViewPlaceholder(period, state.firstDayOfWeek, actions, modifier)
         }
     }
@@ -157,7 +160,7 @@ fun ShellContent(
 }
 
 /** Views that swipe between their own days: the shell only fades when they are chosen. */
-private val PAGED_VIEWS = setOf(CalendarView.DAY, CalendarView.THREE_DAYS)
+private val PAGED_VIEWS = setOf(CalendarView.DAY, CalendarView.THREE_DAYS, CalendarView.MONTH)
 
 private const val BACK_SLIDE_PX = 48f
 private const val BACK_FADE = 0.3f
