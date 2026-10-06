@@ -1,0 +1,72 @@
+// SPDX-FileCopyrightText: 2026 UltimateCalendar contributors
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+package com.qtekfun.ultimatecalendar.data.calendar
+
+import com.qtekfun.ultimatecalendar.data.source.CalendarSource
+import com.qtekfun.ultimatecalendar.data.source.SeriesChanges
+import com.qtekfun.ultimatecalendar.domain.editor.EditTarget
+import com.qtekfun.ultimatecalendar.domain.model.EventDraft
+import com.qtekfun.ultimatecalendar.domain.model.TimeRange
+import com.qtekfun.ultimatecalendar.domain.recurrence.RecurrenceRules
+import com.qtekfun.ultimatecalendar.domain.recurrence.RecurrenceScope
+import com.qtekfun.ultimatecalendar.domain.recurrence.RecurrenceSplitter
+import com.qtekfun.ultimatecalendar.domain.result.CalendarResult
+import java.time.ZoneOffset
+import javax.inject.Inject
+
+/**
+ * Stores what the event editor produced (RF-05). A new event is one `create`; an edit of a
+ * repeating event is decided by [RecurrenceSplitter] and carried out here with the primitives of
+ * the [CalendarSource] by [SeriesChanges], which puts the series back when a split fails
+ * halfway.
+ */
+class EventSaver @Inject constructor(private val source: CalendarSource) {
+    suspend fun create(draft: EventDraft): CalendarResult<Unit> = source.create(draft).map { }
+
+    /**
+     * Saves [draft] over the event in [target]. A repeating event is changed for [scope] only
+     * (all of it when null); a single event ignores it.
+     */
+    suspend fun update(
+        target: EditTarget,
+        draft: EventDraft,
+        scope: RecurrenceScope?
+    ): CalendarResult<Unit> {
+        val master = target.master
+        val edited = draft.toEvent(master.id, master.organizer)
+        return if (!master.isRecurring) {
+            source.update(edited)
+        } else {
+            val chosen = scope ?: RecurrenceScope.ALL
+            val before = occurrencesBefore(target, chosen)
+            when (
+                val decided =
+                    RecurrenceSplitter.edit(master, target.occurrence, edited, chosen, before)
+            ) {
+                is CalendarResult.Success -> SeriesChanges.apply(source, master, decided.value)
+                is CalendarResult.Failure -> decided
+            }
+        }
+    }
+
+    /**
+     * How many occurrences come before the one being edited, which a split needs to carry a
+     * `COUNT` over to the new series. Read from the source (never expanded here) and only when
+     * the rule counts and the edit splits the series.
+     */
+    private suspend fun occurrencesBefore(target: EditTarget, scope: RecurrenceScope): Int {
+        val master = target.master
+        val counted = master.rrule?.let { RecurrenceRules.parse(it)?.count } != null
+        val first = master.time.startIn(ZoneOffset.UTC)
+        val at = target.occurrence.startIn(ZoneOffset.UTC)
+        return if (scope == RecurrenceScope.THIS_AND_FOLLOWING && counted && at.isAfter(first)) {
+            source.instances(TimeRange(first, at), setOf(master.calendarId)).getOrNull()
+                .orEmpty().count {
+                    it.eventId == master.id && it.time.startIn(ZoneOffset.UTC).isBefore(at)
+                }
+        } else {
+            0
+        }
+    }
+}

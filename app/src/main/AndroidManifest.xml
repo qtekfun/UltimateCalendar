@@ -11,6 +11,12 @@
     <uses-permission android:name="android.permission.WRITE_CALENDAR" />
 
     <!--
+      Optional (RF-05): asked only when the user taps to suggest guests from their contacts;
+      without it the guests field works with typed addresses. Never uploaded, never stored.
+    -->
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+
+    <!--
       Other calendar apps that raise their own reminders (RF-07): the wizard tells the user how
       to turn those off. Only these packages are visible to the app; it never lists the rest.
       Keep in step with OtherCalendarApps.KNOWN (a unit test checks it).
