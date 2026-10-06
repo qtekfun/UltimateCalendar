@@ -15,6 +15,9 @@ import com.qtekfun.ultimatecalendar.domain.model.TimeRange
 import com.qtekfun.ultimatecalendar.domain.recurrence.RecurrenceRules
 import com.qtekfun.ultimatecalendar.domain.result.CalendarError
 import com.qtekfun.ultimatecalendar.domain.result.CalendarResult
+import com.qtekfun.ultimatecalendar.domain.search.SearchMatcher
+import com.qtekfun.ultimatecalendar.domain.search.SearchQuery
+import com.qtekfun.ultimatecalendar.domain.search.SearchableEvent
 import java.time.Instant
 import java.time.ZoneOffset
 import kotlinx.coroutines.flow.Flow
@@ -49,6 +52,20 @@ class FakeCalendarSource(calendars: List<CalendarInfo> = emptyList()) : Calendar
             .filter { calendarIds == null || it.calendarId in calendarIds }
             .flatMap { instancesOf(it, range) }
             .sortedBy { it.time.startIn(ZoneOffset.UTC) }
+        return CalendarResult.Success(found)
+    }
+
+    override suspend fun search(
+        query: String,
+        calendarIds: Set<CalendarId>?,
+        range: TimeRange?
+    ): CalendarResult<List<SearchableEvent>> {
+        val words = SearchQuery.of(query)
+        val found = events.values
+            .filter { calendarIds == null || it.calendarId in calendarIds }
+            .filter { range == null || instancesOf(it, range).isNotEmpty() }
+            .map { SearchableEvent.of(it) }
+            .filter { SearchMatcher.match(words, it) != null }
         return CalendarResult.Success(found)
     }
 

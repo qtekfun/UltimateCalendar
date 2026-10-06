@@ -16,6 +16,7 @@ import com.qtekfun.ultimatecalendar.domain.detail.EventRef
 import com.qtekfun.ultimatecalendar.notify.NotificationRoute
 import com.qtekfun.ultimatecalendar.ui.detail.EventDetailScreen
 import com.qtekfun.ultimatecalendar.ui.invitations.InvitationsScreen
+import com.qtekfun.ultimatecalendar.ui.search.SearchScreen
 import com.qtekfun.ultimatecalendar.ui.settings.SettingsScreen
 import com.qtekfun.ultimatecalendar.ui.shell.ShellActions
 import com.qtekfun.ultimatecalendar.ui.shell.ShellScreen
@@ -30,8 +31,14 @@ fun AppNavigation(routes: NotificationRoutes = remember { NotificationRoutes() }
     OpenRequestedRoute(routes, nav)
     // T12: the first-run wizard (RF-01) becomes the first branch of this `when`.
     when {
-        // T22: Search replaces this placeholder.
-        nav.search -> Placeholder(R.string.shell_search) { nav.search = false }
+        // Search stays under what opens from it (an event's detail, the editor): back returns here.
+        nav.search && !nav.eventDetail && !nav.newEvent -> SearchScreen(
+            onBack = { nav.search = false },
+            onOpenEvent = {
+                nav.detailRef = EventRef.of(it)
+                nav.eventDetail = true
+            }
+        )
 
         // T20: the event editor replaces this placeholder.
         nav.newEvent -> Placeholder(R.string.shell_new_event) { nav.newEvent = false }
