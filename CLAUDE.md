@@ -10,7 +10,7 @@ Lee siempre `SPEC.md` (qué construir) y `PLAN.md` (en qué orden) antes de empe
 ## Identidad del proyecto
 - Nombre: **UltimateCalendar**
 - `applicationId`: `com.qtekfun.ultimatecalendar`
-- Repositorio: `github.com/qtekfun/UltimateCalendar`, rama principal **`master`** (protegida: solo se entra por PR con la CI en verde)
+- Repositorio: `github.com/qtekfun/UltimateCalendar`, rama principal **`master`** (por convención solo se entra por PR con la CI en verde; GitHub no lo impone, no hay ruleset)
 - Licencia: **GPL-3.0-or-later** (cabecera SPDX en cada archivo fuente, también yml, toml, kts, manifest y md)
 - Idiomas de la UI: inglés (por defecto) y español. **Ninguna cadena visible va hardcodeada**: todo en `strings.xml` (`values/` y `values-es/`).
 
@@ -85,5 +85,5 @@ Lee siempre `SPEC.md` (qué construir) y `PLAN.md` (en qué orden) antes de empe
 ## Qué NO hacer
 - No implementes nada marcado como "Fuera de alcance" en `SPEC.md`.
 - No cambies versiones de dependencias manualmente: lo gestiona Dependabot.
-- No desactives ni relajes detekt, ktlint, Lint, Kover, la verificación de dependencias, los workflows ni el ruleset para que pase la CI.
+- No desactives ni relajes detekt, ktlint, Lint, Kover, la verificación de dependencias, ni los workflows para que pase la CI.
 - No uses capturas con datos reales para la tienda ni el README: salen del test `Screenshots` con datos inventados.
