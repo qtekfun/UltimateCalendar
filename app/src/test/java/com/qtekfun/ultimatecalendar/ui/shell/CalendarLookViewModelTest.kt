@@ -3,6 +3,7 @@
 
 package com.qtekfun.ultimatecalendar.ui.shell
 
+import androidx.lifecycle.viewModelScope
 import com.qtekfun.ultimatecalendar.data.calendar.CalendarRepository
 import com.qtekfun.ultimatecalendar.data.local.UltimateCalendarDatabase
 import com.qtekfun.ultimatecalendar.data.local.inMemoryDatabase
@@ -14,6 +15,7 @@ import com.qtekfun.ultimatecalendar.domain.model.CalendarInfo
 import com.qtekfun.ultimatecalendar.domain.model.CalendarSettings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -51,12 +53,13 @@ class CalendarLookViewModelTest {
 
     @AfterEach
     fun close() {
+        model.viewModelScope.cancel()
         database.close()
     }
 
     @Test
     fun `a name and a color are stored on this phone and the source is not touched`() = runTest {
-        model.save(work, "Job", 0xFF112233.toInt())
+        model.save(work, "Job", 0xFF112233.toInt()).join()
 
         assertStored(CalendarSettings("Job", 0xFF112233.toInt()))
         assertEquals("Work", source.calendars().value.single().displayName)
@@ -66,10 +69,10 @@ class CalendarLookViewModelTest {
     fun `leaving what was shown keeps the override and a reset forgets it`() = runTest {
         repository.saveSettings(work.id, CalendarSettings("Job", 1))
 
-        model.save(work.copy(displayName = "Job", color = 1), "Job", 1)
+        model.save(work.copy(displayName = "Job", color = 1), "Job", 1).join()
         assertStored(CalendarSettings("Job", 1))
 
-        model.save(work.copy(displayName = "Job", color = 1), "", null)
+        model.save(work.copy(displayName = "Job", color = 1), "", null).join()
         assertStored(CalendarSettings())
     }
 

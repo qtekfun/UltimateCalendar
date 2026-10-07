@@ -31,7 +31,6 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.jupiter.api.AfterEach
@@ -78,7 +77,7 @@ class EventMoveViewModelTest {
     fun close() {
         created.forEach { it.viewModelScope.cancel() }
         database.close()
-        Dispatchers.resetMain()
+        // No resetMain: the cancelled work finishes on Main from another thread, after this.
     }
 
     private fun viewModel(): EventMoveViewModel {

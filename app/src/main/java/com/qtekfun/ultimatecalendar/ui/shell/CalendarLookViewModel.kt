@@ -9,6 +9,7 @@ import com.qtekfun.ultimatecalendar.data.calendar.CalendarRepository
 import com.qtekfun.ultimatecalendar.domain.model.CalendarInfo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 /** Saves the name and color the user gave a calendar on this phone (RF-02). */
@@ -17,9 +18,9 @@ class CalendarLookViewModel @Inject constructor(private val repository: Calendar
     ViewModel() {
     /**
      * [pickedColor] null goes back to the source's color; a blank [typedName], to its name. The
-     * source itself is never written.
+     * source itself is never written. The job ends when the write has landed.
      */
-    fun save(calendar: CalendarInfo, typedName: String, pickedColor: Int?) {
+    fun save(calendar: CalendarInfo, typedName: String, pickedColor: Int?): Job =
         viewModelScope.launch {
             val current = repository.settings(calendar.id)
             repository.saveSettings(
@@ -27,5 +28,4 @@ class CalendarLookViewModel @Inject constructor(private val repository: Calendar
                 current.withLook(calendar.displayName, typedName, calendar.color, pickedColor)
             )
         }
-    }
 }

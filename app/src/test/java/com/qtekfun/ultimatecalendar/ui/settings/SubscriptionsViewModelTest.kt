@@ -3,6 +3,7 @@
 
 package com.qtekfun.ultimatecalendar.ui.settings
 
+import androidx.lifecycle.viewModelScope
 import app.cash.turbine.test
 import com.qtekfun.ultimatecalendar.data.subscriptions.AddResult
 import com.qtekfun.ultimatecalendar.data.subscriptions.FeedIcs
@@ -12,8 +13,8 @@ import com.qtekfun.ultimatecalendar.domain.subscriptions.RefreshInterval
 import com.qtekfun.ultimatecalendar.domain.subscriptions.SubscriptionError
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import mockwebserver3.MockResponse
@@ -34,14 +35,20 @@ class SubscriptionsViewModelTest {
 
     private val rig by lazy { SubscriptionRig(server) }
     private val viewModel by lazy { SubscriptionsViewModel(rig.repository, rig.refresher) }
+    private val main = UnconfinedTestDispatcher()
 
     @BeforeEach
-    fun setMain() = Dispatchers.setMain(UnconfinedTestDispatcher())
+    fun setMain() = Dispatchers.setMain(main)
 
     @AfterEach
     fun tearDown() {
-        Dispatchers.resetMain()
+        // Stop what the ViewModel still runs (the list's upstream, a download) before the
+        // database goes away.
+        viewModel.viewModelScope.cancel()
         rig.close()
+        // No resetMain: the cancelled work finishes on Main from another thread, after this; with
+        // Main gone it would throw, and the next test would fail with "uncaught exceptions
+        // before the test started". The next test sets its own Main.
     }
 
     private fun feed(title: String = "A"): MockResponse {
