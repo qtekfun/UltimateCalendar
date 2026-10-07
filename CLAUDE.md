@@ -70,7 +70,7 @@ Lee siempre `SPEC.md` (qué construir) y `PLAN.md` (en qué orden) antes de empe
 
 ## Versiones y releases
 - Las releases son manuales, como en UltimateDeck (ver `RELEASING.md`): `appVersion` y `CHANGELOG.md` solo cambian en una PR de release (`chore: release X.Y.Z`, rama `release/X.Y.Z`), que además lleva los textos de tienda `fastlane/metadata/android/{en-US,es-ES}/changelogs/<versionCode>.txt` (≤ 500 caracteres; la CI los exige en esas ramas). En el resto de PRs no se toca `appVersion`.
-- El tag `vX.Y.Z` lo crea y sube el autor; el workflow `Release` construye y publica el APK firmado.
+- El tag `vX.Y.Z` lo crea y sube el autor, o yo cuando él lo pide expresamente; el workflow `Release` construye y publica el APK firmado.
 
 ## Convenciones de código
 - Un archivo por clase pública relevante; paquetes por feature dentro de cada capa.
