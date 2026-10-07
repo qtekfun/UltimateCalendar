@@ -60,7 +60,8 @@ import kotlinx.coroutines.withContext
 @Suppress("TooManyFunctions")
 class ProviderCalendarSource @Inject constructor(
     private val gateway: ProviderGateway,
-    @IoDispatcher private val dispatcher: CoroutineDispatcher
+    @IoDispatcher private val dispatcher: CoroutineDispatcher,
+    private val aliases: OwnAddresses = OwnAddresses { emptySet() }
 ) : CalendarSource {
     private val store = ProviderStore(gateway)
     private val exceptions = SeriesExceptions(store)
@@ -156,12 +157,18 @@ class ProviderCalendarSource @Inject constructor(
     override suspend fun cancelInstance(id: EventId, originalStart: Instant): CalendarResult<Unit> =
         guarded(dispatcher) { exceptions.change(id, originalStart, null) }
 
-    override suspend fun respond(id: EventId, status: AttendeeStatus): CalendarResult<Unit> =
-        guarded(dispatcher) {
+    override suspend fun respond(id: EventId, status: AttendeeStatus): CalendarResult<Unit> {
+        val extra = aliases.addresses()
+        return guarded(dispatcher) {
             val row = store.eventRow(id)
             val calendar = store.calendar(requireNotNull(EventMapping.calendarOf(row)))
             if (!calendar.access.canRespond) abort(CalendarError.ReadOnly)
-            val me = listOfNotNull(calendar.ownerEmail)
+            // The owner of the calendar, the account name (an address for Google) and the user's
+            // aliases: the same "me" the invitation check used to find this invitation.
+            val me = listOfNotNull(
+                calendar.ownerEmail,
+                calendar.account.name.takeIf { '@' in it }
+            ) + extra
             val mine = store.children(ProviderTable.ATTENDEES, AttendeeMapping.projection, id.value)
                 .firstOrNull { AttendeeMapping.toAttendee(it)?.isOneOf(me) == true }
                 ?: abort(CalendarError.Invalid("not an attendee"))
@@ -169,6 +176,7 @@ class ProviderCalendarSource @Inject constructor(
             val attendeeId = requireNotNull(mine.long(Attendees._ID))
             store.write(listOf(ProviderOp.Update(ProviderTable.ATTENDEES, attendeeId, answer)))
         }
+    }
 }
 
 /** Runs [block] on [dispatcher], turning failures into [CalendarResult.Failure]. */

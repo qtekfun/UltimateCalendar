@@ -7,6 +7,7 @@ import com.qtekfun.ultimatecalendar.data.invitations.InvitationResponses
 import com.qtekfun.ultimatecalendar.data.invitations.ResponseOutcome
 import com.qtekfun.ultimatecalendar.domain.invitations.Invitation
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationAlert
+import com.qtekfun.ultimatecalendar.domain.invitations.InvitationAnswer
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationKey
 import com.qtekfun.ultimatecalendar.domain.model.AttendeeStatus
 import com.qtekfun.ultimatecalendar.domain.model.CalendarId
@@ -38,6 +39,10 @@ class RecordingSurface : InvitationNotificationSurface {
 
     override fun showAnswerFailed(invitation: Invitation) {
         calls += "failed ${invitation.key.eventId.value}"
+    }
+
+    override fun showAnswered(answer: InvitationAnswer, waiting: Boolean) {
+        calls += "answered ${answer.name}${if (waiting) " waiting" else ""}"
     }
 
     override fun showMoved(invitation: Invitation) {
