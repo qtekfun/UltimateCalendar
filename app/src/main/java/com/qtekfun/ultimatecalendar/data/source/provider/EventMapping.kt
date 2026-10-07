@@ -33,6 +33,7 @@ internal object EventMapping {
         Events.RRULE,
         Events.RDATE,
         Events.ORGANIZER,
+        Events.UID_2445,
         Events.DELETED
     )
 
@@ -86,7 +87,8 @@ internal object EventMapping {
                 rrule = row.text(Events.RRULE)?.ifBlank { null },
                 organizer = row.text(Events.ORGANIZER)?.ifBlank { null },
                 attendees = attendees,
-                reminders = reminders
+                reminders = reminders,
+                uid = row.text(Events.UID_2445)?.trim()?.ifEmpty { null }
             )
         }
     }

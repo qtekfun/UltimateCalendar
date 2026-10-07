@@ -7,9 +7,13 @@ import android.content.Context
 import androidx.work.ListenableWorker
 import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
+import com.qtekfun.ultimatecalendar.data.invitations.ForeignAnswers
+import com.qtekfun.ultimatecalendar.data.invitations.NotifiedInvitations
 import com.qtekfun.ultimatecalendar.data.source.CalendarSource
 import com.qtekfun.ultimatecalendar.data.subscriptions.SubscriptionRefresher
 import com.qtekfun.ultimatecalendar.data.sync.SourceSyncRequester
+import com.qtekfun.ultimatecalendar.notify.InvitationNotificationSurface
+import com.qtekfun.ultimatecalendar.notify.InvitationRecheck
 import com.qtekfun.ultimatecalendar.notify.MissedReminderRecovery
 import com.qtekfun.ultimatecalendar.sync.engine.SyncEngine
 import javax.inject.Inject
@@ -22,13 +26,19 @@ import javax.inject.Singleton
  * falls back to its own factory.
  */
 @Singleton
+// Every worker's ports come in through this one factory.
+@Suppress("LongParameterList")
 class InvitationWorkerFactory @Inject constructor(
     private val checker: Provider<InvitationChecker>,
     private val recovery: Provider<MissedReminderRecovery>,
     private val engine: Provider<SyncEngine>,
     private val subscriptions: Provider<SubscriptionRefresher>,
     private val source: Provider<CalendarSource>,
-    private val requester: Provider<SourceSyncRequester>
+    private val requester: Provider<SourceSyncRequester>,
+    private val answers: Provider<ForeignAnswers>,
+    private val surface: Provider<InvitationNotificationSurface>,
+    private val notified: Provider<NotifiedInvitations>,
+    private val recheck: Provider<InvitationRecheck>
 ) : WorkerFactory() {
     override fun createWorker(
         appContext: Context,
@@ -46,6 +56,15 @@ class InvitationWorkerFactory @Inject constructor(
 
         ReplySyncWorker::class.java.name ->
             ReplySyncWorker(appContext, workerParameters, source.get(), requester.get())
+
+        PendingAnswerWorker::class.java.name -> PendingAnswerWorker(
+            appContext,
+            workerParameters,
+            answers.get(),
+            surface.get(),
+            notified.get(),
+            recheck.get()
+        )
 
         else -> null
     }

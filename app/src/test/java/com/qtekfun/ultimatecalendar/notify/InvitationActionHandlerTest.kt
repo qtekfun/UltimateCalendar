@@ -56,6 +56,26 @@ class InvitationActionHandlerTest {
     }
 
     @Test
+    fun `an invitation whose account has no copy yet stays, saying it waits for it`() = runTest {
+        responses.outcome = ResponseOutcome.WaitingForAccount("b@gmail.com")
+        notified.replaceAll(listOf(lunch))
+
+        handler.answer(lunch.key, InvitationAnswer.ACCEPT)
+        // Nothing is announced as answered, nothing is removed and nothing is looked at again.
+        assertEquals(listOf("waiting 7"), surface.calls)
+        assertEquals(0, rechecks)
+    }
+
+    @Test
+    fun `an invitation that is no longer in the record says nothing while it waits`() = runTest {
+        responses.outcome = ResponseOutcome.WaitingForAccount("b@gmail.com")
+
+        handler.answer(lunch.key, InvitationAnswer.ACCEPT)
+
+        assertEquals(emptyList<String>(), surface.calls)
+    }
+
+    @Test
     fun `pressing the same button twice leaves the same screen`() = runTest {
         handler.answer(lunch.key, InvitationAnswer.ACCEPT)
         handler.answer(lunch.key, InvitationAnswer.ACCEPT)

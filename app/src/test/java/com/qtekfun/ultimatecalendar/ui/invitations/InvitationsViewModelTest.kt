@@ -10,6 +10,7 @@ import com.qtekfun.ultimatecalendar.data.invitations.InvitationResponses
 import com.qtekfun.ultimatecalendar.data.invitations.NotifiedInvitations
 import com.qtekfun.ultimatecalendar.data.invitations.ResponseOutcome
 import com.qtekfun.ultimatecalendar.data.invitations.SourceInvitationResponses
+import com.qtekfun.ultimatecalendar.data.invitations.foreignAnswers
 import com.qtekfun.ultimatecalendar.data.source.FakeCalendarSource
 import com.qtekfun.ultimatecalendar.domain.invitations.Invitation
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationAnswer
@@ -61,7 +62,8 @@ class InvitationsViewModelTest {
     private val coordinator = mockk<InvitationCheckCoordinator>()
     private val main = UnconfinedTestDispatcher()
     private var zone: ZoneId = ZoneId.of("Europe/Madrid")
-    private var responses: InvitationResponses = SourceInvitationResponses(source)
+    private var responses: InvitationResponses =
+        SourceInvitationResponses(source, foreignAnswers(source))
     private val inbox = InvitationInbox(
         InvitationChecker(
             source,
@@ -166,7 +168,7 @@ class InvitationsViewModelTest {
         val lunch = create("Lunch")
         create("Dinner", hours = 5)
         val gate = CompletableDeferred<Unit>()
-        val slow = SourceInvitationResponses(source)
+        val slow = SourceInvitationResponses(source, foreignAnswers(source))
         responses = InvitationResponses { key, status ->
             gate.await()
             slow.respond(key, status)
@@ -273,6 +275,39 @@ class InvitationsViewModelTest {
 
         assertEquals(AttendeeStatus.NEEDS_ACTION, statusOf(lunch.key.eventId))
         assertEquals(listOf("Lunch"), viewModel.titles())
+    }
+
+    @Test
+    fun `an answer that waits for the invited account keeps the invitation and says so`() =
+        runTest {
+            val lunch = create("Lunch")
+            responses = InvitationResponses { _, _ ->
+                ResponseOutcome.WaitingForAccount("b@gmail.com")
+            }
+            val viewModel = viewModel()
+            viewModel.loaded()
+
+            viewModel.events.test {
+                viewModel.answer(lunch, InvitationAnswer.ACCEPT)
+                assertEquals(InvitationsEvent.WaitingForAccount("b@gmail.com"), awaitItem())
+            }
+            assertEquals(listOf("Lunch"), viewModel.titles())
+            assertEquals(AttendeeStatus.NEEDS_ACTION, statusOf(lunch.key.eventId))
+            assertTrue(surface.calls.isEmpty())
+        }
+
+    @Test
+    fun `an undo that finds the account still waiting says it was not stored`() = runTest {
+        val lunch = create("Lunch")
+        val viewModel = viewModel()
+        viewModel.loaded()
+        viewModel.answer(lunch, InvitationAnswer.ACCEPT)
+        responses = InvitationResponses { _, _ -> ResponseOutcome.WaitingForAccount("b@gmail.com") }
+        viewModel.events.test {
+            assertEquals(InvitationsEvent.Answered(lunch, InvitationAnswer.ACCEPT), awaitItem())
+            viewModel.undo(lunch)
+            assertEquals(InvitationsEvent.AnswerFailed, awaitItem())
+        }
     }
 
     @Test

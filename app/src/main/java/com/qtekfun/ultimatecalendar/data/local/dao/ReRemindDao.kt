@@ -20,11 +20,12 @@ abstract class ReRemindDao {
 
     @Query(
         "DELETE FROM invitation_re_reminders WHERE calendarId = :calendarId AND " +
-            "eventId = :eventId AND moment = :moment AND start = :start"
+            "eventId = :eventId AND address = :address AND moment = :moment AND start = :start"
     )
     protected abstract suspend fun delete(
         calendarId: Long,
         eventId: Long,
+        address: String,
         moment: String,
         start: Long
     )
@@ -32,7 +33,7 @@ abstract class ReRemindDao {
     /** Forgets [gone] and writes [rows] in one transaction: a run that dies halfway changes nothing. */
     @Transaction
     open suspend fun apply(rows: List<ReRemindEntity>, gone: List<ReRemindEntity>) {
-        gone.forEach { delete(it.calendarId, it.eventId, it.moment, it.start) }
+        gone.forEach { delete(it.calendarId, it.eventId, it.address, it.moment, it.start) }
         save(rows)
     }
 }

@@ -19,7 +19,7 @@ import java.time.ZoneId
 data class ReRemindKey(val invitation: InvitationKey, val moment: ReRemindMoment, val start: Long) {
     /** Text that identifies the key in alarms; ids only, never titles. */
     val tag: String
-        get() = "${invitation.calendarId.value}/${invitation.eventId.value}/${moment.name}/$start"
+        get() = "${NotificationTags.id(invitation)}/${moment.name}/$start"
 
     companion object {
         fun of(invitation: Invitation, moment: ReRemindMoment) = ReRemindKey(

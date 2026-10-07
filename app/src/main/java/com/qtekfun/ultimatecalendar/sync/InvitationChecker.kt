@@ -97,7 +97,7 @@ class InvitationChecker(
 
                 is CalendarResult.Success -> {
                     val aliases = settings.aliases()
-                    readEvents(null, aliases).map {
+                    readEvents(null, InvitationCandidates.wide(calendars.value, aliases)).map {
                         detector.scan(it.events, calendars.value, aliases).pending
                     }
                 }
@@ -125,7 +125,13 @@ class InvitationChecker(
         val followed = attended.load()
         val aliases = settings.aliases()
         val from = listOfNotNull(previous.earliestStart(), followed.earliestStart()).minOrNull()
-        return when (val read = readEvents(from, aliases, followed)) {
+        return when (
+            val read = readEvents(
+                from,
+                InvitationCandidates.wide(calendars, aliases),
+                followed
+            )
+        ) {
             is CalendarResult.Failure -> InvitationCheckOutcome.Failed(read.error)
             is CalendarResult.Success -> finish(previous, followed, read.value, calendars, aliases)
         }
@@ -160,7 +166,7 @@ class InvitationChecker(
      */
     private suspend fun readEvents(
         from: Instant?,
-        aliases: Set<String>,
+        wide: Boolean,
         followed: List<AttendedEvent> = emptyList()
     ): CalendarResult<Read> {
         val now = clock.instant()
@@ -169,7 +175,7 @@ class InvitationChecker(
             is CalendarResult.Failure -> instances
 
             is CalendarResult.Success -> {
-                val ids = candidates(instances.value, aliases)
+                val ids = InvitationCandidates.of(instances.value, wide)
                 // A followed event with no occurrence in the window (moved out of it, or gone)
                 // is read on its own: it must be told apart from a deleted one.
                 val missing = followed.map { it.key.eventId }.filter { it !in ids }.distinct()
@@ -196,17 +202,6 @@ class InvitationChecker(
         }
         return CalendarResult.Success(events)
     }
-
-    /**
-     * Only an event where the source says the user is an attendee can be an invitation, so the
-     * rest is not read one by one (thousands of reads). The user's own aliases are not known to
-     * the source, so with aliases every event that lists attendees is read: one without any cannot
-     * be an invitation.
-     */
-    private fun candidates(instances: List<EventInstance>, aliases: Set<String>) = instances
-        .filter { it.selfStatus != null || (aliases.isNotEmpty() && it.hasAttendees) }
-        .map { it.eventId }
-        .distinct()
 
     private fun List<Invitation>.earliestStart() = minOfOrNull { it.time.startIn(clock.zone) }
 

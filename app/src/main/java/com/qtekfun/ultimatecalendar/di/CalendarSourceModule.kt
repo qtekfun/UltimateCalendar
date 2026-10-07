@@ -4,6 +4,7 @@
 package com.qtekfun.ultimatecalendar.di
 
 import com.qtekfun.ultimatecalendar.data.invitations.OwnEditMarks
+import com.qtekfun.ultimatecalendar.data.invitations.PendingAnswerRetry
 import com.qtekfun.ultimatecalendar.data.invitations.ReplyStatus
 import com.qtekfun.ultimatecalendar.data.invitations.SourceReplyStatus
 import com.qtekfun.ultimatecalendar.data.source.CalendarSource
@@ -27,6 +28,7 @@ import com.qtekfun.ultimatecalendar.data.sync.ReplyRetry
 import com.qtekfun.ultimatecalendar.data.sync.SourceSyncRequester
 import com.qtekfun.ultimatecalendar.sync.CalDavSyncScheduler
 import com.qtekfun.ultimatecalendar.sync.WorkManagerCalDavScheduler
+import com.qtekfun.ultimatecalendar.sync.WorkManagerPendingAnswers
 import com.qtekfun.ultimatecalendar.sync.WorkManagerReplyRetry
 import com.qtekfun.ultimatecalendar.sync.WorkManagerSubscriptionScheduler
 import dagger.Binds
@@ -52,6 +54,9 @@ interface CalendarSourceModule {
 
     @Binds
     fun replyRetry(retry: WorkManagerReplyRetry): ReplyRetry
+
+    @Binds
+    fun pendingAnswers(retry: WorkManagerPendingAnswers): PendingAnswerRetry
 
     @Binds
     fun replyStatus(status: SourceReplyStatus): ReplyStatus

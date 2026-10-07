@@ -94,6 +94,10 @@ fun InvitationsScreen(
                     if (snackbar.showUndo(text, undo)) viewModel.undo(event.invitation)
                 }
 
+                is InvitationsEvent.WaitingForAccount -> snackbar.showSnackbar(
+                    resources.getString(R.string.invitation_waiting_account, event.address)
+                )
+
                 InvitationsEvent.AnswerFailed ->
                     snackbar.showSnackbar(resources.getString(R.string.invitation_answer_failed))
 
@@ -270,18 +274,24 @@ private fun InvitationCard(
                     overflow = TextOverflow.Ellipsis
                 )
             }
-            invitation.organizer?.let {
-                Text(
-                    stringResource(R.string.invitations_from, it),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+            invitation.account?.let {
+                SmallLine(stringResource(R.string.invitation_for_account, it))
             }
+            invitation.organizer?.let { SmallLine(stringResource(R.string.invitations_from, it)) }
             AnswerButtons(invitation.title, labels, onAnswer)
         }
     }
+}
+
+@Composable
+private fun SmallLine(text: String) {
+    Text(
+        text,
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis
+    )
 }
 
 private fun sample(

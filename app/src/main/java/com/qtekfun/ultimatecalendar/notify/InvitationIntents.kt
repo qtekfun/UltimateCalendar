@@ -5,6 +5,7 @@ package com.qtekfun.ultimatecalendar.notify
 
 import android.content.Context
 import android.content.Intent
+import androidx.core.net.toUri
 import com.qtekfun.ultimatecalendar.domain.detail.EventRef
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationAnswer
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationKey
@@ -40,10 +41,12 @@ object InvitationIntents {
     private const val ACTION_OPEN = "com.qtekfun.ultimatecalendar.action.OPEN_INVITATION"
     private const val EXTRA_CALENDAR = "invitation_calendar"
     private const val EXTRA_EVENT = "invitation_event"
+    private const val EXTRA_ADDRESS = "invitation_address"
     private const val EXTRA_ANSWER = "invitation_answer"
     private const val EXTRA_INBOX = "invitation_inbox"
     private const val EXTRA_REF = "invitation_ref"
     private const val MISSING = -1L
+    private const val WEB_CALENDAR = "https://calendar.google.com/calendar/r"
 
     fun open(context: Context, route: NotificationRoute): Intent =
         Intent(context, MainActivity::class.java)
@@ -83,9 +86,20 @@ object InvitationIntents {
         return if (key == null || answer == null) null else key to answer
     }
 
+    /**
+     * Opens the web calendar of [account] in the browser (or whatever handles the link), where an
+     * invitation that the account's calendar on the phone never received can be answered.
+     */
+    fun viewCalendar(account: String): Intent = Intent(
+        Intent.ACTION_VIEW,
+        WEB_CALENDAR.toUri().buildUpon().appendQueryParameter("authuser", account).build()
+    ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
     private fun putKey(intent: Intent, key: InvitationKey) {
         intent.putExtra(EXTRA_CALENDAR, key.calendarId.value)
         intent.putExtra(EXTRA_EVENT, key.eventId.value)
+        // The address of another of the user's accounts, kept inside the app's own intent.
+        intent.putExtra(EXTRA_ADDRESS, key.address)
     }
 
     private fun keyOf(intent: Intent): InvitationKey? {
@@ -94,7 +108,11 @@ object InvitationIntents {
         return if (calendar == MISSING || event == MISSING) {
             null
         } else {
-            InvitationKey(CalendarId(calendar), EventId(event))
+            InvitationKey(
+                CalendarId(calendar),
+                EventId(event),
+                intent.getStringExtra(EXTRA_ADDRESS).orEmpty()
+            )
         }
     }
 }

@@ -46,6 +46,12 @@ sealed interface InvitationsEvent {
     data class Answered(val invitation: Invitation, val answer: InvitationAnswer) :
         InvitationsEvent
 
+    /**
+     * The invitation is for another of the user's accounts, which has not received the event: the
+     * answer will be given when it does, and the invitation stays in the list until then.
+     */
+    data class WaitingForAccount(val address: String) : InvitationsEvent
+
     /** An answer or an undo was not stored. */
     data object AnswerFailed : InvitationsEvent
 
@@ -94,7 +100,7 @@ class InvitationsViewModel @Inject constructor(
     fun answer(invitation: Invitation, answer: InvitationAnswer) {
         answered.update { it + invitation.key }
         viewModelScope.launch {
-            when (responses.respond(invitation.key, answer.status)) {
+            when (val outcome = responses.respond(invitation.key, answer.status)) {
                 ResponseOutcome.Answered -> {
                     forget(invitation.key)
                     messages.send(InvitationsEvent.Answered(invitation, answer))
@@ -108,6 +114,11 @@ class InvitationsViewModel @Inject constructor(
                 is ResponseOutcome.Failed -> {
                     answered.update { it - invitation.key }
                     messages.send(InvitationsEvent.AnswerFailed)
+                }
+
+                is ResponseOutcome.WaitingForAccount -> {
+                    answered.update { it - invitation.key }
+                    messages.send(InvitationsEvent.WaitingForAccount(outcome.address))
                 }
             }
         }
@@ -124,7 +135,8 @@ class InvitationsViewModel @Inject constructor(
 
                 ResponseOutcome.Gone -> messages.send(InvitationsEvent.Gone)
 
-                is ResponseOutcome.Failed -> messages.send(InvitationsEvent.AnswerFailed)
+                is ResponseOutcome.Failed,
+                is ResponseOutcome.WaitingForAccount -> messages.send(InvitationsEvent.AnswerFailed)
             }
         }
     }

@@ -41,6 +41,14 @@ class RecordingSurface : InvitationNotificationSurface {
         calls += "failed ${invitation.key.eventId.value}"
     }
 
+    override fun showWaitingForAccount(invitation: Invitation) {
+        calls += "waiting ${invitation.key.eventId.value}"
+    }
+
+    override fun showNeverArrived(invitation: Invitation) {
+        calls += "never ${invitation.key.eventId.value}"
+    }
+
     override fun showAnswered(answer: InvitationAnswer, waiting: Boolean) {
         calls += "answered ${answer.name}${if (waiting) " waiting" else ""}"
     }

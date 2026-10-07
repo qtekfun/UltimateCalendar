@@ -133,6 +133,20 @@ class LocalCalendars(private val context: Context) {
         resolver.update(asSyncAdapter(uri), values, null, null)
     }
 
+    /**
+     * A calendar of the test account owned by another address, as a second Google account on the
+     * phone is: the test account's calendars are the only ones ever touched, and [tearDown] removes
+     * this one with the rest.
+     */
+    fun createOtherAccount(owner: String): CalendarId = createCalendar(OTHER_NAME, owner)
+
+    /** Gives [event] the iCalendar UID a sync adapter stores, the same in every copy of it. */
+    fun setUid(event: EventId, uid: String) {
+        val values = ContentValues().apply { put(Events.UID_2445, uid) }
+        val uri = ContentUris.withAppendedId(Events.CONTENT_URI, event.value)
+        resolver.update(asSyncAdapter(uri), values, null, null)
+    }
+
     /** The organizer moves [event] to [start] (an hour long): written as a sync adapter does. */
     fun moveTo(event: EventId, start: ZonedDateTime) {
         val values = ContentValues().apply {
@@ -251,7 +265,7 @@ class LocalCalendars(private val context: Context) {
         }
     }
 
-    private fun createCalendar(name: String): CalendarId {
+    private fun createCalendar(name: String, owner: String = OWNER): CalendarId {
         val values = ContentValues().apply {
             put(Calendars.ACCOUNT_NAME, ACCOUNT)
             put(Calendars.ACCOUNT_TYPE, CalendarContract.ACCOUNT_TYPE_LOCAL)
@@ -259,7 +273,7 @@ class LocalCalendars(private val context: Context) {
             put(Calendars.CALENDAR_DISPLAY_NAME, name)
             put(Calendars.CALENDAR_COLOR, COLOR)
             put(Calendars.CALENDAR_ACCESS_LEVEL, Calendars.CAL_ACCESS_OWNER)
-            put(Calendars.OWNER_ACCOUNT, OWNER)
+            put(Calendars.OWNER_ACCOUNT, owner)
             put(Calendars.VISIBLE, 1)
             put(Calendars.SYNC_EVENTS, 1)
             put(Calendars.CALENDAR_TIME_ZONE, zone.id)
@@ -290,6 +304,7 @@ class LocalCalendars(private val context: Context) {
         const val OWNER = "me@example.com"
         const val WORK_NAME = "UI Work"
         const val HOME_NAME = "UI Home"
+        const val OTHER_NAME = "UI Other account"
         const val COLOR = 0xFF0B63CE.toInt()
         const val UNIQUE_CHARS = 8
         const val DAY_MS = 86_400_000L

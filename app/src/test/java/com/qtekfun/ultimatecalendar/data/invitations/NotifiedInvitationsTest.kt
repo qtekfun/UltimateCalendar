@@ -62,6 +62,24 @@ class NotifiedInvitationsTest {
     }
 
     @Test
+    fun `one event that invites two of my accounts is two invitations with their account`() =
+        runTest {
+            val own = timed(1)
+            val b = timed(1).copy(
+                key = own.key.copy(address = "b@gmail.com"),
+                account = "b@gmail.com"
+            )
+            val c = timed(1).copy(
+                key = own.key.copy(address = "c@gmail.com"),
+                account = "c@gmail.com"
+            )
+
+            notified.replaceAll(listOf(own, b, c))
+
+            assertEquals(setOf(own, b, c), notified.load().toSet())
+        }
+
+    @Test
     fun `the same event id in two calendars is two invitations`() = runTest {
         notified.replaceAll(listOf(timed(1, calendar = 1), timed(1, calendar = 2)))
 

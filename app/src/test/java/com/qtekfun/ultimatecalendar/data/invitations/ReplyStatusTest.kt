@@ -46,6 +46,27 @@ class ReplyStatusTest {
     }
 
     @Test
+    fun `an answer for another of my accounts waits on that account, not on the calendar's`() =
+        runTest {
+            val other = CalendarAccount("b@gmail.com", "com.google")
+            val mine = CalendarInfo(
+                CalendarId(1),
+                CalendarAccount("a@gmail.com", "LOCAL"),
+                "c",
+                0,
+                CalendarAccess.OWNER
+            )
+            val theirs = CalendarInfo(CalendarId(2), other, "d", 0, CalendarAccess.OWNER)
+            coEvery { source.calendars() } returns CalendarResult.Success(listOf(mine, theirs))
+
+            assertTrue(status.isWaiting(InvitationKey(CalendarId(1), EventId(7), "b@gmail.com")))
+            assertFalse(status.isWaiting(InvitationKey(CalendarId(1), EventId(7), "c@gmail.com")))
+            coEvery { source.calendars() } returns
+                CalendarResult.Failure(CalendarError.PermissionDenied)
+            assertFalse(status.isWaiting(InvitationKey(CalendarId(1), EventId(7), "b@gmail.com")))
+        }
+
+    @Test
     fun `an unknown calendar or an unreadable list is not waiting`() = runTest {
         coEvery { source.calendars() } returns CalendarResult.Success(listOf(calendar))
         assertFalse(status.isWaiting(InvitationKey(CalendarId(2), EventId(7))))

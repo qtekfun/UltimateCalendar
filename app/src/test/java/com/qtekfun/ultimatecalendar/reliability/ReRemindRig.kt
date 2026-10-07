@@ -95,6 +95,10 @@ class ReRemindRig(
 
         override fun showAnswerFailed(invitation: Invitation) = Unit
 
+        override fun showWaitingForAccount(invitation: Invitation) = Unit
+
+        override fun showNeverArrived(invitation: Invitation) = Unit
+
         override fun showAnswered(
             answer: com.qtekfun.ultimatecalendar.domain.invitations.InvitationAnswer,
             waiting: Boolean

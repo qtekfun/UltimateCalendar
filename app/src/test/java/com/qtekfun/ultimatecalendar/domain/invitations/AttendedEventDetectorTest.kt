@@ -390,6 +390,21 @@ class AttendedEventDetectorTest {
     }
 
     @Test
+    fun `an event in two of my accounts is followed once, in the lowest calendar`() {
+        val first = event(10, calendar = 2).copy(uid = "u")
+        val second = event(11, calendar = 1).copy(uid = "u")
+        val other = event(12, calendar = 1).copy(uid = "v")
+        val plain = event(13, calendar = 2)
+        val sameButNoUid = event(14, calendar = 1)
+
+        val result = scan(first, second, other, plain, sameButNoUid)
+
+        assertEquals(listOf(11L, 12L, 13L, 14L), tracked(result).sorted())
+        // Every copy was seen, so the one not followed is dropped silently, not cancelled.
+        assertEquals(setOf(10L, 11L, 12L, 13L, 14L), result.seen.map { it.eventId.value }.toSet())
+    }
+
+    @Test
     fun `the place is only a short hash that tells places apart`() {
         assertEquals("", AttendedEvent.placeHash(null))
         assertEquals("", AttendedEvent.placeHash("   "))

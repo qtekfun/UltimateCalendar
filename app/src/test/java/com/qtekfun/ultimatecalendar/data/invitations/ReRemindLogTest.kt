@@ -52,6 +52,18 @@ class ReRemindLogTest {
     }
 
     @Test
+    fun `the same moment for two accounts of one event is two entries`() = runTest {
+        val own = key(1, ReRemindMoment.DAY_BEFORE)
+        val foreign = own.copy(invitation = own.invitation.copy(address = "b@gmail.com"))
+
+        log.apply(listOf(entry(own, 10, false), entry(foreign, 20, true)), emptyList())
+        assertEquals(setOf(entry(own, 10, false), entry(foreign, 20, true)), log.all().toSet())
+
+        log.apply(emptyList(), listOf(foreign))
+        assertEquals(listOf(entry(own, 10, false)), log.all())
+    }
+
+    @Test
     fun `an entry is replaced by its key and forgotten keys go in the same write`() = runTest {
         val day = key(1, ReRemindMoment.DAY_BEFORE)
         val hour = key(1, ReRemindMoment.HOUR_BEFORE)

@@ -31,7 +31,11 @@ class ReRemindLog @Inject constructor(
     suspend fun all(): List<ReRemindEntry> = withContext(io) {
         dao.all().mapNotNull { row ->
             ReRemindMoment.entries.firstOrNull { it.name == row.moment }?.let { moment ->
-                val invitation = InvitationKey(CalendarId(row.calendarId), EventId(row.eventId))
+                val invitation = InvitationKey(
+                    CalendarId(row.calendarId),
+                    EventId(row.eventId),
+                    row.address
+                )
                 ReRemindEntry(
                     ReRemindKey(invitation, moment, row.start),
                     Instant.ofEpochMilli(row.at),
@@ -51,6 +55,7 @@ class ReRemindLog @Inject constructor(
     private fun ReRemindKey.toRow(at: Long, settled: Boolean) = ReRemindEntity(
         calendarId = invitation.calendarId.value,
         eventId = invitation.eventId.value,
+        address = invitation.address,
         moment = moment.name,
         start = start,
         at = at,

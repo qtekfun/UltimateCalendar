@@ -34,13 +34,17 @@ class InvitationNotificationBuilders @Inject constructor(
         invitation: Invitation,
         silent: Boolean,
         failed: Boolean,
-        reminder: Boolean = false
+        reminder: Boolean = false,
+        waiting: Boolean = false
     ): NotificationCompat.Builder {
         val details = listOfNotNull(
             timeText(invitation),
             invitation.location?.takeIf { it.isNotBlank() },
+            invitation.account?.let { context.getString(R.string.invitation_for_account, it) },
             context.getString(R.string.invitation_answer_failed).takeIf { failed },
-            context.getString(R.string.invitation_still_waiting).takeIf { reminder }
+            context.getString(R.string.invitation_still_waiting).takeIf { reminder },
+            invitation.account?.takeIf { waiting }
+                ?.let { context.getString(R.string.invitation_waiting_account, it) }
         )
         val builder = base(NotificationChannels.INVITATIONS)
             .setContentTitle(invitation.title)
@@ -55,6 +59,37 @@ class InvitationNotificationBuilders @Inject constructor(
             .setOnlyAlertOnce(silent)
         InvitationAnswer.entries.forEach { builder.addAction(button(invitation.key, it)) }
         return builder
+    }
+
+    /**
+     * An invitation for another of the user's accounts whose answer never found its copy: it says
+     * so and, instead of the answer buttons that cannot work, offers to open the account's own
+     * calendar in the browser, where the user can answer it.
+     */
+    fun undelivered(invitation: Invitation): NotificationCompat.Builder {
+        val account = invitation.account.orEmpty()
+        val text = context.getString(R.string.invitation_never_arrived, account)
+        return base(NotificationChannels.INVITATIONS)
+            .setContentTitle(invitation.title)
+            .setContentText(text)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
+            .setContentIntent(open(NotificationRoute.Event(invitation.detailRef())))
+            .setCategory(NotificationCompat.CATEGORY_EVENT)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setGroup(GROUP)
+            .setGroupAlertBehavior(NotificationCompat.GROUP_ALERT_CHILDREN)
+            .addAction(
+                NotificationCompat.Action.Builder(
+                    0,
+                    context.getString(R.string.invitation_open_calendar),
+                    PendingIntent.getActivity(
+                        context,
+                        Objects.hash(NotificationTags.invitation(invitation.key), "view"),
+                        InvitationIntents.viewCalendar(account),
+                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                    )
+                ).build()
+            )
     }
 
     /** The line that gathers two or more invitations; a tap opens the tray. */
