@@ -278,6 +278,39 @@ class InvitationsViewModelTest {
     }
 
     @Test
+    fun `an answer that waits for the invited account keeps the invitation and says so`() =
+        runTest {
+            val lunch = create("Lunch")
+            responses = InvitationResponses { _, _ ->
+                ResponseOutcome.WaitingForAccount("b@gmail.com")
+            }
+            val viewModel = viewModel()
+            viewModel.loaded()
+
+            viewModel.events.test {
+                viewModel.answer(lunch, InvitationAnswer.ACCEPT)
+                assertEquals(InvitationsEvent.WaitingForAccount("b@gmail.com"), awaitItem())
+            }
+            assertEquals(listOf("Lunch"), viewModel.titles())
+            assertEquals(AttendeeStatus.NEEDS_ACTION, statusOf(lunch.key.eventId))
+            assertTrue(surface.calls.isEmpty())
+        }
+
+    @Test
+    fun `an undo that finds the account still waiting says it was not stored`() = runTest {
+        val lunch = create("Lunch")
+        val viewModel = viewModel()
+        viewModel.loaded()
+        viewModel.answer(lunch, InvitationAnswer.ACCEPT)
+        responses = InvitationResponses { _, _ -> ResponseOutcome.WaitingForAccount("b@gmail.com") }
+        viewModel.events.test {
+            assertEquals(InvitationsEvent.Answered(lunch, InvitationAnswer.ACCEPT), awaitItem())
+            viewModel.undo(lunch)
+            assertEquals(InvitationsEvent.AnswerFailed, awaitItem())
+        }
+    }
+
+    @Test
     fun `undo that cannot be stored says so and the answer stays`() = runTest {
         val lunch = create("Lunch")
         val viewModel = viewModel()
