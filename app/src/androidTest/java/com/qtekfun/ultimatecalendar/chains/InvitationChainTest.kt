@@ -41,6 +41,7 @@ class InvitationChainTest : ChainTest() {
         waitForText(title)
         closeApp()
 
+        val before = calendars.syncState(id)
         val accept = notifications.activeNotifications.first { it.tag == tag }
             .notification.actions.orEmpty().first { it.title.toString() == "Accept" }
         accept.actionIntent.send()
@@ -52,6 +53,12 @@ class InvitationChainTest : ChainTest() {
             Attendees.ATTENDEE_STATUS_ACCEPTED,
             calendars.eventsTitled(title).single().selfStatus
         )
+        // What Google's adapter uploads from: the provider marks the event dirty for any client
+        // write to its attendees (the emulator's LOCAL account shows it too), and the app never
+        // touches the sync id.
+        val after = calendars.syncState(id)
+        assertEquals("the answer marks the event for upload", 1, after.first)
+        assertEquals("the sync id is untouched", before.second, after.second)
     }
 
     private companion object {

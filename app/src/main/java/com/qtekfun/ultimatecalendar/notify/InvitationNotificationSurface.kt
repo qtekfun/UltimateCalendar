@@ -5,6 +5,7 @@ package com.qtekfun.ultimatecalendar.notify
 
 import com.qtekfun.ultimatecalendar.domain.invitations.Invitation
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationAlert
+import com.qtekfun.ultimatecalendar.domain.invitations.InvitationAnswer
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationKey
 
 /**
@@ -19,6 +20,12 @@ interface InvitationNotificationSurface {
 
     /** Like [show], with a line saying the last answer was not sent. */
     fun showAnswerFailed(invitation: Invitation)
+
+    /**
+     * Tells, briefly, that the answer was stored; [waiting] when its account cannot sync right
+     * now, so the reply goes to the organizer later. It never claims more than that.
+     */
+    fun showAnswered(answer: InvitationAnswer, waiting: Boolean)
 
     /** Tells, on the changes channel, that the organizer moved the event. */
     fun showMoved(invitation: Invitation)

@@ -202,6 +202,25 @@ class LocalCalendars(private val context: Context) {
         }
     }
 
+    /**
+     * What a sync adapter looks at on [event]: `DIRTY` (the provider sets it when a client changes
+     * the event or its attendees, whatever the account type) and the `_SYNC_ID` the app never
+     * writes.
+     */
+    fun syncState(event: EventId): Pair<Int, String?> {
+        val cursor = resolver.query(
+            ContentUris.withAppendedId(Events.CONTENT_URI, event.value),
+            arrayOf(Events.DIRTY, Events._SYNC_ID),
+            null,
+            null,
+            null
+        )
+        return checkNotNull(cursor).use {
+            check(it.moveToFirst()) { "event ${event.value} is gone" }
+            it.getInt(0) to it.getString(1)
+        }
+    }
+
     /** The minutes before of the reminders stored for [event], sorted. */
     fun reminderMinutes(event: Long): List<Int> {
         val cursor = resolver.query(

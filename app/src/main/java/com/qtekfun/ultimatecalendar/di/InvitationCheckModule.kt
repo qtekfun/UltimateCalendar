@@ -14,6 +14,7 @@ import com.qtekfun.ultimatecalendar.data.invitations.SourceInvitationResponses
 import com.qtekfun.ultimatecalendar.data.settings.RepositoryInvitationCheckSettings
 import com.qtekfun.ultimatecalendar.data.settings.SettingsRepository
 import com.qtekfun.ultimatecalendar.data.source.CalendarSource
+import com.qtekfun.ultimatecalendar.data.source.OwnAddresses
 import com.qtekfun.ultimatecalendar.data.sync.AccountSyncTrigger
 import com.qtekfun.ultimatecalendar.data.sync.AndroidSyncEnvironment
 import com.qtekfun.ultimatecalendar.data.sync.CompositeSyncRequester
@@ -28,6 +29,7 @@ import com.qtekfun.ultimatecalendar.domain.invitations.InvitationReReminders
 import com.qtekfun.ultimatecalendar.notify.AndroidInvitationNotifications
 import com.qtekfun.ultimatecalendar.notify.ChangeNotificationSettings
 import com.qtekfun.ultimatecalendar.notify.InvitationNotificationSurface
+import com.qtekfun.ultimatecalendar.notify.InvitationRecheck
 import com.qtekfun.ultimatecalendar.notify.SystemInvitationNotifier
 import com.qtekfun.ultimatecalendar.sync.InvitationCheckScheduler
 import com.qtekfun.ultimatecalendar.sync.InvitationCheckSettings
@@ -41,6 +43,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import java.time.Clock
 import javax.inject.Named
+import javax.inject.Provider
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
 
@@ -102,6 +105,16 @@ object InvitationCheckModule {
     @Provides
     fun changeNotificationSettings(settings: SettingsRepository) = ChangeNotificationSettings {
         settings.current().let { ChangeNotifications(it.notifyChanges, it.notifyCancellations) }
+    }
+
+    /** The user's aliases, so that an invitation sent to one of them can be answered. */
+    @Provides
+    fun ownAddresses(settings: InvitationCheckSettings) = OwnAddresses { settings.aliases() }
+
+    /** After an answer from a notification: look again, with no sync request of its own. */
+    @Provides
+    fun recheck(checker: Provider<InvitationChecker>) = InvitationRecheck {
+        checker.get().check(requestSync = false).let { }
     }
 
     @Provides

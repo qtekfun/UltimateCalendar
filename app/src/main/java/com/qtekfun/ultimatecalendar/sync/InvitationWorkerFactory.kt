@@ -7,7 +7,9 @@ import android.content.Context
 import androidx.work.ListenableWorker
 import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
+import com.qtekfun.ultimatecalendar.data.source.CalendarSource
 import com.qtekfun.ultimatecalendar.data.subscriptions.SubscriptionRefresher
+import com.qtekfun.ultimatecalendar.data.sync.SourceSyncRequester
 import com.qtekfun.ultimatecalendar.notify.MissedReminderRecovery
 import com.qtekfun.ultimatecalendar.sync.engine.SyncEngine
 import javax.inject.Inject
@@ -24,7 +26,9 @@ class InvitationWorkerFactory @Inject constructor(
     private val checker: Provider<InvitationChecker>,
     private val recovery: Provider<MissedReminderRecovery>,
     private val engine: Provider<SyncEngine>,
-    private val subscriptions: Provider<SubscriptionRefresher>
+    private val subscriptions: Provider<SubscriptionRefresher>,
+    private val source: Provider<CalendarSource>,
+    private val requester: Provider<SourceSyncRequester>
 ) : WorkerFactory() {
     override fun createWorker(
         appContext: Context,
@@ -39,6 +43,9 @@ class InvitationWorkerFactory @Inject constructor(
 
         SubscriptionRefreshWorker::class.java.name ->
             SubscriptionRefreshWorker(appContext, workerParameters, subscriptions.get())
+
+        ReplySyncWorker::class.java.name ->
+            ReplySyncWorker(appContext, workerParameters, source.get(), requester.get())
 
         else -> null
     }

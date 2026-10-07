@@ -4,12 +4,15 @@
 package com.qtekfun.ultimatecalendar.di
 
 import com.qtekfun.ultimatecalendar.data.invitations.OwnEditMarks
+import com.qtekfun.ultimatecalendar.data.invitations.ReplyStatus
+import com.qtekfun.ultimatecalendar.data.invitations.SourceReplyStatus
 import com.qtekfun.ultimatecalendar.data.source.CalendarSource
 import com.qtekfun.ultimatecalendar.data.source.CompositeCalendarSource
 import com.qtekfun.ultimatecalendar.data.source.InvitationSyncingSource
 import com.qtekfun.ultimatecalendar.data.source.OwnEditMarkingSource
 import com.qtekfun.ultimatecalendar.data.source.ProviderAccess
 import com.qtekfun.ultimatecalendar.data.source.ProviderCalendarSource
+import com.qtekfun.ultimatecalendar.data.source.ReplyRetryingSource
 import com.qtekfun.ultimatecalendar.data.source.caldav.CalDavCalendarSource
 import com.qtekfun.ultimatecalendar.data.source.caldav.CalDavSyncTrigger
 import com.qtekfun.ultimatecalendar.data.source.caldav.RandomUidFactory
@@ -19,9 +22,12 @@ import com.qtekfun.ultimatecalendar.data.source.provider.ProviderGateway
 import com.qtekfun.ultimatecalendar.data.source.subscription.SubscriptionCalendarSource
 import com.qtekfun.ultimatecalendar.data.subscriptions.SubscriptionScheduler
 import com.qtekfun.ultimatecalendar.data.sync.InvitationSyncs
+import com.qtekfun.ultimatecalendar.data.sync.ReplyDelivery
+import com.qtekfun.ultimatecalendar.data.sync.ReplyRetry
 import com.qtekfun.ultimatecalendar.data.sync.SourceSyncRequester
 import com.qtekfun.ultimatecalendar.sync.CalDavSyncScheduler
 import com.qtekfun.ultimatecalendar.sync.WorkManagerCalDavScheduler
+import com.qtekfun.ultimatecalendar.sync.WorkManagerReplyRetry
 import com.qtekfun.ultimatecalendar.sync.WorkManagerSubscriptionScheduler
 import dagger.Binds
 import dagger.Module
@@ -43,6 +49,12 @@ interface CalendarSourceModule {
     @Binds
     @Singleton
     fun gateway(gateway: ContentResolverGateway): ProviderGateway
+
+    @Binds
+    fun replyRetry(retry: WorkManagerReplyRetry): ReplyRetry
+
+    @Binds
+    fun replyStatus(status: SourceReplyStatus): ReplyStatus
 
     @Binds
     fun uids(factory: RandomUidFactory): UidFactory
@@ -70,11 +82,17 @@ interface CalendarSourceModule {
         fun calendarSource(
             composite: CompositeCalendarSource,
             ownEdits: OwnEditMarks,
-            syncs: InvitationSyncs
-        ): CalendarSource =
-            OwnEditMarkingSource(InvitationSyncingSource(composite, syncs), ownEdits)
+            syncs: InvitationSyncs,
+            delivery: ReplyDelivery
+        ): CalendarSource = OwnEditMarkingSource(
+            ReplyRetryingSource(InvitationSyncingSource(composite, syncs), delivery),
+            ownEdits
+        )
 
-        /** Asks an account to sync soon after the app writes an invitation or an answer. */
+        /**
+         * Asks an account to sync soon after the app writes an invitation or an answer. When it
+         * cannot, [ReplyDelivery] keeps the bounded retry as the fallback for answers.
+         */
         @Provides
         @Singleton
         fun invitationSyncs(
