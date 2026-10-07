@@ -23,6 +23,10 @@ on:
         description: "Run the provider timing test (T25, seeds 20,000 events) instead of the UI tests"
         type: boolean
         default: false
+      chain-repeats:
+        description: "Run only InvitationChainTest this many times in one emulator session (flake rate); 0 runs the whole suite"
+        type: number
+        default: 0
   pull_request:
     types: [labeled, synchronize]
 
@@ -69,7 +73,7 @@ jobs:
           arch: x86_64
           disable-animations: true
           script: >-
-            ./gradlew connectedDebugAndroidTest
+            tools/run-ui-tests.sh ${{ inputs.chain-repeats || 0 }}
             ${{ inputs.perf && '-Pandroid.testInstrumentationRunnerArguments.perf=true -Pandroid.testInstrumentationRunnerArguments.class=com.qtekfun.ultimatecalendar.data.source.ProviderPerformanceTest' || '' }}
 
       - name: Print the timings
@@ -83,6 +87,15 @@ jobs:
           name: perf-timings-${{ matrix.api-level }}
           path: app/build/outputs/androidTest-results/
           retention-days: 30
+
+      - name: Upload the emulator log
+        if: always() && !inputs.perf
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ui-test-logcat-${{ matrix.api-level }}
+          path: build/logcat/
+          if-no-files-found: ignore
+          retention-days: 14
 
       - name: Upload reports
         if: failure()

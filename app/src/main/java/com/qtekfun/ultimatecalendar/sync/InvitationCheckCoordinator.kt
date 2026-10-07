@@ -7,9 +7,11 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
+import android.util.Log
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 /**
@@ -36,7 +38,13 @@ class InvitationCheckCoordinator @Inject constructor(
         // A burst of provider changes (a sync writes many rows) is one check. It does not ask
         // for another sync: that would make a sync cause another sync.
         scope.launch {
-            checker.sourceChanges.debounce(CHANGES_DEBOUNCE_MS).collect { checker.check(false) }
+            Log.i("UC-DIAG", "coordinator: collecting source changes")
+            checker.sourceChanges.onEach { Log.i("UC-DIAG", "coordinator: change received") }
+                .debounce(CHANGES_DEBOUNCE_MS).collect {
+                    Log.i("UC-DIAG", "coordinator: check starts")
+                    val outcome = checker.check(false)
+                    Log.i("UC-DIAG", "coordinator: check ends " + outcome.javaClass.simpleName)
+                }
         }
         scope.launch {
             opened.debounce(OPEN_DEBOUNCE_MS).collect { checker.check(true) }
