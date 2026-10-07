@@ -22,13 +22,11 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withTimeout
 import mockwebserver3.MockWebServer
 import mockwebserver3.junit5.StartStop
 import okhttp3.OkHttpClient
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
@@ -51,8 +49,8 @@ class CalDavLoginViewModelServerTest {
     @BeforeEach
     fun setUp() = Dispatchers.setMain(Dispatchers.Default)
 
-    @AfterEach
-    fun tearDown() = Dispatchers.resetMain()
+    // No resetMain: a flow still ending on a worker thread would find Main gone and throw into
+    // the next test. The next test sets its own Main.
 
     /** The real flow against the local plain-http server, as the screen's flow would be. */
     private fun model(timeoutMs: Long = 2_000): CalDavLoginViewModel {
