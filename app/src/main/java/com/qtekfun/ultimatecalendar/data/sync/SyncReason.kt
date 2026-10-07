@@ -9,5 +9,13 @@ enum class SyncReason {
     BACKGROUND,
 
     /** The user asked (pull to refresh): expedited and never limited. */
-    MANUAL
+    MANUAL,
+
+    /**
+     * The app just wrote an event with guests, or the user's answer, into the calendar provider:
+     * the account's sync adapter must upload it for the invitation to go out. Expedited and not
+     * limited by the background wait, but still not asked when the account has calendar sync off
+     * or there is no network, because the request would only be queued by the system.
+     */
+    WRITE
 }

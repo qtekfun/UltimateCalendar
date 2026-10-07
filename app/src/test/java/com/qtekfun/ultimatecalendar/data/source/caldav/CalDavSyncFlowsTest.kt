@@ -226,6 +226,61 @@ class CalDavSyncFlowsTest {
         }
 
     @Test
+    fun `only changes the guests are told about ask for a prompt sync`() = runBlocking {
+        setUp()
+        val guests = listOf(Attendee.of("zoe@example.com", "Zoe"))
+        fun prompts() = rig.promptRequests.also { rig.promptRequests = 0 }
+        rig.promptRequests = 0
+
+        val plain = rig.source.create(draft(title = "Alone")).ok()
+        assertEquals(0, prompts(), "an event without guests waits for the usual debounce")
+        rig.source.update(rig.source.event(plain).ok().copy(title = "Alone, later")).ok()
+        assertEquals(0, prompts())
+        rig.source.delete(plain).ok()
+        assertEquals(0, prompts())
+
+        val id = rig.source.create(draft(attendees = guests)).ok()
+        assertEquals(1, prompts(), "creating an event with guests is sent promptly")
+        rig.sync()
+        val event = rig.source.event(id).ok()
+        rig.source.update(event.copy(color = RED)).ok()
+        assertEquals(0, prompts(), "a color is not told to anybody")
+        rig.source.update(event.copy(location = "Room 2")).ok()
+        assertEquals(1, prompts(), "a change the guests see is sent promptly")
+        rig.source.update(event.copy(location = "Room 2", attendees = emptyList())).ok()
+        assertEquals(1, prompts(), "dropping the guests cancels for them")
+        val other = rig.source.create(draft(title = "Other", attendees = guests)).ok()
+        assertEquals(1, prompts())
+        rig.source.delete(other).ok()
+        assertEquals(1, prompts(), "deleting an event that had guests is sent promptly")
+    }
+
+    @Test
+    fun `an answer and a change to one occurrence of a series with guests are prompt`() =
+        runBlocking {
+            setUp()
+            rig.fake.put(rig.mine + "plan.ics", rig.env.ics(invitation))
+            rig.sync()
+            rig.promptRequests = 0
+            val plan = instances().single().eventId
+
+            rig.source.respond(plan, AttendeeStatus.DECLINED).ok()
+            assertEquals(1, rig.promptRequests)
+
+            val series = rig.source.create(
+                draft(
+                    rrule = "FREQ=DAILY;COUNT=3",
+                    attendees = listOf(Attendee.of("zoe@example.com"))
+                )
+            ).ok()
+            rig.promptRequests = 0
+            rig.source.cancelInstance(series, start.plusSeconds(DAY)).ok()
+            assertEquals(1, rig.promptRequests)
+            rig.source.editInstance(series, start.plusSeconds(2 * DAY), draft(title = "Once")).ok()
+            assertEquals(2, rig.promptRequests)
+        }
+
+    @Test
     fun `a server without scheduling keeps guests as a plain list and answers still count`() =
         runBlocking {
             setUp { scheduling = false }

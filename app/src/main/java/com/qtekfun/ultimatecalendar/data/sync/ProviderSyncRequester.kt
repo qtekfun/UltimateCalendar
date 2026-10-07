@@ -28,7 +28,7 @@ class ProviderSyncRequester @Inject constructor(
         var failed = 0
         for (account in accounts.filter { it.type != LOCAL_ACCOUNT_TYPE }) {
             try {
-                trigger.request(account, expedited = reason == SyncReason.MANUAL)
+                trigger.request(account, expedited = reason != SyncReason.BACKGROUND)
                 requested++
             } catch (_: SecurityException) {
                 failed++

@@ -127,4 +127,31 @@ class ThrottledSyncRequesterTest {
 
         assertEquals(listOf(google to true), asked)
     }
+
+    @Test
+    fun `a write for an invitation is urgent even right after a background request`() = runTest {
+        requester.requestSync(setOf(google), SyncReason.BACKGROUND)
+        asked.clear()
+        clock.now = now.plus(Duration.ofMinutes(1))
+
+        val result = requester.requestSync(setOf(google, local), SyncReason.WRITE)
+
+        assertEquals(SyncRequests(requested = 1, failed = 0, skipped = 0), result)
+        assertEquals(listOf(google to true), asked)
+    }
+
+    @Test
+    fun `a write is not requested for an account with its sync off or without a network`() =
+        runTest {
+            states[google] = AccountSyncState(syncable = true, syncsEvents = false)
+
+            val syncOff = requester.requestSync(setOf(google), SyncReason.WRITE)
+            states.clear()
+            device = DeviceSyncState(batterySaver = false, networkAvailable = false)
+            val offline = requester.requestSync(setOf(dav), SyncReason.WRITE)
+
+            assertEquals(SyncRequests(requested = 0, failed = 0, skipped = 1), syncOff)
+            assertEquals(SyncRequests(requested = 0, failed = 0, skipped = 1), offline)
+            assertEquals(emptyList<Pair<CalendarAccount, Boolean>>(), asked)
+        }
 }

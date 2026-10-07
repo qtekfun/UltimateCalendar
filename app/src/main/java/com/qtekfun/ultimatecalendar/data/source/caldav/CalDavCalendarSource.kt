@@ -189,7 +189,7 @@ class CalDavCalendarSource @Inject constructor(
                 queue.enqueue(account.id, it, QueuedOperation.CreateEvent)
             }
         }
-        committed()
+        committed(promptly = draft.attendees.isNotEmpty())
         CalDavIds.event(id)
     }
 
@@ -209,7 +209,10 @@ class CalDavCalendarSource @Inject constructor(
                 stored.copy(color = event.color),
                 after,
                 fields,
-                QueuedOperation.UpdateEvent
+                QueuedOperation.UpdateEvent,
+                // Guests are told about what they see: not about a color.
+                promptly = fields.any { it in GUEST_FIELDS } &&
+                    (before.series.event.attendees.isNotEmpty() || event.attendees.isNotEmpty())
             )
         }
     }
@@ -218,6 +221,7 @@ class CalDavCalendarSource @Inject constructor(
         val account = requireAccount()
         val stored = row(account, id)
         writableCalendar(account, CalDavIds.calendar(stored.calendarId))
+        val guests = StoredSeries.read(stored).series.event.attendees.isNotEmpty()
         inTransaction {
             val sent = queue.enqueue(
                 account.id,
@@ -231,7 +235,7 @@ class CalDavCalendarSource @Inject constructor(
                 eventRows.delete(stored.id)
             }
         }
-        committed()
+        committed(promptly = guests)
     }
 
     override suspend fun editInstance(
@@ -264,7 +268,7 @@ class CalDavCalendarSource @Inject constructor(
             // schedules tells the organizer, one that does not just keeps the answer.
             if (before.series != answer.event.series) {
                 val operation = QueuedOperation.Respond(answer.email, status, null)
-                save(account, stored, answer.event, fields, operation)
+                save(account, stored, answer.event, fields, operation, promptly = true)
             }
         }
 
@@ -287,7 +291,15 @@ class CalDavCalendarSource @Inject constructor(
         } else {
             QueuedOperation.EditInstance(stamp)
         }
-        save(account, stored, after, setOf(EventField.OVERRIDES), operation)
+        save(
+            account,
+            stored,
+            after,
+            setOf(EventField.OVERRIDES),
+            operation,
+            promptly = before.series.event.attendees.isNotEmpty() ||
+                edit?.attendees?.isNotEmpty() == true
+        )
     }
 
     /** Stores [after] in [stored]'s row with its changes marked, and queues [operation]. */
@@ -296,7 +308,8 @@ class CalDavCalendarSource @Inject constructor(
         stored: DavEventEntity,
         after: IcsEvent,
         fields: Set<EventField>,
-        operation: QueuedOperation
+        operation: QueuedOperation,
+        promptly: Boolean
     ) {
         val updated = StoredSeries.write(stored, after).copy(
             dirtyFields = stored.dirtyFields or EventField.toBits(fields),
@@ -306,7 +319,7 @@ class CalDavCalendarSource @Inject constructor(
             eventRows.update(updated)
             queue.enqueue(account.id, stored.id, operation)
         }
-        committed()
+        committed(promptly)
     }
 
     private fun instancesOf(
@@ -375,10 +388,13 @@ class CalDavCalendarSource @Inject constructor(
         return calendar
     }
 
-    /** A change is stored: tell the readers and ask for a sync soon. */
-    private fun committed() {
+    /**
+     * A change is stored: tell the readers and ask for a sync soon, [promptly] when it carries an
+     * invitation or an answer.
+     */
+    private fun committed(promptly: Boolean = false) {
         written.tryEmit(Unit)
-        sync.localChange()
+        sync.localChange(promptly)
     }
 
     private suspend fun <R> inTransaction(block: suspend () -> R): R =
@@ -400,5 +416,15 @@ class CalDavCalendarSource @Inject constructor(
     private companion object {
         val ALL_FIELDS = EventField.toBits(EventField.entries.toSet())
         const val WRITES_BUFFER = 8
+
+        /** The fields an invitation shows: a change to one of them is told to the guests. */
+        val GUEST_FIELDS = setOf(
+            EventField.TITLE,
+            EventField.DESCRIPTION,
+            EventField.LOCATION,
+            EventField.TIME,
+            EventField.REPEAT,
+            EventField.ATTENDEES
+        )
     }
 }

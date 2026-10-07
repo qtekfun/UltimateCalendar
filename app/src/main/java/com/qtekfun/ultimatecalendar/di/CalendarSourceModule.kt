@@ -6,6 +6,7 @@ package com.qtekfun.ultimatecalendar.di
 import com.qtekfun.ultimatecalendar.data.invitations.OwnEditMarks
 import com.qtekfun.ultimatecalendar.data.source.CalendarSource
 import com.qtekfun.ultimatecalendar.data.source.CompositeCalendarSource
+import com.qtekfun.ultimatecalendar.data.source.InvitationSyncingSource
 import com.qtekfun.ultimatecalendar.data.source.OwnEditMarkingSource
 import com.qtekfun.ultimatecalendar.data.source.ProviderAccess
 import com.qtekfun.ultimatecalendar.data.source.ProviderCalendarSource
@@ -17,6 +18,8 @@ import com.qtekfun.ultimatecalendar.data.source.provider.ContentResolverGateway
 import com.qtekfun.ultimatecalendar.data.source.provider.ProviderGateway
 import com.qtekfun.ultimatecalendar.data.source.subscription.SubscriptionCalendarSource
 import com.qtekfun.ultimatecalendar.data.subscriptions.SubscriptionScheduler
+import com.qtekfun.ultimatecalendar.data.sync.InvitationSyncs
+import com.qtekfun.ultimatecalendar.data.sync.SourceSyncRequester
 import com.qtekfun.ultimatecalendar.sync.CalDavSyncScheduler
 import com.qtekfun.ultimatecalendar.sync.WorkManagerCalDavScheduler
 import com.qtekfun.ultimatecalendar.sync.WorkManagerSubscriptionScheduler
@@ -26,6 +29,9 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 
 /**
  * The calendar source the app uses: the Android calendar provider, the app's own CalDAV calendars
@@ -63,8 +69,18 @@ interface CalendarSourceModule {
         @Singleton
         fun calendarSource(
             composite: CompositeCalendarSource,
-            ownEdits: OwnEditMarks
-        ): CalendarSource = OwnEditMarkingSource(composite, ownEdits)
+            ownEdits: OwnEditMarks,
+            syncs: InvitationSyncs
+        ): CalendarSource =
+            OwnEditMarkingSource(InvitationSyncingSource(composite, syncs), ownEdits)
+
+        /** Asks an account to sync soon after the app writes an invitation or an answer. */
+        @Provides
+        @Singleton
+        fun invitationSyncs(
+            requester: SourceSyncRequester,
+            @IoDispatcher io: CoroutineDispatcher
+        ): InvitationSyncs = InvitationSyncs(requester, CoroutineScope(SupervisorJob() + io))
 
         @Provides
         fun providerAccess(composite: CompositeCalendarSource): ProviderAccess = composite

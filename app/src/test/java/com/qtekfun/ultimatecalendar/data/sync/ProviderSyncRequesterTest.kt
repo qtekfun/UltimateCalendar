@@ -32,11 +32,12 @@ class ProviderSyncRequesterTest {
     }
 
     @Test
-    fun `only a manual request is expedited`() = runTest {
+    fun `only a manual request or one for a write is expedited`() = runTest {
         requester().requestSync(setOf(google), SyncReason.BACKGROUND)
         requester().requestSync(setOf(google), SyncReason.MANUAL)
+        requester().requestSync(setOf(google), SyncReason.WRITE)
 
-        assertEquals(listOf(false, true), urgent)
+        assertEquals(listOf(false, true, true), urgent)
     }
 
     @Test

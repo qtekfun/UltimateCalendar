@@ -46,6 +46,9 @@ class CalDavRig(server: MockWebServer, zone: ZoneId = ZoneId.of("Europe/Madrid")
     /** How many times the source asked for a sync after a change. */
     var syncRequests = 0
 
+    /** How many of them were for an invitation or an answer, to be sent promptly. */
+    var promptRequests = 0
+
     private var uid = 0
     private lateinit var signedIn: SignedInAccount
 
@@ -82,7 +85,10 @@ class CalDavRig(server: MockWebServer, zone: ZoneId = ZoneId.of("Europe/Madrid")
         env.db,
         env.queue,
         env.clock,
-        { syncRequests++ },
+        { promptly ->
+            syncRequests++
+            if (promptly) promptRequests++
+        },
         { "uid-${++uid}@test" },
         Dispatchers.Unconfined
     )
