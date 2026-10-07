@@ -7,11 +7,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
-import android.util.Log
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 
 /**
@@ -36,15 +35,16 @@ class InvitationCheckCoordinator @Inject constructor(
         // Replaces the periodic job now and whenever Settings changes the interval.
         scope.launch { settings.intervals.collect { scheduler.apply(it) } }
         // A burst of provider changes (a sync writes many rows) is one check. It does not ask
-        // for another sync: that would make a sync cause another sync.
+        // for another sync: that would make a sync cause another sync. Watching begins with a
+        // check of its own: the observer is registered a moment after the process starts, and
+        // whatever was written before that (an adapter's sync that woke the process, a test
+        // seeding right away) produced a change nobody heard. A change that arrives while a check
+        // runs is kept (debounce holds the latest) and checked right after it.
         scope.launch {
-            Log.i("UC-DIAG", "coordinator: collecting source changes")
-            checker.sourceChanges.onEach { Log.i("UC-DIAG", "coordinator: change received") }
-                .debounce(CHANGES_DEBOUNCE_MS).collect {
-                    Log.i("UC-DIAG", "coordinator: check starts")
-                    val outcome = checker.check(false)
-                    Log.i("UC-DIAG", "coordinator: check ends " + outcome.javaClass.simpleName)
-                }
+            checker.sourceChanges
+                .onStart { emit(Unit) }
+                .debounce(CHANGES_DEBOUNCE_MS)
+                .collect { checker.check(false) }
         }
         scope.launch {
             opened.debounce(OPEN_DEBOUNCE_MS).collect { checker.check(true) }

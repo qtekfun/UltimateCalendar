@@ -15,7 +15,6 @@ import android.os.Handler
 import android.os.Looper
 import android.os.RemoteException
 import android.provider.CalendarContract
-import android.util.Log
 import androidx.core.net.toUri
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -40,7 +39,6 @@ class ContentResolverGateway @Inject constructor(@ApplicationContext context: Co
         val signals = Channel<Unit>(Channel.CONFLATED)
         val observer = object : ContentObserver(Handler(Looper.getMainLooper())) {
             override fun onChange(selfChange: Boolean) {
-                Log.i("UC-DIAG", "gateway: onChange")
                 signals.trySend(Unit)
             }
         }
@@ -55,7 +53,6 @@ class ContentResolverGateway @Inject constructor(@ApplicationContext context: Co
             // reads that follow report the missing permission. Throwing here would crash the app.
             return@flow
         }
-        Log.i("UC-DIAG", "gateway: observer registered")
         try {
             for (signal in signals) emit(signal)
         } finally {

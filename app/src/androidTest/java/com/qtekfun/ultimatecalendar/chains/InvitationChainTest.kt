@@ -4,7 +4,6 @@
 package com.qtekfun.ultimatecalendar.chains
 
 import android.provider.CalendarContract.Attendees
-import android.util.Log
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationKey
 import com.qtekfun.ultimatecalendar.domain.invitations.NotificationTags
 import com.qtekfun.ultimatecalendar.domain.model.Attendee
@@ -23,7 +22,6 @@ class InvitationChainTest : ChainTest() {
     @Test
     fun anInvitationInTheProviderIsNotifiedListedAndAnsweredFromTheNotification() {
         startProcess()
-        Log.i("UC-DIAG", "test: process started")
         val title = calendars.unique("Offsite")
         val id = calendars.seed(
             calendars.timed(
@@ -33,13 +31,11 @@ class InvitationChainTest : ChainTest() {
                 attendees = listOf(Attendee.of(calendars.me))
             )
         )
-        Log.i("UC-DIAG", "test: seeded")
         val tag = NotificationTags.invitation(InvitationKey(calendars.work, id))
 
         // The provider's change starts a check after a short debounce; nobody calls the checker.
         waitUntil(INVITATION_TIMEOUT_MS) { notifications.activeNotifications.any { it.tag == tag } }
 
-        Log.i("UC-DIAG", "test: notified")
         launchApp()
         clickDescribed("Invitations, 1 pending")
         waitForText(title)
