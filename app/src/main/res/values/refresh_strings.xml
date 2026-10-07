@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 UltimateCalendar contributors
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<resources>
+    <string name="refresh_action">Refresh</string>
+    <string name="refresh_in_progress">Refreshing</string>
+    <string name="refresh_up_to_date">Up to date</string>
+    <string name="refresh_issues">Not everything was refreshed: %1$s.</string>
+    <string name="refresh_issue_offline">no network</string>
+    <string name="refresh_issue_permission">calendar permission missing</string>
+    <string name="refresh_issue_account_sync">account sync is disabled</string>
+    <string name="refresh_issue_server">server error</string>
+    <string name="refresh_issue_sign_in">sign-in refused</string>
+    <string name="refresh_issue_read">calendars could not be read</string>
+    <string name="invitations_sent_when_synced">Invitations are sent when your account syncs.</string>
+</resources>

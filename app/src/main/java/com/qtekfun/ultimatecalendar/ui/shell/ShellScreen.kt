@@ -10,9 +10,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.PermanentNavigationDrawer
@@ -23,6 +25,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
@@ -33,7 +36,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -73,11 +79,18 @@ fun ShellScreen(
     navigation: ShellActions,
     viewModel: ShellViewModel = viewModel(),
     detailPane: DetailPane? = null,
-    looks: CalendarLookViewModel = viewModel()
+    looks: CalendarLookViewModel = viewModel(),
+    refresh: RefreshViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val refreshing by refresh.refreshing.collectAsStateWithLifecycle()
+    val snackbar = remember { SnackbarHostState() }
+    val resources = LocalResources.current
+    LaunchedEffect(refresh) {
+        refresh.messages.collect { snackbar.showSnackbar(it.text(resources)) }
+    }
     ShellContent(
-        state,
+        state.copy(refreshing = refreshing),
         navigation.copy(
             onSelectView = {
                 viewModel.selectView(it)
@@ -87,10 +100,12 @@ fun ShellScreen(
             onToday = viewModel::goToToday,
             onPrevious = viewModel::previous,
             onNext = viewModel::next,
+            onRefresh = refresh::refresh,
             onSetCalendarVisible = viewModel::setCalendarVisible,
             onCalendarPermissionAnswered = viewModel::calendarPermissionAnswered,
             onSaveCalendarLook = looks::save
         ),
+        snackbarHost = snackbar,
         detailPane = detailPane
     )
 }
@@ -192,12 +207,16 @@ private fun ShellScaffold(
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
             Column {
-                ShellTopBar(
-                    state,
-                    actions,
-                    onOpenDrawer = onOpenDrawer,
-                    showMenu = layout.navigation == NavigationStyle.MODAL_DRAWER
-                )
+                Box {
+                    ShellTopBar(
+                        state,
+                        actions,
+                        onOpenDrawer = onOpenDrawer,
+                        showMenu = layout.navigation == NavigationStyle.MODAL_DRAWER
+                    )
+                    // Also the only sign of a refresh where the bar has no room for its button.
+                    if (state.refreshing) RefreshProgress(Modifier.align(Alignment.BottomCenter))
+                }
                 if (state.calendarPermissionMissing) {
                     CalendarPermissionBanner(onResult = actions.onCalendarPermissionAnswered)
                 }
@@ -218,6 +237,12 @@ private fun ShellScaffold(
             ) { period -> content(period, padding) }
         }
     }
+}
+
+@Composable
+private fun RefreshProgress(modifier: Modifier = Modifier) {
+    val busy = stringResource(R.string.refresh_in_progress)
+    LinearProgressIndicator(modifier.fillMaxWidth().semantics { contentDescription = busy })
 }
 
 /**

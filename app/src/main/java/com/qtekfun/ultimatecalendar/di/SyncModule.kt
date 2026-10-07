@@ -5,6 +5,10 @@ package com.qtekfun.ultimatecalendar.di
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.qtekfun.ultimatecalendar.data.subscriptions.SubscriptionRefresher
+import com.qtekfun.ultimatecalendar.data.subscriptions.SubscriptionsRefresh
+import com.qtekfun.ultimatecalendar.sync.CalDavSync
+import com.qtekfun.ultimatecalendar.sync.OwnAccountSync
 import com.qtekfun.ultimatecalendar.sync.engine.LastSyncStore
 import com.qtekfun.ultimatecalendar.sync.engine.PreferencesLastSyncStore
 import com.qtekfun.ultimatecalendar.sync.engine.SessionSyncSource
@@ -24,6 +28,12 @@ import kotlin.random.Random
 abstract class SyncModule {
     @Binds
     abstract fun syncSource(source: SessionSyncSource): SyncSource
+
+    @Binds
+    abstract fun ownAccountSync(sync: CalDavSync): OwnAccountSync
+
+    @Binds
+    abstract fun subscriptionsRefresh(refresher: SubscriptionRefresher): SubscriptionsRefresh
 
     @Binds
     abstract fun lastSync(store: PreferencesLastSyncStore): LastSyncStore

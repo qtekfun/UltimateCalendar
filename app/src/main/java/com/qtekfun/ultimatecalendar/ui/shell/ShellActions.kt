@@ -20,6 +20,8 @@ data class ShellActions(
     val onSetCalendarVisible: (CalendarId, Boolean) -> Unit = { _, _ -> },
     /** Saves the name and color the user gave a calendar on this phone (RF-02). */
     val onSaveCalendarLook: (CalendarInfo, String, Int?) -> Unit = { _, _, _ -> },
+    /** Refreshes everything now: syncs the accounts, the subscriptions and the invitations. */
+    val onRefresh: () -> Unit = {},
     val onSearch: () -> Unit = {},
     val onInvitations: () -> Unit = {},
     val onNewEvent: () -> Unit = {},

@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -44,9 +45,11 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextOverflow
 import com.qtekfun.ultimatecalendar.R
+import com.qtekfun.ultimatecalendar.domain.layout.WidthClass
 import com.qtekfun.ultimatecalendar.domain.model.CalendarInfo
 import com.qtekfun.ultimatecalendar.domain.navigation.AccountCalendars
 import com.qtekfun.ultimatecalendar.domain.navigation.CalendarView
+import com.qtekfun.ultimatecalendar.ui.adaptive.currentAdaptiveLayout
 import com.qtekfun.ultimatecalendar.ui.components.CalendarCheckRow
 import com.qtekfun.ultimatecalendar.ui.components.CalendarIcons
 import com.qtekfun.ultimatecalendar.ui.components.SectionHeader
@@ -80,6 +83,7 @@ fun ShellDrawer(
 
 @Composable
 private fun DrawerItems(state: ShellUiState, actions: ShellActions, onClose: () -> Unit) {
+    val compact = currentAdaptiveLayout().widthClass == WidthClass.COMPACT
     LazyColumn {
         item {
             Text(
@@ -102,6 +106,10 @@ private fun DrawerItems(state: ShellUiState, actions: ShellActions, onClose: () 
                 modifier = Modifier.padding(horizontal = ItemPadding)
             )
         }
+        // A narrow screen has no room for the button in the header.
+        if (compact) {
+            item { RefreshItem(state.refreshing, actions, onClose) }
+        }
         item { Divider() }
         item { SectionHeader(stringResource(R.string.shell_calendars)) }
         when {
@@ -119,6 +127,23 @@ private fun DrawerItems(state: ShellUiState, actions: ShellActions, onClose: () 
         item { Divider() }
         item { Footer(actions, onClose) }
     }
+}
+
+@Composable
+private fun RefreshItem(refreshing: Boolean, actions: ShellActions, onClose: () -> Unit) {
+    val busy = stringResource(R.string.refresh_in_progress)
+    NavigationDrawerItem(
+        icon = { Icon(Icons.Filled.Refresh, contentDescription = null) },
+        label = { Text(stringResource(R.string.refresh_action)) },
+        selected = false,
+        onClick = {
+            if (!refreshing) actions.onRefresh()
+            onClose()
+        },
+        modifier = Modifier
+            .padding(horizontal = ItemPadding)
+            .semantics { if (refreshing) stateDescription = busy }
+    )
 }
 
 @Composable

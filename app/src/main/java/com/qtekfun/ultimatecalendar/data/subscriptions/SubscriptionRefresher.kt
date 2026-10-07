@@ -58,7 +58,7 @@ class SubscriptionRefresher @Inject constructor(
     private val zone: SystemZone,
     private val clock: Clock,
     @IoDispatcher private val io: CoroutineDispatcher
-) {
+) : SubscriptionsRefresh {
     private val subscriptions = database.subscriptionDao()
     private val events = database.subscriptionEventDao()
     private val mutex = Mutex()
@@ -77,7 +77,9 @@ class SubscriptionRefresher @Inject constructor(
     }
 
     /** Refreshes every enabled subscription (the user asked, or one was just added). */
-    suspend fun refreshAll(): RefreshSummary = refreshEach { _, all -> all.filter { it.enabled } }
+    override suspend fun refreshAll(): RefreshSummary = refreshEach { _, all ->
+        all.filter { it.enabled }
+    }
 
     /**
      * Refreshes what is due at this moment (see [SubscriptionPolicy.toRefresh]); [retrying] is
