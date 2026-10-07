@@ -4,7 +4,9 @@
 package com.qtekfun.ultimatecalendar.sync
 
 import androidx.work.ListenableWorker
+import com.qtekfun.ultimatecalendar.data.source.CalendarSource
 import com.qtekfun.ultimatecalendar.data.subscriptions.SubscriptionRefresher
+import com.qtekfun.ultimatecalendar.data.sync.SourceSyncRequester
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationChanges
 import com.qtekfun.ultimatecalendar.domain.result.CalendarError
 import com.qtekfun.ultimatecalendar.notify.MissedReminderRecovery
@@ -65,7 +67,9 @@ class InvitationCheckWorkerTest {
                 },
                 Provider { recovery },
                 Provider { engine },
-                Provider { mockk<SubscriptionRefresher>() }
+                Provider { mockk<SubscriptionRefresher>() },
+                Provider { mockk<CalendarSource>() },
+                Provider { mockk<SourceSyncRequester>() }
             )
 
         val built = factory.createWorker(
@@ -91,6 +95,13 @@ class InvitationCheckWorkerTest {
             mockk(relaxed = true)
         )
 
+        val reply = factory.createWorker(
+            mockk(relaxed = true),
+            ReplySyncWorker::class.java.name,
+            mockk(relaxed = true)
+        )
+
+        assertInstanceOf(ReplySyncWorker::class.java, reply)
         assertInstanceOf(SubscriptionRefreshWorker::class.java, refresh)
         assertInstanceOf(InvitationCheckWorker::class.java, built)
         assertInstanceOf(CalDavSyncWorker::class.java, sync)

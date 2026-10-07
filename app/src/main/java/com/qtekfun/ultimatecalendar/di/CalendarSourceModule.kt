@@ -4,11 +4,14 @@
 package com.qtekfun.ultimatecalendar.di
 
 import com.qtekfun.ultimatecalendar.data.invitations.OwnEditMarks
+import com.qtekfun.ultimatecalendar.data.invitations.ReplyStatus
+import com.qtekfun.ultimatecalendar.data.invitations.SourceReplyStatus
 import com.qtekfun.ultimatecalendar.data.source.CalendarSource
 import com.qtekfun.ultimatecalendar.data.source.CompositeCalendarSource
 import com.qtekfun.ultimatecalendar.data.source.OwnEditMarkingSource
 import com.qtekfun.ultimatecalendar.data.source.ProviderAccess
 import com.qtekfun.ultimatecalendar.data.source.ProviderCalendarSource
+import com.qtekfun.ultimatecalendar.data.source.ReplyRetryingSource
 import com.qtekfun.ultimatecalendar.data.source.caldav.CalDavCalendarSource
 import com.qtekfun.ultimatecalendar.data.source.caldav.CalDavSyncTrigger
 import com.qtekfun.ultimatecalendar.data.source.caldav.RandomUidFactory
@@ -17,8 +20,11 @@ import com.qtekfun.ultimatecalendar.data.source.provider.ContentResolverGateway
 import com.qtekfun.ultimatecalendar.data.source.provider.ProviderGateway
 import com.qtekfun.ultimatecalendar.data.source.subscription.SubscriptionCalendarSource
 import com.qtekfun.ultimatecalendar.data.subscriptions.SubscriptionScheduler
+import com.qtekfun.ultimatecalendar.data.sync.ReplyDelivery
+import com.qtekfun.ultimatecalendar.data.sync.ReplyRetry
 import com.qtekfun.ultimatecalendar.sync.CalDavSyncScheduler
 import com.qtekfun.ultimatecalendar.sync.WorkManagerCalDavScheduler
+import com.qtekfun.ultimatecalendar.sync.WorkManagerReplyRetry
 import com.qtekfun.ultimatecalendar.sync.WorkManagerSubscriptionScheduler
 import dagger.Binds
 import dagger.Module
@@ -37,6 +43,12 @@ interface CalendarSourceModule {
     @Binds
     @Singleton
     fun gateway(gateway: ContentResolverGateway): ProviderGateway
+
+    @Binds
+    fun replyRetry(retry: WorkManagerReplyRetry): ReplyRetry
+
+    @Binds
+    fun replyStatus(status: SourceReplyStatus): ReplyStatus
 
     @Binds
     fun uids(factory: RandomUidFactory): UidFactory
@@ -63,8 +75,9 @@ interface CalendarSourceModule {
         @Singleton
         fun calendarSource(
             composite: CompositeCalendarSource,
-            ownEdits: OwnEditMarks
-        ): CalendarSource = OwnEditMarkingSource(composite, ownEdits)
+            ownEdits: OwnEditMarks,
+            delivery: ReplyDelivery
+        ): CalendarSource = OwnEditMarkingSource(ReplyRetryingSource(composite, delivery), ownEdits)
 
         @Provides
         fun providerAccess(composite: CompositeCalendarSource): ProviderAccess = composite

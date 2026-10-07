@@ -8,12 +8,16 @@ import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
+import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.qtekfun.ultimatecalendar.R
 import com.qtekfun.ultimatecalendar.domain.invitations.Invitation
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationAlert
+import com.qtekfun.ultimatecalendar.domain.invitations.InvitationAnswer
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationKey
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationNotificationPlanner
 import com.qtekfun.ultimatecalendar.domain.invitations.NotificationTags
@@ -30,6 +34,7 @@ import javax.inject.Singleton
  * permission nothing is shown and nothing fails; the tray keeps working.
  */
 @Singleton
+@Suppress("TooManyFunctions")
 class AndroidInvitationNotifications @Inject constructor(
     @ApplicationContext private val context: Context,
     private val builders: InvitationNotificationBuilders
@@ -52,6 +57,24 @@ class AndroidInvitationNotifications @Inject constructor(
         NotificationTags.invitation(invitation.key),
         builders.invitation(invitation, silent = true, failed = true)
     )
+
+    override fun showAnswered(answer: InvitationAnswer, waiting: Boolean) {
+        val done = context.getString(
+            when (answer) {
+                InvitationAnswer.ACCEPT -> R.string.invitation_sent_accept
+                InvitationAnswer.MAYBE -> R.string.invitation_sent_maybe
+                InvitationAnswer.DECLINE -> R.string.invitation_sent_decline
+            }
+        )
+        val text = if (waiting) {
+            context.getString(R.string.invitation_sent_waiting, done)
+        } else {
+            done
+        }
+        Handler(Looper.getMainLooper()).post {
+            Toast.makeText(context, text, Toast.LENGTH_LONG).show()
+        }
+    }
 
     override fun showMoved(invitation: Invitation) = post(
         NotificationTags.moved(invitation.key),

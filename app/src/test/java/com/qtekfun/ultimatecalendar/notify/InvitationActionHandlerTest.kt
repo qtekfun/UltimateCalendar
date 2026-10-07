@@ -4,6 +4,7 @@
 package com.qtekfun.ultimatecalendar.notify
 
 import com.qtekfun.ultimatecalendar.data.invitations.NotifiedInvitations
+import com.qtekfun.ultimatecalendar.data.invitations.ReplyStatus
 import com.qtekfun.ultimatecalendar.data.invitations.ResponseOutcome
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationAnswer
 import com.qtekfun.ultimatecalendar.domain.model.AttendeeStatus
@@ -19,7 +20,15 @@ class InvitationActionHandlerTest {
     private val surface = RecordingSurface()
     private val responses = FixedResponses(ResponseOutcome.Answered)
     private val notified = NotifiedInvitations(InMemoryNotifiedDao(), Dispatchers.Unconfined)
-    private val handler = InvitationActionHandler(responses, surface, notified)
+    private var waiting = false
+    private var rechecks = 0
+    private val handler = InvitationActionHandler(
+        responses,
+        surface,
+        notified,
+        ReplyStatus { waiting },
+        { rechecks++ }
+    )
     private val lunch = sampleInvitation(7, "Lunch")
 
     @Test
@@ -33,24 +42,44 @@ class InvitationActionHandlerTest {
     }
 
     @Test
-    fun `a stored answer removes the notification and refreshes the group`() = runTest {
+    fun `a stored answer removes the notification, says so and looks again`() = runTest {
         handler.answer(lunch.key, InvitationAnswer.ACCEPT)
-        assertEquals(listOf("cancel 7", "summary"), surface.calls)
+        assertEquals(listOf("cancel 7", "summary", "answered ACCEPT"), surface.calls)
+        assertEquals(1, rechecks)
+    }
+
+    @Test
+    fun `an answer whose account cannot sync now says the reply goes out later`() = runTest {
+        waiting = true
+        handler.answer(lunch.key, InvitationAnswer.MAYBE)
+        assertEquals(listOf("cancel 7", "summary", "answered MAYBE waiting"), surface.calls)
     }
 
     @Test
     fun `pressing the same button twice leaves the same screen`() = runTest {
         handler.answer(lunch.key, InvitationAnswer.ACCEPT)
         handler.answer(lunch.key, InvitationAnswer.ACCEPT)
-        assertEquals(listOf("cancel 7", "summary", "cancel 7", "summary"), surface.calls)
+        assertEquals(
+            listOf(
+                "cancel 7",
+                "summary",
+                "answered ACCEPT",
+                "cancel 7",
+                "summary",
+                "answered ACCEPT"
+            ),
+            surface.calls
+        )
     }
 
     @Test
-    fun `an event deleted meanwhile also clears the notification`() = runTest {
-        responses.outcome = ResponseOutcome.Gone
-        handler.answer(lunch.key, InvitationAnswer.DECLINE)
-        assertEquals(listOf("cancel 7", "summary"), surface.calls)
-    }
+    fun `an event deleted meanwhile also clears the notification without claiming an answer`() =
+        runTest {
+            responses.outcome = ResponseOutcome.Gone
+            handler.answer(lunch.key, InvitationAnswer.DECLINE)
+            assertEquals(listOf("cancel 7", "summary"), surface.calls)
+            assertEquals(1, rechecks)
+        }
 
     @Test
     fun `a failed answer keeps the notification and says it was not sent`() = runTest {
@@ -58,6 +87,7 @@ class InvitationActionHandlerTest {
         responses.outcome = ResponseOutcome.Failed(CalendarError.SourceFailure("down"))
         handler.answer(lunch.key, InvitationAnswer.MAYBE)
         assertEquals(listOf("failed 7"), surface.calls)
+        assertEquals(0, rechecks)
     }
 
     @Test

@@ -477,6 +477,35 @@ class ProviderCalendarSourceTest {
     }
 
     @Test
+    fun `responding finds my row by an alias or by the account name`() = runTest {
+        gateway.calendars = listOf(calendar(OWNED, 700, owner = null))
+        gateway.events = listOf(eventRow(1, OWNED))
+        gateway.attendees = listOf(
+            mapOf(
+                Attendees.EVENT_ID to 1L,
+                Attendees._ID to 10L,
+                Attendees.ATTENDEE_EMAIL to "Alias@Example.com"
+            ),
+            mapOf(
+                Attendees.EVENT_ID to 1L,
+                Attendees._ID to 11L,
+                Attendees.ATTENDEE_EMAIL to "tests@example.com"
+            )
+        )
+        val withAlias = ProviderCalendarSource(gateway, Dispatchers.Unconfined) {
+            setOf("alias@example.com")
+        }
+
+        withAlias.respond(EventId(1), AttendeeStatus.ACCEPTED).value()
+        assertEquals(10L, (applied().single() as ProviderOp.Update).id)
+
+        // Without the alias the account name (an address) still finds the row.
+        gateway.applied.clear()
+        source.respond(EventId(1), AttendeeStatus.ACCEPTED).value()
+        assertEquals(11L, (applied().single() as ProviderOp.Update).id)
+    }
+
+    @Test
     fun `responding needs access, an attendee row and an owner address`() = runTest {
         gateway.calendars = listOf(
             calendar(OWNED, 700),
