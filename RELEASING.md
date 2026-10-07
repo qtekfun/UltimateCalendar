@@ -39,7 +39,7 @@ Without the `UC_*` variables, `./gradlew assembleRelease` builds an unsigned APK
 3. Set `appVersion=X.Y.Z` in `gradle.properties`.
 4. Add the store summaries for the new version code, written for users and at most 500 characters each: `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt` and `es-ES/changelogs/<versionCode>.txt`. CI's `store-texts` check requires them on `release/*` branches.
 5. Open the PR `chore: release X.Y.Z` and merge it (squash) once the checks pass.
-6. Tag the merge commit and push the tag (only the author does this):
+6. Tag the merge commit and push the tag (the author, or Claude when the author asks for it):
    ```sh
    git switch master && git pull
    git tag vX.Y.Z && git push origin vX.Y.Z

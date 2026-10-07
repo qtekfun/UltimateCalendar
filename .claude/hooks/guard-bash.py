@@ -35,8 +35,8 @@ if re.search(r"\bgit\s+commit\b", cmd) and branch() == "master":
     block("you are on master; create a feat/<task> branch first.")
 if re.search(r"--no-verify\b", cmd):
     block("do not skip git hooks.")
-if re.search(r"\bgit\s+(tag|rebase\s+-i|reset\s+--hard\s+origin)", cmd):
-    block("tags are created and pushed by the author; no history rewriting.")
+if re.search(r"\bgit\s+(rebase\s+-i|reset\s+--hard\s+origin)", cmd):
+    block("no history rewriting.")
 if re.search(r"\bgradlew\b.*\s-x\s+\S*(check|test|detekt|ktlint|lint|kover)", cmd, re.I):
     block("do not exclude quality tasks; `./gradlew check` must pass as is.")
 if re.search(r"\bgradlew\b.*\bconnected\w*AndroidTest\b", cmd):
