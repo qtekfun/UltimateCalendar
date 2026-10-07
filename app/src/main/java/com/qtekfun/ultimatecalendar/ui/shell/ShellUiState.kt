@@ -24,6 +24,8 @@ data class ShellUiState(
     /** The phone's own accounts cannot be read: CalDAV and subscriptions still work. */
     val calendarPermissionMissing: Boolean = false,
     val pendingInvitations: Int = 0,
+    /** A refresh the user asked for is running. */
+    val refreshing: Boolean = false,
     /** Show the week number under the month title (the setting arrives with T23). */
     val showWeekNumbers: Boolean = false
 )

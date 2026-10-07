@@ -26,7 +26,7 @@ class CalDavSync @Inject constructor(
     private val scheduler: CalDavSyncScheduler,
     private val engine: SyncEngine,
     @IoDispatcher private val io: CoroutineDispatcher
-) {
+) : OwnAccountSync {
     /** How the latest sync of this process ended; null until one finishes. */
     val lastOutcome: StateFlow<SyncOutcome?> get() = engine.lastOutcome
 
@@ -54,5 +54,5 @@ class CalDavSync @Inject constructor(
     }
 
     /** Syncs now, in the caller's coroutine, and tells how it went ("check now" buttons). */
-    suspend fun syncNow(): SyncOutcome = engine.sync()
+    override suspend fun syncNow(): SyncOutcome = engine.sync()
 }

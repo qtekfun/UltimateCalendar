@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -57,6 +59,7 @@ internal data class AgendaCallbacks(
 )
 
 /** The Agenda inside the shell, fed by [AgendaViewModel] (RF-03). */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AgendaScreen(
     state: ShellUiState,
@@ -66,21 +69,27 @@ fun AgendaScreen(
     viewModel: AgendaViewModel = viewModel()
 ) {
     val agenda by viewModel.state.collectAsStateWithLifecycle()
-    AgendaView(
-        agenda = agenda,
-        date = state.date,
-        today = state.today,
-        callbacks = AgendaCallbacks(
-            onOpenEvent = actions.onOpenEvent,
-            onSelectDate = actions.onSelectDate,
-            onShow = viewModel::show,
-            onEarlier = viewModel::earlier,
-            onLater = viewModel::later,
-            onNewEvent = actions.onNewEvent
-        ),
-        modifier = modifier,
-        selected = selected
-    )
+    // Pulling the list down refreshes everything, as the header's button does.
+    PullToRefreshBox(
+        isRefreshing = state.refreshing,
+        onRefresh = actions.onRefresh,
+        modifier = modifier
+    ) {
+        AgendaView(
+            agenda = agenda,
+            date = state.date,
+            today = state.today,
+            callbacks = AgendaCallbacks(
+                onOpenEvent = actions.onOpenEvent,
+                onSelectDate = actions.onSelectDate,
+                onShow = viewModel::show,
+                onEarlier = viewModel::earlier,
+                onLater = viewModel::later,
+                onNewEvent = actions.onNewEvent
+            ),
+            selected = selected
+        )
+    }
 }
 
 /**

@@ -29,7 +29,12 @@ class CalDavAccounts @Inject constructor(
 
 /** Asks for a sync soon after a local change; changes are queued, so a late sync loses nothing. */
 fun interface CalDavSyncTrigger {
-    fun localChange()
+    /**
+     * A change was stored. With [promptly] (an invitation or an answer: the server sends the mail
+     * when it receives the change) the sync starts after a couple of seconds, not after the
+     * usual wait that coalesces ordinary edits.
+     */
+    fun localChange(promptly: Boolean)
 }
 
 /** Makes the UID of a new event, which also names its resource on the server. */

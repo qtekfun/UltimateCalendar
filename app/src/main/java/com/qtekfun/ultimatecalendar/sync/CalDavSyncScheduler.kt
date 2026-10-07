@@ -34,6 +34,12 @@ interface CalDavSyncScheduler {
 
     /** A sync as soon as there is a connection ("check now", pull to refresh). */
     fun syncNow()
+
+    /**
+     * A sync in a couple of seconds, for a change that carries an invitation or an answer: the
+     * server sends the mail when it receives it, so it must not wait for the ordinary debounce.
+     */
+    fun syncPromptly()
 }
 
 /**
@@ -69,6 +75,7 @@ class WorkManagerCalDavScheduler @Inject constructor(
         listOf(
             CalDavSyncWorker.PERIODIC_NAME,
             CalDavSyncWorker.SOON_NAME,
+            CalDavSyncWorker.PROMPT_NAME,
             CalDavSyncWorker.NOW_NAME
         )
             .forEach { work().cancelUniqueWork(it) }
@@ -78,7 +85,9 @@ class WorkManagerCalDavScheduler @Inject constructor(
 
     override fun syncNow() = once(CalDavSyncWorker.NOW_NAME, 0)
 
-    override fun localChange() = syncSoon()
+    override fun syncPromptly() = once(CalDavSyncWorker.PROMPT_NAME, PROMPT_SECONDS)
+
+    override fun localChange(promptly: Boolean) = if (promptly) syncPromptly() else syncSoon()
 
     /** A pending run is replaced (a later one means a later start); a running one is followed. */
     private fun once(name: String, delaySeconds: Long) {
@@ -95,6 +104,7 @@ class WorkManagerCalDavScheduler @Inject constructor(
     private companion object {
         const val PERIOD_MINUTES = 30L
         const val DEBOUNCE_SECONDS = 10L
+        const val PROMPT_SECONDS = 2L
         const val BACKOFF_SECONDS = 30L
     }
 }

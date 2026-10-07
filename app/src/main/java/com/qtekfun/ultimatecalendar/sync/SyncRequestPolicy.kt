@@ -17,6 +17,9 @@ import java.time.Instant
  *
  * - [SyncReason.MANUAL] (pull to refresh): always, unless the provider says the account cannot
  *   sync at all.
+ * - [SyncReason.WRITE] (the app wrote an invitation or an answer): not if the account cannot
+ *   sync or has its calendar sync switched off, nor without a network; otherwise at once, with no
+ *   wait and whatever the battery saver says, because the user's invitation is waiting.
  * - [SyncReason.BACKGROUND] (periodic job, app opening): not if the account cannot sync or has
  *   its calendar sync switched off, not in battery saver, not without a network, and not if the
  *   account was asked less than `max(interval, 30 min)` ago. The wait is shortened by
@@ -34,6 +37,7 @@ class SyncRequestPolicy(private val clock: Clock) {
     ): Boolean = when {
         !account.syncable -> false
         reason == SyncReason.MANUAL -> true
+        reason == SyncReason.WRITE -> account.syncsEvents && device.networkAvailable
         !account.syncsEvents || device.batterySaver || !device.networkAvailable -> false
         else -> lastRequest == null || !withinWait(lastRequest, interval)
     }

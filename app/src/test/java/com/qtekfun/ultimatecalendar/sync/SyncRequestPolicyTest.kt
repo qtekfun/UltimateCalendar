@@ -35,6 +35,25 @@ class SyncRequestPolicyTest {
         last: Instant? = null
     ) = policy.shouldRequest(SyncReason.MANUAL, account, device, CheckInterval.HOUR, last)
 
+    private fun write(
+        account: AccountSyncState = ready,
+        device: DeviceSyncState = normal,
+        last: Instant? = null
+    ) = policy.shouldRequest(SyncReason.WRITE, account, device, CheckInterval.HOUR, last)
+
+    @Test
+    fun `a write asks at once, whatever the wait and the battery saver`() {
+        assertTrue(write(last = ago(0)))
+        assertTrue(write(device = DeviceSyncState(batterySaver = true, networkAvailable = true)))
+    }
+
+    @Test
+    fun `a write does not ask an account that cannot sync, has its sync off or has no network`() {
+        assertFalse(write(account = AccountSyncState(syncable = false, syncsEvents = true)))
+        assertFalse(write(account = AccountSyncState(syncable = true, syncsEvents = false)))
+        assertFalse(write(device = DeviceSyncState(batterySaver = false, networkAvailable = false)))
+    }
+
     @Test
     fun `the first background run asks`() {
         assertTrue(background(last = null))

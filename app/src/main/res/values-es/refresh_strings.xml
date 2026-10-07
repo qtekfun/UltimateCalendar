@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SPDX-FileCopyrightText: 2026 UltimateCalendar contributors
+  SPDX-License-Identifier: GPL-3.0-or-later
+-->
+<resources>
+    <string name="refresh_action">Actualizar</string>
+    <string name="refresh_in_progress">Actualizando</string>
+    <string name="refresh_up_to_date">Al día</string>
+    <string name="refresh_issues">No se actualizó todo: %1$s.</string>
+    <string name="refresh_issue_offline">sin conexión</string>
+    <string name="refresh_issue_permission">falta el permiso de calendario</string>
+    <string name="refresh_issue_account_sync">la sincronización de la cuenta está desactivada</string>
+    <string name="refresh_issue_server">error del servidor</string>
+    <string name="refresh_issue_sign_in">inicio de sesión rechazado</string>
+    <string name="refresh_issue_read">no se pudieron leer los calendarios</string>
+    <string name="invitations_sent_when_synced">Las invitaciones se envían cuando se sincronice tu cuenta.</string>
+</resources>

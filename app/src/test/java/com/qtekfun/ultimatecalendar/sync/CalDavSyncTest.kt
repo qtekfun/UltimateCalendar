@@ -45,6 +45,10 @@ class RecordingCalDavScheduler : CalDavSyncScheduler {
     override fun syncNow() {
         calls += "now"
     }
+
+    override fun syncPromptly() {
+        calls += "promptly"
+    }
 }
 
 class CalDavSyncWorkerTest {

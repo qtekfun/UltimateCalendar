@@ -59,7 +59,8 @@ private const val FLIPPED = 180f
 /**
  * The header of the calendar: menu, "October 2026 v" (opens the date picker; the arrow flips
  * while [pickerOpen]), an optional [subtitle] such as the week number, the view switcher, the
- * Today button with today's number, search and the invitations tray with its count.
+ * Today button with today's number, the Refresh button (when [onRefresh] is given: a narrow
+ * bar has no room for it), search and the invitations tray with its count.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -78,7 +79,9 @@ fun CalendarTopBar(
     modifier: Modifier = Modifier,
     subtitle: String? = null,
     pickerOpen: Boolean = false,
-    showMenu: Boolean = true
+    showMenu: Boolean = true,
+    onRefresh: (() -> Unit)? = null,
+    refreshing: Boolean = false
 ) {
     val pickDescription = stringResource(R.string.shell_pick_date, title)
     val arrow by animateFloatAsState(
@@ -104,6 +107,7 @@ fun CalendarTopBar(
         actions = {
             ViewSwitcher(view, onSelectView)
             TodayButton(today, onToday)
+            if (onRefresh != null) RefreshButton(refreshing, onRefresh)
             IconButton(onClick = onSearch) {
                 Icon(
                     Icons.Filled.Search,

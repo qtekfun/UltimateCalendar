@@ -28,6 +28,7 @@ class CalDavSyncWorker(context: Context, params: WorkerParameters, private val e
     companion object {
         const val PERIODIC_NAME = "caldav-sync"
         const val SOON_NAME = "caldav-sync-soon"
+        const val PROMPT_NAME = "caldav-sync-prompt"
         const val NOW_NAME = "caldav-sync-now"
 
         /** After this many tries the next trigger (a change, the period) tries again instead. */

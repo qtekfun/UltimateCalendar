@@ -17,7 +17,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.qtekfun.ultimatecalendar.R
+import com.qtekfun.ultimatecalendar.domain.layout.WidthClass
 import com.qtekfun.ultimatecalendar.domain.navigation.WeekNumbers
+import com.qtekfun.ultimatecalendar.ui.adaptive.currentAdaptiveLayout
 import com.qtekfun.ultimatecalendar.ui.components.CalendarTopBar
 import java.time.Instant
 import java.time.LocalDate
@@ -63,7 +65,12 @@ fun ShellTopBar(
         onToday = actions.onToday,
         onSearch = actions.onSearch,
         onInvitations = actions.onInvitations,
-        modifier = modifier
+        modifier = modifier,
+        // On a narrow screen the bar is full: the drawer has the action there.
+        onRefresh = actions.onRefresh.takeUnless {
+            currentAdaptiveLayout().widthClass == WidthClass.COMPACT
+        },
+        refreshing = state.refreshing
     )
     if (picking) {
         DateDialog(
