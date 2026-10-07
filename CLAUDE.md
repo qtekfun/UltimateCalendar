@@ -1,89 +1,89 @@
-# UltimateCalendar — instrucciones para Claude Code
+# UltimateCalendar — instructions for Claude Code
 
 <!-- SPDX-FileCopyrightText: 2026 UltimateCalendar contributors -->
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 
-Calendario Android con la interfaz de **Google Calendar** y las invitaciones de **Apple Calendar**, sobre el proveedor de calendario de Android (Google, DAVx5…) y, más adelante, CalDAV propio. Offline, software libre (GPLv3), destino final F-Droid. Hermana de [UltimateTasks](https://github.com/qtekfun/UltimateTasks) y [UltimateDeck](https://github.com/qtekfun/UltimateDeck): se copian y adaptan sus piezas comunes.
+Android calendar with the **Google Calendar** interface and the invitations of **Apple Calendar**, on top of the Android calendar provider (Google, DAVx5…) and, later, its own CalDAV. Offline, free software (GPLv3), final destination F-Droid. Sister of [UltimateTasks](https://github.com/qtekfun/UltimateTasks) and [UltimateDeck](https://github.com/qtekfun/UltimateDeck): their common pieces are copied and adapted.
 
-Lee siempre `SPEC.md` (qué construir) y `PLAN.md` (en qué orden) antes de empezar. Si algo de este archivo contradice a la spec, para y pregunta.
+Always read `SPEC.md` (what to build) and `PLAN.md` (in what order) before starting. If anything in this file contradicts the spec, stop and ask.
 
-## Identidad del proyecto
-- Nombre: **UltimateCalendar**
+## Project identity
+- Name: **UltimateCalendar**
 - `applicationId`: `com.qtekfun.ultimatecalendar`
-- Repositorio: `github.com/qtekfun/UltimateCalendar`, rama principal **`master`** (por convención solo se entra por PR con la CI en verde; GitHub no lo impone, no hay ruleset)
-- Licencia: **GPL-3.0-or-later** (cabecera SPDX en cada archivo fuente, también yml, toml, kts, manifest y md)
-- Idiomas de la UI: inglés (por defecto) y español. **Ninguna cadena visible va hardcodeada**: todo en `strings.xml` (`values/` y `values-es/`).
+- Repository: `github.com/qtekfun/UltimateCalendar`, main branch **`master`** (by convention it is only entered through a PR with CI green; GitHub does not enforce it, there is no ruleset)
+- License: **GPL-3.0-or-later** (SPDX header in every source file, also yml, toml, kts, manifest and md)
+- UI languages: English (default) and Spanish. **No visible string is hardcoded**: everything in `strings.xml` (`values/` and `values-es/`).
 
-## Stack (no cambiar sin preguntar)
-- Kotlin, Jetpack Compose, Material 3 (colores dinámicos + modo oscuro + AMOLED)
-- `minSdk` 26, `targetSdk` el último estable. Subir `minSdk` solo si algo lo bloquea, y dejarlo anotado en `SPEC.md`.
-- Arquitectura: MVVM + capas `ui` / `domain` / `data` / `sync`, flujo de datos unidireccional (StateFlow)
-- Fuentes de calendario detrás de `CalendarSource` (`data/source/`): `ProviderCalendarSource` (CalendarContract) y, en la fase 6, `CalDavCalendarSource`. La UI y `domain` nunca usan `ContentResolver` ni la red directamente.
-- Inyección: Hilt · Persistencia propia: Room · Segundo plano: WorkManager · Avisos: AlarmManager
-- Gradle con Kotlin DSL y catálogo de versiones (`gradle/libs.versions.toml`), mismas versiones que UltimateTasks al arrancar (JDK 21 para Gradle, bytecode 17).
+## Stack (do not change without asking)
+- Kotlin, Jetpack Compose, Material 3 (dynamic colors + dark mode + AMOLED)
+- `minSdk` 26, `targetSdk` the latest stable. Raise `minSdk` only if something blocks it, and note it in `SPEC.md`.
+- Architecture: MVVM + `ui` / `domain` / `data` / `sync` layers, unidirectional data flow (StateFlow)
+- Calendar sources behind `CalendarSource` (`data/source/`): `ProviderCalendarSource` (CalendarContract) and, in phase 6, `CalDavCalendarSource`. The UI and `domain` never use `ContentResolver` or the network directly.
+- Injection: Hilt · Own persistence: Room · Background: WorkManager · Reminders: AlarmManager
+- Gradle with Kotlin DSL and version catalog (`gradle/libs.versions.toml`), same versions as UltimateTasks at the start (JDK 21 for Gradle, bytecode 17).
 
-## Reutilización de UltimateTasks
-- Se **copian y adaptan** (no se comparten como librería): configuración Gradle y de calidad, tema, asistente de fiabilidad, planificador de avisos, recuperación de avisos perdidos, latido, modo robusto, `BootReceiver`, editor de repeticiones, ajustes, copia de seguridad cifrada, Screenshots, release y receta F-Droid; en la fase 6, cliente CalDAV, iCalendar, Login Flow v2, cola y resolutor.
-- Al copiar, se copian también sus tests. Se adaptan paquete, nombres y cadenas; nada de código muerto específico de tareas.
+## Reuse from UltimateTasks
+- They are **copied and adapted** (not shared as a library): Gradle and quality configuration, theme, reliability wizard, reminder scheduler, recovery of missed reminders, heartbeat, robust mode, `BootReceiver`, recurrence editor, settings, encrypted backup, Screenshots, release and F-Droid recipe; in phase 6, CalDAV client, iCalendar, Login Flow v2, queue and resolver.
+- When copying, their tests are copied too. Package, names and strings are adapted; no dead code specific to tasks.
 
-## Reglas de software libre (F-Droid) — innegociables
-- **Prohibido**: Firebase, Google Play Services (también para leer Google Calendar: se lee del proveedor de Android), Crashlytics, analíticas, SDKs propietarios, cualquier dependencia no libre.
-- **Prohibido** telemetría de ningún tipo.
-- Antes de añadir una dependencia: comprueba su licencia (compatible con GPLv3) y **pregunta al usuario**.
-- Metadatos de publicación en formato fastlane: `fastlane/metadata/android/{en-US,es-ES}/`.
-- Builds reproducibles: sin timestamps ni valores no deterministas en el build.
+## Free-software rules (F-Droid) — non-negotiable
+- **Forbidden**: Firebase, Google Play Services (also for reading Google Calendar: it is read from the Android provider), Crashlytics, analytics, proprietary SDKs, any non-free dependency.
+- **Forbidden**: telemetry of any kind.
+- Before adding a dependency: check its license (compatible with GPLv3) and **ask the user**.
+- Publication metadata in fastlane format: `fastlane/metadata/android/{en-US,es-ES}/`.
+- Reproducible builds: no timestamps or non-deterministic values in the build.
 
-## Proveedor de calendario: reglas
-- Escribe como cliente normal, **nunca** con `CALLER_IS_SYNCADAPTER` fuera de los tests.
-- No toques columnas de sincronización (`_SYNC_ID`, `SYNC_DATA*`, `CAL_SYNC*`) ni propiedades extendidas de otras apps.
-- Lee rangos con `Instances`; nunca expandas repeticiones en la UI.
-- En el teléfono del autor, prueba solo con **calendarios de prueba creados para ello**; no crees, edites ni respondas eventos reales.
+## Calendar provider: rules
+- Write as a normal client, **never** with `CALLER_IS_SYNCADAPTER` outside of tests.
+- Do not touch sync columns (`_SYNC_ID`, `SYNC_DATA*`, `CAL_SYNC*`) or extended properties of other apps.
+- Read ranges with `Instances`; never expand recurrences in the UI.
+- On the author's phone, test only with **test calendars created for that purpose**; do not create, edit or respond to real events.
 
-## Comandos
-- Build debug: `./gradlew assembleDebug`
-- Tests unitarios: `./gradlew testDebugUnitTest`
-- Tests de UI en el móvil (sin desinstalar la app): `./gradlew installDebug installDebugAndroidTest` y `adb shell am instrument -w com.qtekfun.ultimatecalendar.test/com.qtekfun.ultimatecalendar.HiltTestRunner`. **Nunca** `connectedDebugAndroidTest` en el móvil del autor: desinstala la app y borra sus datos.
-- Lint y estilo: `./gradlew detekt ktlintCheck lintDebug`
-- Cobertura: `./gradlew koverVerify koverHtmlReport`
-- Todo lo anterior (lo que corre la CI): `./gradlew check`
+## Commands
+- Debug build: `./gradlew assembleDebug`
+- Unit tests: `./gradlew testDebugUnitTest`
+- UI tests on the phone (without uninstalling the app): `./gradlew installDebug installDebugAndroidTest` and `adb shell am instrument -w com.qtekfun.ultimatecalendar.test/com.qtekfun.ultimatecalendar.HiltTestRunner`. **Never** `connectedDebugAndroidTest` on the author's phone: it uninstalls the app and deletes its data.
+- Lint and style: `./gradlew detekt ktlintCheck lintDebug`
+- Coverage: `./gradlew koverVerify koverHtmlReport`
+- All of the above (what CI runs): `./gradlew check`
 
-## Calidad y tests
-- Cada tarea termina con `./gradlew check` en verde. No marques una tarea como hecha si falla.
-- Stack de tests: JUnit5 + MockK, Turbine (flows), Room en memoria, MockWebServer (fase 6), tests de UI con Compose solo en flujos clave.
-- **Arnés del proveedor**: toda funcionalidad de `CalendarSource` se prueba en la suite de contrato `CalendarSourceContract`, que corre contra `FakeCalendarSource` (unitarios) y contra el proveedor real del emulador (instrumentados, cuenta local de pruebas). Si el fake y el proveedor real no se comportan igual, el fake está mal: arréglalo. Fixtures de filas reales de Google y DAVx5 en `app/src/test/resources/provider-fixtures/`, anonimizadas.
-- **Cobertura (Kover):**
-  - Umbral global mínimo **85 %** sobre `domain`, `data` y `sync`.
-  - **100 % obligatorio** en: detector de invitaciones, planificador de avisos, recuperación de avisos perdidos, división de repeticiones y, en la fase 6, cola, resolutor y expansión de recurrencias.
-  - Excluido de la medición: código generado (Hilt, Room), `@Preview`, UI Compose pura.
-  - **Nunca escribas tests vacíos o tautológicos** para subir el número. Un test debe poder fallar por una razón real.
-- Fechas con `java.time` y un `Clock` inyectable; nunca `System.currentTimeMillis()` directo en lógica testeable. Tests de zonas horarias y cambio de horario de verano en todo lo que planifica.
-- Warnings de Kotlin y Lint tratados como errores.
+## Quality and tests
+- Every task ends with `./gradlew check` green. Do not mark a task as done if it fails.
+- Test stack: JUnit5 + MockK, Turbine (flows), in-memory Room, MockWebServer (phase 6), Compose UI tests only for key flows.
+- **Provider harness**: every `CalendarSource` feature is tested in the contract suite `CalendarSourceContract`, which runs against `FakeCalendarSource` (unit) and against the emulator's real provider (instrumented, local test account). If the fake and the real provider do not behave the same, the fake is wrong: fix it. Fixtures of real Google and DAVx5 rows in `app/src/test/resources/provider-fixtures/`, anonymized.
+- **Coverage (Kover):**
+  - Minimum global threshold **85 %** over `domain`, `data` and `sync`.
+  - **100 % mandatory** in: invitation detector, reminder scheduler, recovery of missed reminders, recurrence splitting and, in phase 6, queue, resolver and recurrence expansion.
+  - Excluded from measurement: generated code (Hilt, Room), `@Preview`, pure Compose UI.
+  - **Never write empty or tautological tests** to raise the number. A test must be able to fail for a real reason.
+- Dates with `java.time` and an injectable `Clock`; never `System.currentTimeMillis()` directly in testable logic. Time zone and daylight saving time change tests for everything that schedules.
+- Kotlin and Lint warnings treated as errors.
 
-## Flujo de trabajo
-- Trabaja **una tarea de `PLAN.md` cada vez**, en una rama `feat/<tarea>` (o `fix/…`) desde `master`.
-- Empieza en modo plan: propón el enfoque y espera confirmación antes de tocar código.
-- Commits siguiendo **Conventional Commits** (`feat:`, `fix:`, `perf:`, `test:`, `refactor:`, `docs:`, `build:`, `ci:`, `chore:`), pequeños y atómicos. **El título de la PR también**, porque se fusiona con squash y ese es el commit que queda en `master`.
-- No hagas `git push --force`, no reescribas historia compartida, no hagas commit ni push a `master`. Los hooks de `.claude/` lo bloquean; no intentes saltártelos.
-- Abre la PR con `gh pr create` rellenando la plantilla; espera la CI y arregla lo que falle. Cuando todos los checks pasen, fusiona tú con `gh pr merge --squash` (decisión del usuario, 2026-10-06); si algo falla, no fusiones.
-- Al terminar cada tarea: resume en 2-3 líneas qué se hizo y qué queda; marca la tarea en `PLAN.md` (con `*Resultado:*` si algo cambió respecto al plan) y anota decisiones en `SPEC.md` §9 con fecha y tarea.
-- Si la spec es ambigua o falta información: **pregunta**, no inventes.
+## Workflow
+- Work on **one task from `PLAN.md` at a time**, on a branch `feat/<task>` (or `fix/…`) from `master`.
+- Start in plan mode: propose the approach and wait for confirmation before touching code.
+- Commits following **Conventional Commits** (`feat:`, `fix:`, `perf:`, `test:`, `refactor:`, `docs:`, `build:`, `ci:`, `chore:`), small and atomic. **The PR title too**, because it is merged with squash and that is the commit that stays in `master`.
+- Do not `git push --force`, do not rewrite shared history, do not commit or push to `master`. The hooks in `.claude/` block it; do not try to get around them.
+- Open the PR with `gh pr create` filling in the template; wait for CI and fix whatever fails. When all checks pass, you merge with `gh pr merge --squash` (user's decision, 2026-10-06); if anything fails, do not merge.
+- When finishing each task: summarize in 2-3 lines what was done and what remains; mark the task in `PLAN.md` (with `*Result:*` if something changed from the plan) and record decisions in `SPEC.md` §9 with date and task.
+- If the spec is ambiguous or information is missing: **ask**, do not invent.
 
-## Versiones y releases
-- Las releases son manuales, como en UltimateDeck (ver `RELEASING.md`): `appVersion` y `CHANGELOG.md` solo cambian en una PR de release (`chore: release X.Y.Z`, rama `release/X.Y.Z`), que además lleva los textos de tienda `fastlane/metadata/android/{en-US,es-ES}/changelogs/<versionCode>.txt` (≤ 500 caracteres; la CI los exige en esas ramas). En el resto de PRs no se toca `appVersion`.
-- El tag `vX.Y.Z` lo crea y sube el autor, o yo cuando él lo pide expresamente; el workflow `Release` construye y publica el APK firmado.
+## Versions and releases
+- Releases are manual, as in UltimateDeck (see `RELEASING.md`): `appVersion` and `CHANGELOG.md` only change in a release PR (`chore: release X.Y.Z`, branch `release/X.Y.Z`), which also carries the store texts `fastlane/metadata/android/{en-US,es-ES}/changelogs/<versionCode>.txt` (≤ 500 characters; CI requires them on those branches). In all other PRs `appVersion` is not touched.
+- The `vX.Y.Z` tag is created and pushed by the author, or by me when the author expressly asks for it; the `Release` workflow builds and publishes the signed APK.
 
-## Convenciones de código
-- Un archivo por clase pública relevante; paquetes por feature dentro de cada capa.
-- Sin lógica de negocio en composables ni en ViewModels pesados: va en `domain` (invitaciones, avisos, repeticiones, disposición de eventos solapados).
-- Inmutabilidad por defecto (`val`, `data class`, colecciones inmutables).
-- Errores de IO modelados con tipos sellados (`CalendarResult`), no con excepciones sueltas hacia la UI.
-- Todo el acceso al proveedor, Room y red fuera del hilo principal (Dispatchers inyectables).
-- Los secretos (fase 6) se guardan cifrados con Android Keystore; nunca en logs ni en texto plano. Ni títulos de eventos ni correos en logs.
-- Accesibilidad: `contentDescription`, tamaños táctiles mínimos de 48 dp, soporte de fuente grande.
-- Room: cambio de esquema = nueva versión + migración + test de migración.
+## Code conventions
+- One file per relevant public class; packages by feature within each layer.
+- No business logic in composables or in heavy ViewModels: it goes in `domain` (invitations, reminders, recurrences, layout of overlapping events).
+- Immutability by default (`val`, `data class`, immutable collections).
+- IO errors modeled with sealed types (`CalendarResult`), not with loose exceptions towards the UI.
+- All access to the provider, Room and the network off the main thread (injectable Dispatchers).
+- Secrets (phase 6) are stored encrypted with Android Keystore; never in logs or in plain text. No event titles or emails in logs.
+- Accessibility: `contentDescription`, minimum touch targets of 48 dp, large font support.
+- Room: schema change = new version + migration + migration test.
 
-## Qué NO hacer
-- No implementes nada marcado como "Fuera de alcance" en `SPEC.md`.
-- No cambies versiones de dependencias manualmente: lo gestiona Dependabot.
-- No desactives ni relajes detekt, ktlint, Lint, Kover, la verificación de dependencias, ni los workflows para que pase la CI.
-- No uses capturas con datos reales para la tienda ni el README: salen del test `Screenshots` con datos inventados.
+## What NOT to do
+- Do not implement anything marked as "Out of scope" in `SPEC.md`.
+- Do not change dependency versions manually: Dependabot manages it.
+- Do not disable or relax detekt, ktlint, Lint, Kover, dependency verification, or the workflows to make CI pass.
+- Do not use screenshots with real data for the store or the README: they come from the `Screenshots` test with made-up data.
