@@ -1,0 +1,1 @@
+Fixes from the first tests on a real phone. New refresh button. Invitations are sent right away after you create or change an event with guests or answer one. Answering an invitation sent to one of your address aliases now works. Answers that could not be uploaded are retried automatically.

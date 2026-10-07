@@ -11,6 +11,19 @@ the notes of the tagged version.
 
 ## [Unreleased]
 
+## [1.0.0-rc.2] - 2026-10-07
+
+Fixes from the first real-phone tests of 1.0.0-rc.1.
+
+### Added
+- A refresh button: one tap syncs your Android accounts, the built-in CalDAV account and the subscriptions, and checks for new invitations. In the top bar on wide screens, in the menu on phones, and pull-to-refresh in the agenda.
+
+### Fixed
+- Invitations are now sent promptly: after creating or changing an event with guests, or answering an invitation, the app asks your account to sync right away instead of waiting for its next turn.
+- Answering an invitation that was sent to one of your own address aliases always failed with "not sent"; it now works.
+- An answer that could not be uploaded because the account was offline or had sync off is retried automatically, and the notification says "Accepted" and that the reply will be sent when the account syncs.
+- Changes to events with guests on a CalDAV account sync after 2 seconds instead of 10.
+
 ## [1.0.0-rc.1] - 2026-10-06
 
 First release candidate.
