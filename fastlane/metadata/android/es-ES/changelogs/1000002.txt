@@ -1,0 +1,1 @@
+Arreglos de las primeras pruebas en un móvil real. Nuevo botón de refrescar. Las invitaciones se envían al momento al crear o cambiar un evento con invitados o al responder. Ya funciona responder a una invitación enviada a uno de tus alias. Las respuestas que no se pudieron subir se reintentan solas.
