@@ -22,6 +22,18 @@ interface InvitationNotificationSurface {
     fun showAnswerFailed(invitation: Invitation)
 
     /**
+     * Like [show], with a line saying the invitation's account has not received the event yet and
+     * that the answer will be given when it does.
+     */
+    fun showWaitingForAccount(invitation: Invitation)
+
+    /**
+     * Replaces the notification with one that says the invited account never received the event,
+     * so it cannot be answered from here, and offers to open that account's calendar.
+     */
+    fun showNeverArrived(invitation: Invitation)
+
+    /**
      * Tells, briefly, that the answer was stored; [waiting] when its account cannot sync right
      * now, so the reply goes to the organizer later. It never claims more than that.
      */

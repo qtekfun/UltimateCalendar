@@ -239,6 +239,19 @@ class InvitationNotificationPlannerTest {
     }
 
     @Test
+    fun `the invitations of two accounts of one event have their own tags without the address`() {
+        val own = InvitationKey(CalendarId(1), EventId(23))
+        val b = InvitationKey(CalendarId(1), EventId(23), "b@gmail.com")
+        val c = InvitationKey(CalendarId(1), EventId(23), "c@gmail.com")
+
+        assertEquals(3, setOf(own, b, c).map { NotificationTags.invitation(it) }.toSet().size)
+        assertFalse(NotificationTags.invitation(b).contains("gmail"))
+        assertFalse(NotificationTags.moved(b).contains("@"))
+        assertEquals(NotificationTags.invitation(b), NotificationTags.invitation(b.copy()))
+        assertTrue(NotificationTags.isInvitation(NotificationTags.invitation(b)))
+    }
+
+    @Test
     fun `answers map to the attendee status the source stores`() {
         assertEquals(AttendeeStatus.ACCEPTED, InvitationAnswer.ACCEPT.status)
         assertEquals(AttendeeStatus.TENTATIVE, InvitationAnswer.MAYBE.status)

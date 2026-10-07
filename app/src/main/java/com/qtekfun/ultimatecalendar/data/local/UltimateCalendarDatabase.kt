@@ -76,7 +76,7 @@ abstract class UltimateCalendarDatabase : RoomDatabase() {
     abstract fun subscriptionEventDao(): SubscriptionEventDao
 
     companion object {
-        const val VERSION = 8
+        const val VERSION = 9
 
         /**
          * Migrations from each released version to the next. There is no destructive fallback:
@@ -90,7 +90,8 @@ abstract class UltimateCalendarDatabase : RoomDatabase() {
                 MIGRATION_4_5,
                 MIGRATION_5_6,
                 MIGRATION_6_7,
-                MIGRATION_7_8
+                MIGRATION_7_8,
+                MIGRATION_8_9
             )
     }
 }

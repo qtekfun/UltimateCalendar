@@ -14,6 +14,10 @@
     <string name="invitation_sent_decline">Declined</string>
     <string name="invitation_sent_waiting">%1$s. The reply will be sent when the account syncs.</string>
     <string name="invitation_still_waiting">Still waiting for your answer</string>
+    <string name="invitation_for_account">For %1$s</string>
+    <string name="invitation_waiting_account">Waiting for the account %1$s to receive the invitation. I will answer when it arrives.</string>
+    <string name="invitation_never_arrived">The account %1$s did not receive this invitation on the phone, so it cannot be answered here. Answer it in Google Calendar.</string>
+    <string name="invitation_open_calendar">Open Google Calendar</string>
     <string name="invitation_moved">Changed: %1$s</string>
     <string name="invitation_cancelled">Cancelled by the organizer (was %1$s)</string>
     <plurals name="invitation_summary">

@@ -36,7 +36,7 @@ class AttendedEventDetector(private val clock: Clock) {
         val next = instances.filter { isFuture(it.time) }
             .groupBy { it.eventId }
             .mapValues { (_, list) -> list.map { it.time }.minBy { it.startIn(clock.zone) } }
-        val tracked = mutableListOf<AttendedSnapshot>()
+        val tracked = mutableListOf<Pair<String?, AttendedSnapshot>>()
         val seen = mutableSetOf<InvitationKey>()
         for (event in events) {
             val key = InvitationKey(event.calendarId, event.id)
@@ -47,15 +47,28 @@ class AttendedEventDetector(private val clock: Clock) {
                 val shown = Invitation(key, event.title, time, event.location, event.organizer)
                 val record =
                     AttendedEvent(key, event.title, time, AttendedEvent.placeHash(event.location))
-                tracked += AttendedSnapshot(record, shown)
+                val copy = event.uid?.let { EventCopies.identity(event, clock.zone) }
+                tracked += copy to AttendedSnapshot(record, shown)
             }
         }
         return AttendedScan(
-            tracked.sortedBy { it.record.time.startIn(clock.zone) },
+            oneOfEach(tracked).sortedBy { it.record.time.startIn(clock.zone) },
             seen,
             calendars.map { it.id }.toSet()
         )
     }
+
+    /**
+     * The same event can be in two accounts of the user (an invitation to both): it is followed
+     * once, in the calendar with the lowest id, so that a change is not told twice.
+     */
+    private fun oneOfEach(tracked: List<Pair<String?, AttendedSnapshot>>): List<AttendedSnapshot> =
+        tracked.sortedWith(
+            compareBy({
+                it.second.record.key.calendarId.value
+            }, { it.second.record.key.eventId.value })
+        ).distinctBy<Pair<String?, AttendedSnapshot>, Any> { it.first ?: it.second.record.key }
+            .map { it.second }
 
     /** Compares what was followed in the previous run with the current [scan]. */
     fun diff(previous: List<AttendedEvent>, scan: AttendedScan): AttendedChanges {

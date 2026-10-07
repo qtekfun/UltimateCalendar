@@ -13,7 +13,7 @@ import androidx.room3.Entity
  */
 @Entity(
     tableName = "invitation_re_reminders",
-    primaryKeys = ["calendarId", "eventId", "moment", "start"]
+    primaryKeys = ["calendarId", "eventId", "address", "moment", "start"]
 )
 data class ReRemindEntity(
     val calendarId: Long,
@@ -21,5 +21,7 @@ data class ReRemindEntity(
     val moment: String,
     val start: Long,
     val at: Long,
-    val settled: Boolean
+    val settled: Boolean,
+    /** The account of the invitation when it is not the calendar's own; blank otherwise. */
+    val address: String = ""
 )

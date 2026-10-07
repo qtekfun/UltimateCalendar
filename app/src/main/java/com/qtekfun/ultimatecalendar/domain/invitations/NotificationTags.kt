@@ -23,5 +23,11 @@ object NotificationTags {
     /** Whether [tag] belongs to a notification that asks for an answer (a member of the group). */
     fun isInvitation(tag: String?) = tag != null && tag.startsWith(INVITATION)
 
-    private fun id(key: InvitationKey) = "${key.calendarId.value}/${key.eventId.value}"
+    // The address of an account is not put in the tag, only a digest of it.
+
+    /** The ids that name [key] in a tag: calendar, event and, for another account, a digest. */
+    fun id(key: InvitationKey) = "${key.calendarId.value}/${key.eventId.value}" +
+        if (key.isForeign) "/" + key.address.hashCode().toUInt().toString(HEX) else ""
+
+    private const val HEX = 16
 }

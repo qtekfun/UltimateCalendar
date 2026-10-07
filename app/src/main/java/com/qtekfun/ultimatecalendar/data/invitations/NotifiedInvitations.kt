@@ -61,11 +61,13 @@ class NotifiedInvitations @Inject constructor(
             end = end,
             zone = zone,
             location = location,
-            organizer = organizer
+            organizer = organizer,
+            address = key.address,
+            account = account
         )
 
     private fun NotifiedInvitationEntity.toInvitation() = Invitation(
-        key = InvitationKey(CalendarId(calendarId), EventId(eventId)),
+        key = InvitationKey(CalendarId(calendarId), EventId(eventId), address),
         title = title,
         time = if (allDay) {
             EventTime.AllDay(LocalDate.ofEpochDay(start), LocalDate.ofEpochDay(end))
@@ -77,6 +79,7 @@ class NotifiedInvitations @Inject constructor(
             )
         },
         location = location,
-        organizer = organizer
+        organizer = organizer,
+        account = account
     )
 }

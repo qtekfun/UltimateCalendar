@@ -48,6 +48,14 @@ class FakeCalendarSource(calendars: List<CalendarInfo> = emptyList()) : Calendar
         changed.tryEmit(Unit)
     }
 
+    /**
+     * Gives [id] the iCalendar UID a sync adapter stores for an event (`UID_2445`), which is the
+     * same in every copy of an invitation that lands in the calendars of its guests.
+     */
+    fun setUid(id: EventId, uid: String?) {
+        events[id]?.let { events[id] = it.copy(uid = uid) }
+    }
+
     fun addCalendar(calendar: CalendarInfo) {
         calendarsById[calendar.id] = calendar
         changed.tryEmit(Unit)

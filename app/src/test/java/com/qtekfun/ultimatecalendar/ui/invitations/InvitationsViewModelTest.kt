@@ -10,6 +10,7 @@ import com.qtekfun.ultimatecalendar.data.invitations.InvitationResponses
 import com.qtekfun.ultimatecalendar.data.invitations.NotifiedInvitations
 import com.qtekfun.ultimatecalendar.data.invitations.ResponseOutcome
 import com.qtekfun.ultimatecalendar.data.invitations.SourceInvitationResponses
+import com.qtekfun.ultimatecalendar.data.invitations.foreignAnswers
 import com.qtekfun.ultimatecalendar.data.source.FakeCalendarSource
 import com.qtekfun.ultimatecalendar.domain.invitations.Invitation
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationAnswer
@@ -61,7 +62,8 @@ class InvitationsViewModelTest {
     private val coordinator = mockk<InvitationCheckCoordinator>()
     private val main = UnconfinedTestDispatcher()
     private var zone: ZoneId = ZoneId.of("Europe/Madrid")
-    private var responses: InvitationResponses = SourceInvitationResponses(source)
+    private var responses: InvitationResponses =
+        SourceInvitationResponses(source, foreignAnswers(source))
     private val inbox = InvitationInbox(
         InvitationChecker(
             source,
@@ -166,7 +168,7 @@ class InvitationsViewModelTest {
         val lunch = create("Lunch")
         create("Dinner", hours = 5)
         val gate = CompletableDeferred<Unit>()
-        val slow = SourceInvitationResponses(source)
+        val slow = SourceInvitationResponses(source, foreignAnswers(source))
         responses = InvitationResponses { key, status ->
             gate.await()
             slow.respond(key, status)

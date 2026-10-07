@@ -279,6 +279,41 @@ class MigrationTest {
         assertNull(database.subscriptionEventDao().get(event))
     }
 
+    @Test
+    fun `version 8 keeps its invitations and re-reminders, with a blank address, in 9`(
+        @TempDir dir: File
+    ) = runTest {
+        val file = File(dir, "calendar.db")
+        createVersion(8, file)
+        val before = BundledSQLiteDriver().open(file.path)
+        try {
+            before.execSQL(
+                "INSERT INTO invitation_re_reminders VALUES (7, 9, 'DAY_BEFORE', 1, 100, 1)"
+            )
+        } finally {
+            before.close()
+        }
+
+        val database = open(file)
+        try {
+            val own = NotifiedInvitationEntity(7, 9, "Lunch", false, 1, 2, "UTC", null, null)
+            assertEquals(listOf(own), database.notifiedInvitationDao().all())
+            assertEquals(
+                listOf(ReRemindEntity(7, 9, "DAY_BEFORE", 1, 100, true)),
+                database.reRemindDao().all()
+            )
+            // The key now has the address: the same event can invite two of my accounts.
+            val other = own.copy(address = "b@gmail.com", account = "b@gmail.com")
+            database.notifiedInvitationDao().replaceAll(listOf(own, other))
+            assertEquals(setOf(own, other), database.notifiedInvitationDao().all().toSet())
+            val moment = ReRemindEntity(7, 9, "DAY_BEFORE", 1, 100, true, address = "b@gmail.com")
+            database.reRemindDao().apply(listOf(moment), emptyList())
+            assertEquals(2, database.reRemindDao().all().size)
+        } finally {
+            database.close()
+        }
+    }
+
     private suspend fun assertReRemindTableWorks(database: UltimateCalendarDatabase) {
         val dao = database.reRemindDao()
         assertEquals(emptyList<ReRemindEntity>(), dao.all())

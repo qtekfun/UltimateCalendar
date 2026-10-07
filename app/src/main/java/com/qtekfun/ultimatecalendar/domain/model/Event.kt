@@ -23,7 +23,12 @@ data class Event(
     val rrule: String? = null,
     val organizer: String? = null,
     val attendees: List<Attendee> = emptyList(),
-    val reminders: List<Reminder> = emptyList()
+    val reminders: List<Reminder> = emptyList(),
+    /**
+     * The iCalendar UID (`UID_2445`): the same in every copy of an invitation that lands in the
+     * calendars of the guests' accounts, so copies of one event can be told. Null when unknown.
+     */
+    val uid: String? = null
 ) {
     val isRecurring: Boolean get() = rrule != null
 

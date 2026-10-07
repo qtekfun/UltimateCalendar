@@ -58,6 +58,14 @@ class AndroidInvitationNotifications @Inject constructor(
         builders.invitation(invitation, silent = true, failed = true)
     )
 
+    override fun showWaitingForAccount(invitation: Invitation) = post(
+        NotificationTags.invitation(invitation.key),
+        builders.invitation(invitation, silent = true, failed = false, waiting = true)
+    )
+
+    override fun showNeverArrived(invitation: Invitation) =
+        post(NotificationTags.invitation(invitation.key), builders.undelivered(invitation))
+
     override fun showAnswered(answer: InvitationAnswer, waiting: Boolean) {
         val done = context.getString(
             when (answer) {

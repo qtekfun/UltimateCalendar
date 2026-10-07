@@ -24,6 +24,9 @@ fun interface InvitationRecheck {
  * the buttons are safe to press twice. A button pressed after the process died simply runs
  * again from the notification that is still on screen.
  *
+ * An invitation for another of the user's accounts whose own copy has not arrived keeps its
+ * notification, with a line saying so: the answer is given when the copy arrives.
+ *
  * A stored answer is announced honestly: "Accepted", and when its account cannot sync right now,
  * that the reply goes out when it syncs (the source schedules the retry). It is followed by a
  * check, so that the record of notified invitations and the extra reminders no longer count the
@@ -54,6 +57,11 @@ class InvitationActionHandler @Inject constructor(
 
             is ResponseOutcome.Failed ->
                 notified.load().firstOrNull { it.key == key }?.let(surface::showAnswerFailed)
+
+            // Nothing was written: the invitation stays, saying the answer will be given when
+            // the invited account receives the event (a retry job keeps the answer).
+            is ResponseOutcome.WaitingForAccount ->
+                notified.load().firstOrNull { it.key == key }?.let(surface::showWaitingForAccount)
         }
     }
 }

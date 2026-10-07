@@ -4,11 +4,15 @@
 package com.qtekfun.ultimatecalendar.sync
 
 import androidx.work.ListenableWorker
+import com.qtekfun.ultimatecalendar.data.invitations.ForeignAnswers
+import com.qtekfun.ultimatecalendar.data.invitations.NotifiedInvitations
 import com.qtekfun.ultimatecalendar.data.source.CalendarSource
 import com.qtekfun.ultimatecalendar.data.subscriptions.SubscriptionRefresher
 import com.qtekfun.ultimatecalendar.data.sync.SourceSyncRequester
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationChanges
 import com.qtekfun.ultimatecalendar.domain.result.CalendarError
+import com.qtekfun.ultimatecalendar.notify.InvitationNotificationSurface
+import com.qtekfun.ultimatecalendar.notify.InvitationRecheck
 import com.qtekfun.ultimatecalendar.notify.MissedReminderRecovery
 import com.qtekfun.ultimatecalendar.sync.engine.SyncEngine
 import io.mockk.coEvery
@@ -69,7 +73,11 @@ class InvitationCheckWorkerTest {
                 Provider { engine },
                 Provider { mockk<SubscriptionRefresher>() },
                 Provider { mockk<CalendarSource>() },
-                Provider { mockk<SourceSyncRequester>() }
+                Provider { mockk<SourceSyncRequester>() },
+                Provider { mockk<ForeignAnswers>() },
+                Provider { mockk<InvitationNotificationSurface>() },
+                Provider { mockk<NotifiedInvitations>() },
+                Provider { mockk<InvitationRecheck>() }
             )
 
         val built = factory.createWorker(
