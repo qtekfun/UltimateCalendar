@@ -1,0 +1,1 @@
+Las invitaciones a tus otras cuentas del móvil ya aparecen y avisan aunque su copia aún no haya llegado al calendario de esa cuenta, una por cuenta, y al responder espera a la copia y contesta cuando llega. Arregla que una invitación escrita justo al arrancar la app pasara sin aviso. La primera comprobación tras actualizar puede avisar de invitaciones que ya estaban pendientes.

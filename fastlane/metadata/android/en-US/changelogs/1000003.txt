@@ -1,0 +1,1 @@
+Invitations to your other accounts on the phone now show up and notify even before their copy reaches that account's calendar, one per account, and answering waits for the copy and replies when it arrives. Fixes an invitation written right after the app starts going unnoticed. The first check after updating may notify invitations that were already pending.

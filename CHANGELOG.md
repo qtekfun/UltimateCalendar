@@ -11,6 +11,15 @@ the notes of the tagged version.
 
 ## [Unreleased]
 
+## [1.0.0-rc.3] - 2026-10-07
+
+Fixes from the second round of real-phone tests.
+
+### Fixed
+- An invitation to one of your other accounts on the phone now shows up and notifies even when its copy has not reached that account's calendar yet. Each of your accounts that an event invites gets its own invitation ("For <account>"), and answering is recorded in that account's own copy: if the copy is not there yet, the app asks the account to sync and answers when it arrives, telling you it is waiting.
+- An invitation written to the calendar right after the app starts could go unnoticed until the next periodic check; the app now checks once when it starts watching for changes.
+- The first check after updating may notify invitations to your other accounts that were already pending.
+
 ## [1.0.0-rc.2] - 2026-10-07
 
 Fixes from the first real-phone tests of 1.0.0-rc.1.
