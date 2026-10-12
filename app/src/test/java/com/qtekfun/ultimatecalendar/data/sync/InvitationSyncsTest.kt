@@ -100,4 +100,38 @@ class InvitationSyncsTest {
             expectNoEvents()
         }
     }
+
+    @Test
+    fun `an answer is asked for at once, with no wait`() = runTest {
+        val syncs = InvitationSyncs(requester, backgroundScope, debounceMs = 1_500)
+
+        syncs.answered(google)
+
+        assertEquals(listOf(setOf(google) to SyncReason.WRITE), asked)
+    }
+
+    @Test
+    fun `an answer to an account the system does not sync asks nothing`() = runTest {
+        val syncs = InvitationSyncs(requester, backgroundScope, debounceMs = 1_500)
+
+        syncs.answered(CalendarAccount("Device", "LOCAL"))
+        syncs.answered(CalendarAccount("me", CalendarAccount.CALDAV_TYPE))
+        syncs.answered(CalendarAccount("feeds", CalendarAccount.SUBSCRIPTION_TYPE))
+
+        assertEquals(emptyList<Any>(), asked)
+    }
+
+    @Test
+    fun `an answer the system could not take is told`() = runTest {
+        val syncs = InvitationSyncs(requester, backgroundScope, debounceMs = 1_500)
+        syncs.unsent.test {
+            syncs.answered(google)
+            expectNoEvents()
+
+            answer = SyncRequests(requested = 0, failed = 1)
+            syncs.answered(google)
+
+            awaitItem()
+        }
+    }
 }

@@ -19,7 +19,8 @@ import kotlinx.coroutines.flow.asStateFlow
  * The source the app writes through: after a write to an event with guests, or the user's own
  * answer, it asks [syncs] to have the event's account sync, so that the invitation is sent now
  * and not whenever the sync adapter next runs (RF-05, RF-06). Reads and writes that touch no
- * guest pass through untouched.
+ * guest pass through untouched. An answer is asked for at once, not after the short wait that
+ * groups writes (see [InvitationSyncs.answered]).
  *
  * What counts as touching guests: creating an event with guests; changing the title, time,
  * place, repetition, notes or guests of an event that has guests (or gets them, or loses them);
@@ -88,7 +89,9 @@ class InvitationSyncingSource(
     override suspend fun respond(id: EventId, status: AttendeeStatus): CalendarResult<Unit> {
         val before = stored(id)
         return delegate.respond(id, status).also {
-            if (it is CalendarResult.Success && before != null) touched(before.calendarId)
+            if (it is CalendarResult.Success && before != null) {
+                accountOf(before.calendarId)?.let { account -> syncs.answered(account) }
+            }
         }
     }
 
@@ -113,7 +116,9 @@ class InvitationSyncingSource(
     }
 
     private suspend fun touched(calendar: CalendarId) {
-        val calendars = delegate.calendars().getOrNull() ?: return
-        calendars.firstOrNull { it.id == calendar }?.let { syncs.written(it.account) }
+        accountOf(calendar)?.let(syncs::written)
     }
+
+    private suspend fun accountOf(calendar: CalendarId) =
+        delegate.calendars().getOrNull()?.firstOrNull { it.id == calendar }?.account
 }
