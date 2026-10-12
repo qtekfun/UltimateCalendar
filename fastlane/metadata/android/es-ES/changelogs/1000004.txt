@@ -1,0 +1,1 @@
+Las respuestas a las invitaciones llegan antes al organizador: la app pide a tu cuenta que se sincronice al momento, con más prioridad, y sigue comprobando hasta que la respuesta se ha subido de verdad. El detalle del evento avisa si tu respuesta aún no ha llegado al organizador, y por qué, con un botón "Enviar ahora".
