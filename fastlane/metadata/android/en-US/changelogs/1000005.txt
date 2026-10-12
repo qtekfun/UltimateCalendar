@@ -1,0 +1,1 @@
+On tablets and unfolded foldables the side menu is now hidden and no longer takes room from the calendar. The menu button shows it beside the calendar and hides it again.

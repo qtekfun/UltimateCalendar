@@ -11,6 +11,10 @@ the notes of the tagged version.
 
 ## [Unreleased]
 
+## [1.0.0-rc.5] - 2026-10-12
+
+More room for the calendar on big screens.
+
 ### Changed
 - On tablets and unfolded foldables the side menu is hidden and no longer takes room from the calendar: the menu button shows and hides it.
 

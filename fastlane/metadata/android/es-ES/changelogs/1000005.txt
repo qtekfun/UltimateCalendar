@@ -1,0 +1,1 @@
+En tablets y plegables abiertos el menú lateral ahora está oculto y ya no le quita espacio al calendario. El botón de menú lo muestra junto al calendario y lo vuelve a ocultar.
