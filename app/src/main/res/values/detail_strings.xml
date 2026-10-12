@@ -48,6 +48,9 @@
     <string name="detail_maybe">Maybe</string>
     <string name="detail_decline">Decline</string>
     <string name="detail_sending_answer">Sending your answer</string>
+    <string name="detail_reply_sending">Your answer has not reached the organizer yet: it goes when the account syncs.</string>
+    <string name="detail_reply_waiting">Your answer has not been sent yet: the account cannot sync now (no connection, or calendar sync is off). It will be sent when it can.</string>
+    <string name="detail_reply_send_now">Send now</string>
     <string name="detail_selected">Selected</string>
     <string name="detail_respond_failed">Your answer could not be sent. It was not changed.</string>
     <string name="detail_delete_failed">The event could not be deleted.</string>

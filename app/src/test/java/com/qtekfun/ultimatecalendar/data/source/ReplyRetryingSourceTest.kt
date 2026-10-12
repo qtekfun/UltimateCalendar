@@ -50,16 +50,11 @@ class ReplyRetryingSourceTest {
     }
 
     @Test
-    fun `an answer stored while the account cannot sync schedules the retry`() = runTest {
+    fun `an answer stored is followed until it is uploaded, online or not`() = runTest {
         assertEquals(CalendarResult.Success(Unit), source.respond(id, AttendeeStatus.ACCEPTED))
-        assertEquals(1, retries)
-    }
-
-    @Test
-    fun `an answer stored while the account can sync schedules nothing`() = runTest {
         networkAvailable = true
-        source.respond(id, AttendeeStatus.ACCEPTED)
-        assertEquals(0, retries)
+        source.respond(id, AttendeeStatus.DECLINED)
+        assertEquals(2, retries)
     }
 
     @Test

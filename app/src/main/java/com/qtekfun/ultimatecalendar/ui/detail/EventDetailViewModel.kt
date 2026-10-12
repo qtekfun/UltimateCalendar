@@ -10,10 +10,13 @@ import com.qtekfun.ultimatecalendar.data.settings.SettingsRepository
 import com.qtekfun.ultimatecalendar.data.source.CalendarSource
 import com.qtekfun.ultimatecalendar.data.source.SeriesChanges
 import com.qtekfun.ultimatecalendar.data.source.toDraft
+import com.qtekfun.ultimatecalendar.data.sync.ReplyUpload
+import com.qtekfun.ultimatecalendar.data.sync.ReplyUploads
 import com.qtekfun.ultimatecalendar.domain.detail.EventDetail
 import com.qtekfun.ultimatecalendar.domain.detail.EventDetails
 import com.qtekfun.ultimatecalendar.domain.detail.EventRef
 import com.qtekfun.ultimatecalendar.domain.model.AttendeeStatus
+import com.qtekfun.ultimatecalendar.domain.model.CalendarAccount
 import com.qtekfun.ultimatecalendar.domain.model.Event
 import com.qtekfun.ultimatecalendar.domain.recurrence.RecurrenceScope
 import com.qtekfun.ultimatecalendar.domain.recurrence.RecurrenceSplitter
@@ -40,12 +43,14 @@ sealed interface DetailState {
 
     /**
      * The event, with [responding] set to the answer being sent (the buttons wait) and
-     * [deleting] while a deletion is under way.
+     * [deleting] while a deletion is under way. [upload] says that the user's answer is stored
+     * but has not left the phone yet, and why.
      */
     data class Loaded(
         val detail: EventDetail,
         val responding: AttendeeStatus? = null,
-        val deleting: Boolean = false
+        val deleting: Boolean = false,
+        val upload: ReplyUpload? = null
     ) : DetailState {
         val busy: Boolean get() = responding != null || deleting
     }
@@ -62,8 +67,9 @@ data class DetailFailure(val action: DetailAction, val error: CalendarError)
 
 /**
  * Feeds the event detail (RF-04) and carries out its actions: answering an invitation
- * (optimistic: the new answer shows at once and goes back if the source refuses) and deleting
- * an event or part of a series. The decisions are in `domain.detail` and `RecurrenceSplitter`;
+ * (optimistic: the new answer shows at once and goes back if the source refuses), saying while
+ * that answer has not left the phone (and sending it now on request) and deleting an event or
+ * part of a series. The decisions are in `domain.detail` and `RecurrenceSplitter`;
  * this only wires them to the [CalendarSource].
  */
 @HiltViewModel
@@ -71,12 +77,14 @@ class EventDetailViewModel @Inject constructor(
     private val source: CalendarSource,
     private val calendars: CalendarRepository,
     private val settings: SettingsRepository,
-    private val zone: SystemZone
+    private val zone: SystemZone,
+    private val uploads: ReplyUploads
 ) : ViewModel() {
     private val mutableState = MutableStateFlow<DetailState>(DetailState.Loading)
     private val failures = Channel<DetailFailure>(Channel.BUFFERED)
     private var ref: EventRef? = null
     private var undo: Undo? = null
+    private var account: CalendarAccount? = null
 
     val state: StateFlow<DetailState> = mutableState
 
@@ -122,6 +130,12 @@ class EventDetailViewModel @Inject constructor(
                 reload()
             }
         }
+    }
+
+    /** Asks the event's account to upload the user's answer now. */
+    fun sendNow() {
+        val target = account ?: return
+        viewModelScope.launch { uploads.sendNow(target) }
     }
 
     /**
@@ -202,19 +216,29 @@ class EventDetailViewModel @Inject constructor(
             is CalendarResult.Success -> {
                 val event = found.value
                 val all = calendars.calendars().first().getOrNull().orEmpty()
+                val calendar = all.firstOrNull { it.id == event.calendarId }
                 val detail = EventDetails.build(
                     event,
-                    all.firstOrNull { it.id == event.calendarId },
+                    calendar,
                     target.timeOn(event),
                     zone.current(),
                     settings.current().ownEmails
                 )
+                account = calendar?.account
+                val upload = uploadOf(detail, calendar?.account)
                 mutableState.update { current ->
                     val busy = current as? DetailState.Loaded
-                    DetailState.Loaded(detail, busy?.responding, busy?.deleting == true)
+                    DetailState.Loaded(detail, busy?.responding, busy?.deleting == true, upload)
                 }
             }
         }
+    }
+
+    /** Only an answer the user gave can be on its way; an unanswered invitation has nothing. */
+    private suspend fun uploadOf(detail: EventDetail, account: CalendarAccount?): ReplyUpload? {
+        val answered = detail.self?.status?.let { it != AttendeeStatus.NEEDS_ACTION } == true
+        if (!detail.canRespond || !answered || account == null) return null
+        return uploads.state(detail.event.id, account)
     }
 
     private sealed interface Undo {

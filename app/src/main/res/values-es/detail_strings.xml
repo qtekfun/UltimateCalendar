@@ -48,6 +48,9 @@
     <string name="detail_maybe">Quizá</string>
     <string name="detail_decline">Rechazar</string>
     <string name="detail_sending_answer">Enviando tu respuesta</string>
+    <string name="detail_reply_sending">Tu respuesta aún no ha llegado al organizador: se envía cuando la cuenta se sincroniza.</string>
+    <string name="detail_reply_waiting">Tu respuesta aún no se ha enviado: la cuenta no puede sincronizarse ahora (sin conexión o con la sincronización del calendario desactivada). Se enviará en cuanto pueda.</string>
+    <string name="detail_reply_send_now">Enviar ahora</string>
     <string name="detail_selected">Seleccionado</string>
     <string name="detail_respond_failed">No se pudo enviar tu respuesta. No se ha cambiado.</string>
     <string name="detail_delete_failed">No se pudo eliminar el evento.</string>

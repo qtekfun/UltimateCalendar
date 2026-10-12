@@ -20,11 +20,15 @@ import com.qtekfun.ultimatecalendar.data.source.caldav.RandomUidFactory
 import com.qtekfun.ultimatecalendar.data.source.caldav.UidFactory
 import com.qtekfun.ultimatecalendar.data.source.provider.ContentResolverGateway
 import com.qtekfun.ultimatecalendar.data.source.provider.ProviderGateway
+import com.qtekfun.ultimatecalendar.data.source.provider.ProviderPendingUploads
 import com.qtekfun.ultimatecalendar.data.source.subscription.SubscriptionCalendarSource
 import com.qtekfun.ultimatecalendar.data.subscriptions.SubscriptionScheduler
 import com.qtekfun.ultimatecalendar.data.sync.InvitationSyncs
+import com.qtekfun.ultimatecalendar.data.sync.PendingUploads
+import com.qtekfun.ultimatecalendar.data.sync.ProviderReplyUploads
 import com.qtekfun.ultimatecalendar.data.sync.ReplyDelivery
 import com.qtekfun.ultimatecalendar.data.sync.ReplyRetry
+import com.qtekfun.ultimatecalendar.data.sync.ReplyUploads
 import com.qtekfun.ultimatecalendar.data.sync.SourceSyncRequester
 import com.qtekfun.ultimatecalendar.sync.CalDavSyncScheduler
 import com.qtekfun.ultimatecalendar.sync.WorkManagerCalDavScheduler
@@ -51,6 +55,12 @@ interface CalendarSourceModule {
     @Binds
     @Singleton
     fun gateway(gateway: ContentResolverGateway): ProviderGateway
+
+    @Binds
+    fun pendingUploads(uploads: ProviderPendingUploads): PendingUploads
+
+    @Binds
+    fun replyUploads(uploads: ProviderReplyUploads): ReplyUploads
 
     @Binds
     fun replyRetry(retry: WorkManagerReplyRetry): ReplyRetry
@@ -95,8 +105,8 @@ interface CalendarSourceModule {
         )
 
         /**
-         * Asks an account to sync soon after the app writes an invitation or an answer. When it
-         * cannot, [ReplyDelivery] keeps the bounded retry as the fallback for answers.
+         * Asks an account to sync soon after the app writes an invitation or an answer;
+         * [ReplyDelivery] then follows each answer until it is uploaded.
          */
         @Provides
         @Singleton

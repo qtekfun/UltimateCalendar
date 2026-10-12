@@ -8,6 +8,7 @@ import com.qtekfun.ultimatecalendar.data.invitations.ForeignAnswers
 import com.qtekfun.ultimatecalendar.data.invitations.NotifiedInvitations
 import com.qtekfun.ultimatecalendar.data.source.CalendarSource
 import com.qtekfun.ultimatecalendar.data.subscriptions.SubscriptionRefresher
+import com.qtekfun.ultimatecalendar.data.sync.PendingUploads
 import com.qtekfun.ultimatecalendar.data.sync.SourceSyncRequester
 import com.qtekfun.ultimatecalendar.domain.invitations.InvitationChanges
 import com.qtekfun.ultimatecalendar.domain.result.CalendarError
@@ -74,6 +75,7 @@ class InvitationCheckWorkerTest {
                 Provider { mockk<SubscriptionRefresher>() },
                 Provider { mockk<CalendarSource>() },
                 Provider { mockk<SourceSyncRequester>() },
+                Provider { mockk<PendingUploads>() },
                 Provider { mockk<ForeignAnswers>() },
                 Provider { mockk<InvitationNotificationSurface>() },
                 Provider { mockk<NotifiedInvitations>() },

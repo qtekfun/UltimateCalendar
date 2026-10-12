@@ -11,6 +11,7 @@ import com.qtekfun.ultimatecalendar.data.invitations.ForeignAnswers
 import com.qtekfun.ultimatecalendar.data.invitations.NotifiedInvitations
 import com.qtekfun.ultimatecalendar.data.source.CalendarSource
 import com.qtekfun.ultimatecalendar.data.subscriptions.SubscriptionRefresher
+import com.qtekfun.ultimatecalendar.data.sync.PendingUploads
 import com.qtekfun.ultimatecalendar.data.sync.SourceSyncRequester
 import com.qtekfun.ultimatecalendar.notify.InvitationNotificationSurface
 import com.qtekfun.ultimatecalendar.notify.InvitationRecheck
@@ -35,6 +36,7 @@ class InvitationWorkerFactory @Inject constructor(
     private val subscriptions: Provider<SubscriptionRefresher>,
     private val source: Provider<CalendarSource>,
     private val requester: Provider<SourceSyncRequester>,
+    private val uploads: Provider<PendingUploads>,
     private val answers: Provider<ForeignAnswers>,
     private val surface: Provider<InvitationNotificationSurface>,
     private val notified: Provider<NotifiedInvitations>,
@@ -55,7 +57,13 @@ class InvitationWorkerFactory @Inject constructor(
             SubscriptionRefreshWorker(appContext, workerParameters, subscriptions.get())
 
         ReplySyncWorker::class.java.name ->
-            ReplySyncWorker(appContext, workerParameters, source.get(), requester.get())
+            ReplySyncWorker(
+                appContext,
+                workerParameters,
+                source.get(),
+                uploads.get(),
+                requester.get()
+            )
 
         PendingAnswerWorker::class.java.name -> PendingAnswerWorker(
             appContext,

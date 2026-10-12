@@ -8,5 +8,6 @@ import com.qtekfun.ultimatecalendar.domain.model.AttendeeStatus
 /** What the detail can ask for; each is a plain callback so the body stays stateless. */
 data class DetailActions(
     val onRespond: (AttendeeStatus) -> Unit = {},
-    val onOpenUri: (String) -> Unit = {}
+    val onOpenUri: (String) -> Unit = {},
+    val onSendNow: () -> Unit = {}
 )

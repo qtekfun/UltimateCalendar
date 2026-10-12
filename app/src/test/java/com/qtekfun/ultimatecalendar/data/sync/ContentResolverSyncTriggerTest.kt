@@ -16,7 +16,7 @@ class ContentResolverSyncTriggerTest {
     private fun trigger(sdk: Int) = ContentResolverSyncTrigger(sdk) { account, flags ->
         assertEquals(google, account)
         calls += flags
-        if (flags == refused) throw IllegalArgumentException("refused")
+        require(flags != refused) { "refused" }
     }
 
     @Test

@@ -12,6 +12,8 @@ import com.qtekfun.ultimatecalendar.data.settings.FakePreferences
 import com.qtekfun.ultimatecalendar.data.settings.SettingsRepository
 import com.qtekfun.ultimatecalendar.data.source.CalendarSource
 import com.qtekfun.ultimatecalendar.data.source.FakeCalendarSource
+import com.qtekfun.ultimatecalendar.data.sync.ReplyUpload
+import com.qtekfun.ultimatecalendar.data.sync.ReplyUploads
 import com.qtekfun.ultimatecalendar.domain.detail.EventRef
 import com.qtekfun.ultimatecalendar.domain.model.Attendee
 import com.qtekfun.ultimatecalendar.domain.model.AttendeeStatus
@@ -90,8 +92,23 @@ class EventDetailViewModelTest {
 
     private val created = mutableListOf<EventDetailViewModel>()
 
+    private var upload: ReplyUpload? = null
+    private val looked = mutableListOf<EventId>()
+    private val sentNow = mutableListOf<CalendarAccount>()
+    private val uploads = object : ReplyUploads {
+        override suspend fun state(id: EventId, account: CalendarAccount): ReplyUpload? {
+            looked += id
+            return upload
+        }
+
+        override suspend fun sendNow(account: CalendarAccount) {
+            sentNow += account
+        }
+    }
+
     private fun viewModel(on: CalendarSource = source) =
-        EventDetailViewModel(on, repository, settings, SystemZone { madrid }).also { created += it }
+        EventDetailViewModel(on, repository, settings, SystemZone { madrid }, uploads)
+            .also { created += it }
 
     /** Waits (in real time: Room answers on its own threads) for a state that [matches]. */
     private suspend fun EventDetailViewModel.awaitState(
@@ -210,6 +227,48 @@ class EventDetailViewModelTest {
         assertEquals(AttendeeStatus.ACCEPTED, done.detail.self?.status)
         val stored = source.event(ref.eventId).getOrNull()
         assertEquals(AttendeeStatus.ACCEPTED, stored?.attendees?.last()?.status)
+    }
+
+    private val answered = listOf(
+        Attendee.of("boss@example.com", status = AttendeeStatus.ACCEPTED),
+        Attendee.of("me@example.com", status = AttendeeStatus.ACCEPTED)
+    )
+
+    @Test
+    fun `an answer still on the phone is shown, and no longer once it has left`() = runTest {
+        val ref = create(draft(attendees = answered))
+        upload = ReplyUpload.SENDING
+        val viewModel = viewModel()
+        viewModel.show(ref)
+        assertEquals(ReplyUpload.SENDING, viewModel.loaded().upload)
+
+        upload = null
+        viewModel.retry()
+        viewModel.awaitState { it is DetailState.Loaded && it.upload == null }
+        assertEquals(listOf(ref.eventId, ref.eventId), looked)
+    }
+
+    @Test
+    fun `an unanswered invitation or an event without the user has nothing on its way`() = runTest {
+        upload = ReplyUpload.WAITING
+        val viewModel = viewModel()
+        viewModel.show(create(draft(attendees = invited)))
+        assertEquals(null, viewModel.loaded().upload)
+        viewModel.show(create(draft()))
+        assertEquals(null, viewModel.loaded().upload)
+        assertEquals(emptyList<EventId>(), looked)
+    }
+
+    @Test
+    fun `send now asks the account of the event shown, and nothing before one is`() = runTest {
+        val viewModel = viewModel()
+        viewModel.sendNow()
+        assertEquals(emptyList<CalendarAccount>(), sentNow)
+
+        upload = ReplyUpload.SENDING
+        viewModel.show(create(draft(attendees = answered)))
+        viewModel.sendNow()
+        assertEquals(listOf(account), sentNow)
     }
 
     @Test
