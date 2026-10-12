@@ -1,0 +1,1 @@
+Answers to invitations reach the organizer sooner: the app asks your account to sync at once, with higher priority, and keeps checking until the answer has really been uploaded. The event detail says when your answer has not reached the organizer yet, and why, with a "Send now" button.

@@ -11,6 +11,15 @@ the notes of the tagged version.
 
 ## [Unreleased]
 
+## [1.0.0-rc.4] - 2026-10-12
+
+Answers to invitations reach the organizer sooner.
+
+### Fixed
+- An answer given from the notification could wait a long time before reaching the organizer, and Gmail kept showing the invitation as unanswered. The app now asks the account to sync at once and with higher priority, and keeps checking for a while until the answer has really been uploaded.
+
+### Added
+- The event detail tells you when your answer has not reached the organizer yet, and why, with a "Send now" button. The line goes away by itself once it has been sent.
 ## [1.0.0-rc.3] - 2026-10-07
 
 Fixes from the second round of real-phone tests.
