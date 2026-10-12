@@ -10,8 +10,11 @@ enum class NavigationStyle {
     /** A drawer that slides over the content, opened from the header. */
     MODAL_DRAWER,
 
-    /** A drawer that is always visible next to the content. */
-    PERMANENT_DRAWER
+    /**
+     * A drawer next to the content that the header's menu button shows and hides; it starts
+     * hidden so the views get the whole window.
+     */
+    SIDE_DRAWER
 }
 
 /**
@@ -23,7 +26,7 @@ data class AdaptiveLayout(val widthClass: WidthClass) {
     private val expanded get() = widthClass == WidthClass.EXPANDED
 
     val navigation: NavigationStyle
-        get() = if (expanded) NavigationStyle.PERMANENT_DRAWER else NavigationStyle.MODAL_DRAWER
+        get() = if (expanded) NavigationStyle.SIDE_DRAWER else NavigationStyle.MODAL_DRAWER
 
     /** The Agenda is a list with the selected event's detail beside it. */
     val agendaTwoPane: Boolean get() = expanded

@@ -13,11 +13,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.material3.DismissibleNavigationDrawer
+import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.PermanentNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -132,13 +133,17 @@ fun ShellContent(
         ShellView(period.view, shown, actions, detailPane, Modifier.fillMaxSize().padding(padding))
     }
 ) {
-    val drawer =
-        rememberDrawerState(if (startWithDrawerOpen) DrawerValue.Open else DrawerValue.Closed)
+    val initial = if (startWithDrawerOpen) DrawerValue.Open else DrawerValue.Closed
+    val drawer = rememberDrawerState(initial)
+    // Its own state: opening it on an unfolded screen must not leave the modal one open on fold.
+    val sideDrawer = rememberDrawerState(initial)
     val scope = rememberCoroutineScope()
     val layout = currentAdaptiveLayout()
+    val side = layout.navigation == NavigationStyle.SIDE_DRAWER
     val backPush = remember { mutableFloatStateOf(0f) }
-    // System back: the drawer follows the gesture (a small slide and fade), then closes.
-    PredictiveBackHandler(enabled = drawer.isOpen) { progress ->
+    // System back: the drawer follows the gesture (a small slide and fade), then closes. The side
+    // drawer covers nothing, so back leaves it alone.
+    PredictiveBackHandler(enabled = !side && drawer.isOpen) { progress ->
         try {
             progress.collect { backPush.floatValue = it.progress }
             drawer.close()
@@ -146,13 +151,14 @@ fun ShellContent(
             backPush.floatValue = 0f
         }
     }
-    val onClose: () -> Unit = { scope.launch { drawer.close() } }
-    val drawerContent = @Composable { permanent: Boolean ->
+    // The side drawer stays beside the view after a choice, as in Google Calendar.
+    val onClose: () -> Unit = { if (!side) scope.launch { drawer.close() } }
+    val drawerContent = @Composable {
         ShellDrawer(
             state,
             actions,
             onClose = onClose,
-            permanent = permanent,
+            side = side,
             modifier = Modifier
                 .graphicsLayer { translationX = -BACK_SLIDE_PX * backPush.floatValue }
                 .alpha(1f - BACK_FADE * backPush.floatValue)
@@ -163,7 +169,15 @@ fun ShellContent(
             state,
             actions,
             snackbarHost,
-            onOpenDrawer = { scope.launch { drawer.open() } },
+            MenuButton(open = side && sideDrawer.isOpen) {
+                scope.launch {
+                    when {
+                        !side -> drawer.open()
+                        sideDrawer.isOpen -> sideDrawer.close()
+                        else -> sideDrawer.open()
+                    }
+                }
+            },
             content = content
         )
     }
@@ -174,22 +188,28 @@ fun ShellContent(
         LocalSnackbarHost provides snackbarHost,
         LocalCalendarNames provides names
     ) {
-        when (layout.navigation) {
-            NavigationStyle.PERMANENT_DRAWER -> PermanentNavigationDrawer(
-                drawerContent = { drawerContent(true) },
-                modifier = modifier,
-                content = scaffold
-            )
-
-            NavigationStyle.MODAL_DRAWER -> ModalNavigationDrawer(
-                modifier = modifier,
-                drawerState = drawer,
-                drawerContent = { drawerContent(false) },
-                content = scaffold
-            )
+        if (side) {
+            SideDrawer(sideDrawer, drawerContent, modifier, scaffold)
+        } else {
+            ModalNavigationDrawer(drawerContent, modifier, drawer, content = scaffold)
         }
     }
 }
+
+/** The drawer of wide windows, beside the view; only the menu button moves it. */
+@Composable
+private fun SideDrawer(
+    state: DrawerState,
+    drawerContent: @Composable () -> Unit,
+    modifier: Modifier,
+    content: @Composable () -> Unit
+) {
+    // A swipe would fight the views' own paging.
+    DismissibleNavigationDrawer(drawerContent, modifier, state, gesturesEnabled = false, content)
+}
+
+/** The header's menu button: it opens the drawer, or shows and hides the side one. */
+private class MenuButton(val open: Boolean, val onClick: () -> Unit)
 
 /** The header, the Create button and the current view, with the room each window gives it. */
 @Composable
@@ -197,7 +217,7 @@ private fun ShellScaffold(
     state: ShellUiState,
     actions: ShellActions,
     snackbarHost: SnackbarHostState,
-    onOpenDrawer: () -> Unit,
+    menu: MenuButton,
     content: @Composable (PeriodKey, PaddingValues) -> Unit
 ) {
     val layout = currentAdaptiveLayout()
@@ -211,8 +231,8 @@ private fun ShellScaffold(
                     ShellTopBar(
                         state,
                         actions,
-                        onOpenDrawer = onOpenDrawer,
-                        showMenu = layout.navigation == NavigationStyle.MODAL_DRAWER
+                        onOpenDrawer = menu.onClick,
+                        menuOpen = menu.open
                     )
                     // Also the only sign of a refresh where the bar has no room for its button.
                     if (state.refreshing) RefreshProgress(Modifier.align(Alignment.BottomCenter))

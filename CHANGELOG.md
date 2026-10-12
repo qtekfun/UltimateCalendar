@@ -11,6 +11,9 @@ the notes of the tagged version.
 
 ## [Unreleased]
 
+### Changed
+- On tablets and unfolded foldables the side menu is hidden and no longer takes room from the calendar: the menu button shows and hides it.
+
 ## [1.0.0-rc.4] - 2026-10-12
 
 Answers to invitations reach the organizer sooner.

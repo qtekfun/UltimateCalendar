@@ -55,7 +55,6 @@ class AppDriver(private val compose: ComposeTestRule, base: Context, locale: Loc
      * cannot click reliably); [label] is the view's string.
      */
     fun switchTo(label: Int) {
-        // A wide window has the drawer open all the time and no menu button.
         val menu = hasContentDescription(l10n.getString(R.string.shell_open_drawer))
         if (has(menu)) {
             compose.onNode(menu).performClick()
@@ -64,6 +63,12 @@ class AppDriver(private val compose: ComposeTestRule, base: Context, locale: Loc
         compose.onAllNodes(hasText(l10n.getString(label)) and hasClickAction()).onFirst()
             .performClick()
         compose.waitForIdle()
+        // A wide window's side drawer stays open after a choice: hide it for the screenshot.
+        val hide = hasContentDescription(l10n.getString(R.string.shell_close_drawer))
+        if (has(hide)) {
+            compose.onNode(hide).performClick()
+            compose.waitForIdle()
+        }
     }
 
     fun openInvitations(pending: Int) {
@@ -77,7 +82,7 @@ class AppDriver(private val compose: ComposeTestRule, base: Context, locale: Loc
     /** Opens the detail of the event with [title], scrolling the list to it if needed. */
     fun openEvent(title: String, scroll: Boolean = true) {
         waitForText(title)
-        // Not in a wide window: its first scrollable is the always-open drawer.
+        // The drawer is hidden by now, so the first scrollable is the view.
         if (scroll) {
             runCatching {
                 compose.onAllNodes(hasScrollAction()).onFirst().performScrollToNode(titled(title))

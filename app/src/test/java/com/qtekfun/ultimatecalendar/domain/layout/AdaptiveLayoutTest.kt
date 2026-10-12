@@ -25,10 +25,10 @@ class AdaptiveLayoutTest {
     }
 
     @Test
-    fun `only expanded windows get the permanent drawer`() {
+    fun `only expanded windows get the side drawer`() {
         assertEquals(NavigationStyle.MODAL_DRAWER, phone.navigation)
         assertEquals(NavigationStyle.MODAL_DRAWER, smallTablet.navigation)
-        assertEquals(NavigationStyle.PERMANENT_DRAWER, AdaptiveLayout.of(840).navigation)
+        assertEquals(NavigationStyle.SIDE_DRAWER, AdaptiveLayout.of(840).navigation)
     }
 
     @Test
