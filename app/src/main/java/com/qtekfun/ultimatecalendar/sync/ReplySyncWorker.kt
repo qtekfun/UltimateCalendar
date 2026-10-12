@@ -13,6 +13,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.qtekfun.ultimatecalendar.data.source.CalendarSource
+import com.qtekfun.ultimatecalendar.data.sync.PendingUploads
 import com.qtekfun.ultimatecalendar.data.sync.ReplyRetry
 import com.qtekfun.ultimatecalendar.data.sync.SourceSyncRequester
 import com.qtekfun.ultimatecalendar.data.sync.SyncReason
@@ -24,18 +25,34 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Asks the Android accounts to sync once more, urgently, after an answer to an invitation could
- * not be uploaded when it was given (offline, calendar sync off). It runs only with a connection,
- * backs off between tries and gives up after [MAX_ATTEMPTS], so a broken account cannot drain the
- * battery. Built by [InvitationWorkerFactory].
+ * Follows the answers to invitations until their accounts have uploaded them (RF-07). Each run
+ * reads which Android accounts still hold a change to upload ([PendingUploads]) and asks those to
+ * sync, urgently; when none does, the replies have left the phone and it is done. Otherwise it
+ * runs again, backing off, and gives up after [MAX_ATTEMPTS], so an account that never uploads
+ * cannot drain the battery: the periodic check keeps asking at its own pace. It runs only with a
+ * connection. When the provider cannot tell what is pending, every Android account is asked once
+ * and the run is done when they were. Built by [InvitationWorkerFactory].
  */
 class ReplySyncWorker(
     context: Context,
     params: WorkerParameters,
     private val source: CalendarSource,
+    private val uploads: PendingUploads,
     private val requester: SourceSyncRequester
 ) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
+        val pending = uploads.accounts()
+        return if (pending == null) askEveryAccount() else askPending(pending)
+    }
+
+    private suspend fun askPending(pending: Set<CalendarAccount>): Result {
+        val waiting = pending.filter { it.isSystemSynced() }.toSet()
+        if (waiting.isEmpty()) return Result.success()
+        requester.requestSync(waiting, SyncReason.MANUAL)
+        return retryOrGiveUp()
+    }
+
+    private suspend fun askEveryAccount(): Result {
         val calendars = (source.calendars() as? CalendarResult.Success)?.value
         val accounts = calendars?.map { it.account }?.filter { it.isSystemSynced() }?.toSet()
         val asked = accounts?.takeIf { it.isNotEmpty() }
@@ -52,12 +69,20 @@ class ReplySyncWorker(
 
     companion object {
         const val UNIQUE_NAME = "reply-sync"
-        const val MAX_ATTEMPTS = 5
-        const val BACKOFF_MINUTES = 5L
+        const val MAX_ATTEMPTS = 6
+
+        /** The first look, once the request made with the answer has had time to work. */
+        const val FIRST_CHECK_SECONDS = 45L
+
+        /** Doubles each time: the tries span about a quarter of an hour. */
+        const val BACKOFF_SECONDS = 30L
     }
 }
 
-/** [ReplyRetry] as one unique WorkManager job: asking again while one is pending changes nothing. */
+/**
+ * [ReplyRetry] as one unique WorkManager job. A new answer starts the follow-up again, with all
+ * its tries, in place of the one under way: one job covers every pending answer.
+ */
 @Singleton
 class WorkManagerReplyRetry @Inject constructor(@ApplicationContext private val context: Context) :
     ReplyRetry {
@@ -66,10 +91,11 @@ class WorkManagerReplyRetry @Inject constructor(@ApplicationContext private val 
             .setConstraints(
                 Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
             )
+            .setInitialDelay(ReplySyncWorker.FIRST_CHECK_SECONDS, TimeUnit.SECONDS)
             .setBackoffCriteria(
                 BackoffPolicy.EXPONENTIAL,
-                ReplySyncWorker.BACKOFF_MINUTES,
-                TimeUnit.MINUTES
+                ReplySyncWorker.BACKOFF_SECONDS,
+                TimeUnit.SECONDS
             )
             .build()
         WorkManager.getInstance(context)

@@ -24,9 +24,9 @@ class ReplyDeliveryTest {
     private val google = CalendarAccount("me@gmail.com", "com.google")
 
     @Test
-    fun `an account that can sync now is not waiting and schedules nothing`() {
-        assertFalse(delivery.retryIfWaiting(google))
-        assertEquals(0, retries)
+    fun `an answer to an account that can sync now is followed and is not waiting`() {
+        assertFalse(delivery.follow(google))
+        assertEquals(1, retries)
     }
 
     @Test
@@ -36,33 +36,31 @@ class ReplyDeliveryTest {
     }
 
     @Test
-    fun `no network, calendar sync off or an account that cannot sync make it wait and retry`() {
+    fun `no network, calendar sync off or an account that cannot sync make it wait`() {
         device = DeviceSyncState(batterySaver = false, networkAvailable = false)
-        assertTrue(delivery.retryIfWaiting(google))
+        assertTrue(delivery.follow(google))
         device = DeviceSyncState(batterySaver = false, networkAvailable = true)
         account = AccountSyncState(syncable = true, syncsEvents = false)
-        assertTrue(delivery.retryIfWaiting(google))
+        assertTrue(delivery.follow(google))
         account = AccountSyncState(syncable = false, syncsEvents = true)
-        assertTrue(delivery.retryIfWaiting(google))
+        assertTrue(delivery.follow(google))
         assertEquals(3, retries)
     }
 
     @Test
-    fun `local and subscription calendars never wait`() {
+    fun `local and subscription calendars never wait and are not followed`() {
         device = DeviceSyncState(batterySaver = false, networkAvailable = false)
-        assertFalse(delivery.retryIfWaiting(CalendarAccount("x", "LOCAL")))
-        assertFalse(
-            delivery.retryIfWaiting(CalendarAccount("x", CalendarAccount.SUBSCRIPTION_TYPE))
-        )
+        assertFalse(delivery.follow(CalendarAccount("x", "LOCAL")))
+        assertFalse(delivery.follow(CalendarAccount("x", CalendarAccount.SUBSCRIPTION_TYPE)))
         assertEquals(0, retries)
     }
 
     @Test
-    fun `a caldav answer waits offline but leaves the retry to its own queue`() {
+    fun `a caldav answer waits offline but leaves the follow-up to its own queue`() {
         val caldav = CalendarAccount("me", CalendarAccount.CALDAV_TYPE)
-        assertFalse(delivery.retryIfWaiting(caldav))
+        assertFalse(delivery.follow(caldav))
         device = DeviceSyncState(batterySaver = false, networkAvailable = false)
-        assertTrue(delivery.retryIfWaiting(caldav))
+        assertTrue(delivery.follow(caldav))
         assertEquals(0, retries)
     }
 }

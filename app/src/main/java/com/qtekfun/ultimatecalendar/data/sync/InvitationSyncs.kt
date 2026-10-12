@@ -26,6 +26,11 @@ import kotlinx.coroutines.launch
  * account has nothing to sync, the app's own CalDAV account syncs itself a few seconds after a
  * write, and subscriptions have no guests.
  *
+ * An answer is different ([answered]): it is asked for at once and the caller waits for the
+ * request. Answers often come from a notification button, whose process the system may freeze or
+ * end as soon as the button's work returns, before any wait is over; and the system already
+ * merges a request for an account that is still queued.
+ *
  * When a request could not be made (no network, calendar sync switched off, the system refused),
  * [unsent] emits, so the screen can say honestly that the invitations go out when the account
  * syncs by itself.
@@ -47,7 +52,7 @@ class InvitationSyncs(
 
     /** An event of [account] with guests, or the user's answer to it, was just written. */
     fun written(account: CalendarAccount) {
-        if (account.isLocal || account.isCalDav || account.isSubscription) return
+        if (!account.isSystemSynced()) return
         synchronized(lock) {
             if (waiting[account]?.isActive == true) return
             waiting[account] = scope.launch {
@@ -58,6 +63,15 @@ class InvitationSyncs(
             }
         }
     }
+
+    /** The user's answer to an invitation of [account] was just written: asked for now. */
+    suspend fun answered(account: CalendarAccount) {
+        if (!account.isSystemSynced()) return
+        val asked = requester.requestSync(setOf(account), SyncReason.WRITE)
+        if (asked.requested == 0) notices.tryEmit(Unit)
+    }
+
+    private fun CalendarAccount.isSystemSynced() = !isLocal && !isCalDav && !isSubscription
 
     private companion object {
         const val DEBOUNCE_MS = 1_500L

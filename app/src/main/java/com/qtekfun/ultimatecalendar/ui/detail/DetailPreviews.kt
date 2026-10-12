@@ -85,6 +85,7 @@ private fun Preview(detail: EventDetail, responding: AttendeeStatus? = null) {
                 detail,
                 DetailWords(ResourceWords(resources), locale),
                 responding,
+                null,
                 DetailActions()
             )
         }
@@ -106,6 +107,7 @@ internal fun InvitationDetailPreviewContent() {
                 listOf("alex@example.org")
             ),
             DetailWords(ResourceWords(resources), locale),
+            null,
             null,
             DetailActions()
         )

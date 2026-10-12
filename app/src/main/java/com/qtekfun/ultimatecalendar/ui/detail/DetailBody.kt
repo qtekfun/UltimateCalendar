@@ -30,6 +30,7 @@ import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
 import com.qtekfun.ultimatecalendar.R
+import com.qtekfun.ultimatecalendar.data.sync.ReplyUpload
 import com.qtekfun.ultimatecalendar.domain.detail.EventDetail
 import com.qtekfun.ultimatecalendar.domain.model.AttendeeStatus
 import com.qtekfun.ultimatecalendar.ui.components.CalendarColorDot
@@ -39,14 +40,15 @@ import com.qtekfun.ultimatecalendar.ui.theme.Spacing
 
 /**
  * Everything the event detail shows (RF-04), top to bottom: title, when, repetition, place and
- * video call, answer buttons, reminders, calendar, description and attendees. A part with
- * nothing to say is left out.
+ * video call, answer buttons (and whether the answer has left the phone), reminders, calendar,
+ * description and attendees. A part with nothing to say is left out.
  */
 @Composable
 internal fun DetailBody(
     detail: EventDetail,
     words: DetailWords,
     responding: AttendeeStatus?,
+    upload: ReplyUpload?,
     actions: DetailActions,
     modifier: Modifier = Modifier
 ) {
@@ -81,6 +83,7 @@ internal fun DetailBody(
         }
         if (detail.canRespond) {
             ResponseButtons(detail.self?.status, responding, actions.onRespond)
+            upload?.let { ReplyUploadLine(it, actions.onSendNow) }
         }
         if (detail.reminders.isNotEmpty()) {
             DetailRow(leading = { RowIcon(Icons.Filled.Notifications) }) {

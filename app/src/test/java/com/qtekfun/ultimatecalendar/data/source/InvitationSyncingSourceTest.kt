@@ -227,17 +227,17 @@ class InvitationSyncingSourceTest {
     }
 
     @Test
-    fun `answering an invitation asks the account of its calendar`() = runTest {
-        val source = source()
-        val id = source.created(draft(guests = listOf(me, zoe)))
-        settle()
-        asked.clear()
+    fun `answering an invitation asks the account of its calendar at once, without the wait`() =
+        runTest {
+            val source = source()
+            val id = source.created(draft(guests = listOf(me, zoe)))
+            settle()
+            asked.clear()
 
-        source.respond(id, AttendeeStatus.ACCEPTED)
-        settle()
+            source.respond(id, AttendeeStatus.ACCEPTED)
 
-        assertAsked(google)
-    }
+            assertAsked(google)
+        }
 
     @Test
     fun `a write that fails asks nobody and its result is passed on`() = runTest {

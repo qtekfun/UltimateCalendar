@@ -157,7 +157,12 @@ private fun Loaded(
             state.detail,
             words,
             state.responding,
-            DetailActions(onRespond = viewModel::respond, onOpenUri = open),
+            state.upload,
+            DetailActions(
+                onRespond = viewModel::respond,
+                onOpenUri = open,
+                onSendNow = viewModel::sendNow
+            ),
             Modifier.verticalScroll(rememberScrollState()).padding(bottom = Spacing.xl)
         )
     }

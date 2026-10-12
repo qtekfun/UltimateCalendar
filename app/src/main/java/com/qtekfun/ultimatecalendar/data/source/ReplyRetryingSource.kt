@@ -13,9 +13,9 @@ import kotlinx.coroutines.flow.asStateFlow
 
 /**
  * The source every screen, the notification buttons included, answers invitations through: after
- * an answer is stored, and when its account cannot sync at that moment, it schedules a bounded
- * retry that survives the process dying ([ReplyDelivery]), so a reply given offline is not lost.
- * Nothing else changes.
+ * an answer is stored it has [ReplyDelivery] follow it with a bounded check that survives the
+ * process dying, so a reply the system held back, or given offline, is not lost. Nothing else
+ * changes.
  */
 class ReplyRetryingSource(
     private val delegate: CalendarSource,
@@ -27,15 +27,15 @@ class ReplyRetryingSource(
 
     override suspend fun respond(id: EventId, status: AttendeeStatus): CalendarResult<Unit> {
         val result = delegate.respond(id, status)
-        if (result is CalendarResult.Success) scheduleIfWaiting(id)
+        if (result is CalendarResult.Success) follow(id)
         return result
     }
 
-    private suspend fun scheduleIfWaiting(id: EventId) {
+    private suspend fun follow(id: EventId) {
         val event = (delegate.event(id) as? CalendarResult.Success)?.value ?: return
         val calendars = (delegate.calendars() as? CalendarResult.Success)?.value ?: return
         calendars.firstOrNull { it.id == event.calendarId }?.let {
-            delivery.retryIfWaiting(it.account)
+            delivery.follow(it.account)
         }
     }
 }
