@@ -21,13 +21,13 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.DismissibleDrawerSheet
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.NavigationDrawerItem
-import androidx.compose.material3.PermanentDrawerSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -63,7 +63,8 @@ private const val COLLAPSED_ARROW = -90f
 /**
  * The drawer (RF-02), laid out like Google Calendar's: the views, then the calendars of each
  * account (a collapsible section, a colored checkbox per calendar), then Settings and Help.
- * [onClose] runs after a choice that leaves the drawer.
+ * [onClose] runs after a choice that leaves the drawer. A [side] drawer sits beside the view
+ * instead of over it.
  */
 @Composable
 fun ShellDrawer(
@@ -71,11 +72,11 @@ fun ShellDrawer(
     actions: ShellActions,
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
-    permanent: Boolean = false
+    side: Boolean = false
 ) {
     val sheet = modifier.widthIn(max = Dimens.drawerMaxWidth)
-    if (permanent) {
-        PermanentDrawerSheet(sheet) { DrawerItems(state, actions, onClose) }
+    if (side) {
+        DismissibleDrawerSheet(sheet) { DrawerItems(state, actions, onClose) }
     } else {
         ModalDrawerSheet(sheet) { DrawerItems(state, actions, onClose) }
     }

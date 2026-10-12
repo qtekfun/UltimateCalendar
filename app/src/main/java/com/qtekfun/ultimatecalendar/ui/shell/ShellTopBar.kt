@@ -39,7 +39,7 @@ fun ShellTopBar(
     actions: ShellActions,
     onOpenDrawer: () -> Unit,
     modifier: Modifier = Modifier,
-    showMenu: Boolean = true
+    menuOpen: Boolean = false
 ) {
     var picking by rememberSaveable { mutableStateOf(false) }
     val title = monthTitle(state.date, androidx.compose.ui.text.intl.Locale.current.platformLocale)
@@ -59,7 +59,7 @@ fun ShellTopBar(
         pendingInvitations = state.pendingInvitations,
         pickerOpen = picking,
         onOpenDrawer = onOpenDrawer,
-        showMenu = showMenu,
+        menuOpen = menuOpen,
         onTitleClick = { picking = true },
         onSelectView = actions.onSelectView,
         onToday = actions.onToday,

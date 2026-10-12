@@ -5,6 +5,7 @@
 -->
 <resources>
     <string name="shell_open_drawer">Open menu</string>
+    <string name="shell_close_drawer">Hide menu</string>
     <string name="shell_pick_date">Choose date, %1$s</string>
     <string name="shell_search">Search</string>
     <string name="shell_invitations">Invitations</string>

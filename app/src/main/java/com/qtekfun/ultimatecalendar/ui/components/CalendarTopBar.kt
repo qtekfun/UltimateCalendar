@@ -80,6 +80,7 @@ fun CalendarTopBar(
     subtitle: String? = null,
     pickerOpen: Boolean = false,
     showMenu: Boolean = true,
+    menuOpen: Boolean = false,
     onRefresh: (() -> Unit)? = null,
     refreshing: Boolean = false
 ) {
@@ -93,13 +94,11 @@ fun CalendarTopBar(
         modifier = modifier,
         colors = TopAppBarDefaults.topAppBarColors(MaterialTheme.colorScheme.surface),
         navigationIcon = {
-            // The permanent drawer of wide windows is always open: nothing to open.
             if (showMenu) {
+                // On a wide window the same button also hides the side drawer.
+                val menu = if (menuOpen) R.string.shell_close_drawer else R.string.shell_open_drawer
                 IconButton(onClick = onOpenDrawer) {
-                    Icon(
-                        Icons.Filled.Menu,
-                        contentDescription = stringResource(R.string.shell_open_drawer)
-                    )
+                    Icon(Icons.Filled.Menu, contentDescription = stringResource(menu))
                 }
             }
         },
