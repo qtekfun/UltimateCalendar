@@ -224,6 +224,7 @@ private fun TimeGridBody(
         Modifier
             .fillMaxWidth()
             .onPlaced { ui.surface?.viewport = it }
+            .pinchToZoom(LocalGridZoom.current, scroll)
             .verticalScroll(scroll)
     ) {
         HourLabels(metrics, Modifier.width(metrics.gutter).height(height))

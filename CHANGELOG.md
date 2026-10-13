@@ -11,6 +11,9 @@ the notes of the tagged version.
 
 ## [Unreleased]
 
+### Added
+- Pinch with two fingers in the Day, 3 days and Week views to make the hours taller or shorter. The app remembers the zoom.
+
 ## [1.0.0-rc.5] - 2026-10-12
 
 More room for the calendar on big screens.
