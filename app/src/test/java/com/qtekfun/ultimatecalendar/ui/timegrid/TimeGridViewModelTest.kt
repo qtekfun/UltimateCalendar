@@ -21,6 +21,7 @@ import com.qtekfun.ultimatecalendar.domain.model.EventTime
 import com.qtekfun.ultimatecalendar.domain.navigation.DateRange
 import com.qtekfun.ultimatecalendar.domain.result.CalendarError
 import com.qtekfun.ultimatecalendar.domain.result.CalendarResult
+import com.qtekfun.ultimatecalendar.domain.timegrid.GridZoomStore
 import com.qtekfun.ultimatecalendar.notify.SystemZone
 import io.mockk.coEvery
 import io.mockk.every
@@ -82,7 +83,17 @@ class TimeGridViewModelTest {
     }
 
     private fun viewModel(repository: CalendarRepository = this.repository) =
-        TimeGridViewModel(repository, clock, SystemZone { madrid }, Dispatchers.Unconfined)
+        TimeGridViewModel(repository, clock, SystemZone { madrid }, zoom, Dispatchers.Unconfined)
+
+    private val zoom = object : GridZoomStore {
+        var saved = 1.4f
+
+        override fun gridZoom() = saved
+
+        override fun saveGridZoom(zoom: Float) {
+            saved = zoom
+        }
+    }
 
     private suspend fun add(calendar: CalendarInfo, title: String, hour: Int, color: Int? = null) =
         source.create(
@@ -260,5 +271,14 @@ class TimeGridViewModelTest {
             assertEquals(madrid, now.zone)
             cancelAndIgnoreRemainingEvents()
         }
+    }
+
+    @Test
+    fun `the grid opens with the saved zoom and keeps the one pinched to`() {
+        val model = viewModel()
+        assertEquals(1.4f, model.initialZoom)
+        model.saveZoom(2f)
+        assertEquals(2f, zoom.saved)
+        assertEquals(2f, viewModel().initialZoom)
     }
 }

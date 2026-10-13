@@ -4,10 +4,12 @@
 package com.qtekfun.ultimatecalendar.di
 
 import com.qtekfun.ultimatecalendar.data.invitations.InvitationInbox
+import com.qtekfun.ultimatecalendar.data.settings.PreferencesGridZoomStore
 import com.qtekfun.ultimatecalendar.data.settings.RepositoryNavigationSettings
 import com.qtekfun.ultimatecalendar.domain.navigation.FirstDayOfWeekSource
 import com.qtekfun.ultimatecalendar.domain.navigation.NavigationSettings
 import com.qtekfun.ultimatecalendar.domain.navigation.PendingInvitations
+import com.qtekfun.ultimatecalendar.domain.timegrid.GridZoomStore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -27,6 +29,10 @@ object NavigationModule {
     /** The first day of the week of Settings, for the widgets. */
     @Provides
     fun firstDayOfWeek(settings: RepositoryNavigationSettings): FirstDayOfWeekSource = settings
+
+    /** The zoom of the hour grid, kept between launches. */
+    @Provides
+    fun gridZoom(store: PreferencesGridZoomStore): GridZoomStore = store
 
     /** The badge of the tray counts what the invitation tray lists (RF-06). */
     @Provides

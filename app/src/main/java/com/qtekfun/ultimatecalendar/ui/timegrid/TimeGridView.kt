@@ -11,6 +11,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
@@ -68,17 +69,20 @@ fun TimeGridScreen(
             override fun page(range: DateRange) = viewModel.page(range)
         }
     }
+    val zoom = remember(viewModel) { GridZoomState(viewModel.initialZoom, viewModel::saveZoom) }
     WithAdaptiveGridScale {
-        MoveFlow(moves) { editing, pending ->
-            TimeGridView(
-                state = state,
-                now = now,
-                pages = pages,
-                callbacks = GridCallbacks(actions.onOpenEvent, actions.onCreateAt, editing),
-                onSelectDate = actions.onSelectDate,
-                modifier = modifier,
-                pending = pending
-            )
+        CompositionLocalProvider(LocalGridZoom provides zoom) {
+            MoveFlow(moves) { editing, pending ->
+                TimeGridView(
+                    state = state,
+                    now = now,
+                    pages = pages,
+                    callbacks = GridCallbacks(actions.onOpenEvent, actions.onCreateAt, editing),
+                    onSelectDate = actions.onSelectDate,
+                    modifier = modifier,
+                    pending = pending
+                )
+            }
         }
     }
 }
@@ -86,7 +90,8 @@ fun TimeGridScreen(
 /**
  * A swipeable run of day-grid pages (a day, three days or a week). [date] is the shell's selected
  * date: the pager follows it (Today, the date picker) and reports the date it settles on after a
- * swipe through [onSelectDate]. The vertical scroll is shared, so every page shows the same hours.
+ * swipe through [onSelectDate]. The vertical scroll is shared, so every page shows the same hours,
+ * and so is the pinch zoom ([LocalGridZoom]).
  */
 @Composable
 internal fun TimeGridView(
@@ -104,6 +109,7 @@ internal fun TimeGridView(
     val periods = remember(view, anchor) { PeriodPages(view, anchor) }
     val selected by rememberUpdatedState(date)
     val scroll = rememberFirstHourScroll()
+    FollowZoomScroll(LocalGridZoom.current, scroll)
     val drag = rememberDragController(callbacks.editing, busy = pending != null)
     val reduceMotion = rememberReduceMotion()
     Box(modifier.dragGestures(drag)) {
