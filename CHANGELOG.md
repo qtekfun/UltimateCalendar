@@ -11,6 +11,10 @@ the notes of the tagged version.
 
 ## [Unreleased]
 
+## [1.0.0-rc.6] - 2026-10-15
+
+Zoom the hours of the day.
+
 ### Added
 - Pinch with two fingers in the Day, 3 days and Week views to make the hours taller or shorter. The app remembers the zoom.
 
