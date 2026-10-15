@@ -1,0 +1,1 @@
+Pinch with two fingers in the Day, 3 days and Week views to make the hours shorter or taller: shrink them to see nearly the whole day at once, or stretch them for more detail. The app remembers the zoom.

@@ -1,0 +1,1 @@
+Pellizca con dos dedos en las vistas Día, 3 días y Semana para hacer las horas más bajas o más altas: comprímelas para ver casi todo el día de un vistazo, o amplíalas para ver más detalle. La app recuerda el zoom.
