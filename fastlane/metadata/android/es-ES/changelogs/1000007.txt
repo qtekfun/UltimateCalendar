@@ -1,0 +1,1 @@
+En Android 17 la app no llegaba a un servidor de tu red local, como uno en casa, y todas las sincronizaciones fallaban por tiempo de espera. Ahora, solo cuando tu servidor está en la red local, la app explica por qué necesita el permiso «Dispositivos cercanos» y lo pide.

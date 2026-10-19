@@ -11,6 +11,13 @@ the notes of the tagged version.
 
 ## [Unreleased]
 
+## [1.0.0-rc.7] - 2026-10-19
+
+Reach a server on your local network on Android 17.
+
+### Fixed
+- On Android 17 the app could not reach a server on your local network (for example a home server reached through split DNS), and every sync timed out. Now, only when your server is on the local network, the app explains why it needs the "Nearby devices" permission and asks for it.
+
 ## [1.0.0-rc.6] - 2026-10-15
 
 Zoom the hours of the day.
