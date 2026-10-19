@@ -21,6 +21,7 @@ class LocalNetworkViewModelTest {
     private var granted = false
     private val answers = mutableMapOf<String, List<String>>()
     private val asked = mutableListOf<String>()
+    private var syncs = 0
     private val resolver = HostResolver { host ->
         asked += host
         (answers[host] ?: emptyList()).map { InetAddress.getByName(it) }
@@ -32,7 +33,7 @@ class LocalNetworkViewModelTest {
     @AfterEach
     fun tearDown() = Dispatchers.resetMain()
 
-    private fun viewModel() = LocalNetworkViewModel({ granted }, resolver)
+    private fun viewModel() = LocalNetworkViewModel({ granted }, resolver) { syncs++ }
 
     @Test
     fun `no server, nothing to ask`() {
@@ -95,8 +96,12 @@ class LocalNetworkViewModelTest {
             vm.state.value
         )
 
+        assertEquals(0, syncs)
+
         vm.onPermissionResult(granted = true)
         assertEquals(LocalNetworkState(), vm.state.value)
+        // The syncs that failed while blocked wait out their retry delay: sync at once.
+        assertEquals(1, syncs)
     }
 
     @Test
@@ -130,6 +135,11 @@ class LocalNetworkViewModelTest {
         granted = true
         vm.check("cloud.example.com")
         assertEquals(LocalNetworkState(), vm.state.value)
+        assertEquals(1, syncs)
+
+        // Coming back again with nothing blocked does not sync again.
+        vm.check("cloud.example.com")
+        assertEquals(1, syncs)
     }
 
     @Test
@@ -144,6 +154,14 @@ class LocalNetworkViewModelTest {
     }
 
     @Test
+    fun `a permission granted with nothing blocked triggers no sync`() {
+        granted = true
+        viewModel().check("cloud.example.com")
+        viewModel().onPermissionResult(granted = true)
+        assertEquals(0, syncs)
+    }
+
+    @Test
     fun `signing out clears the block`() {
         answers["cloud.example.com"] = listOf("192.168.1.6")
         val vm = viewModel()
@@ -151,5 +169,6 @@ class LocalNetworkViewModelTest {
 
         vm.check(null)
         assertEquals(LocalNetworkState(), vm.state.value)
+        assertEquals(0, syncs)
     }
 }

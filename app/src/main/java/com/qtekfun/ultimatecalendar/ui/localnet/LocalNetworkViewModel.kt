@@ -19,6 +19,14 @@ fun interface LocalNetworkPermission {
     fun isGranted(): Boolean
 }
 
+/**
+ * What to do once the system lets the app reach the local network again: sync at once, since the
+ * syncs that failed while it was blocked are waiting out their retry delay.
+ */
+fun interface LocalNetworkGranted {
+    suspend fun onGranted()
+}
+
 /** What the screens must show about the local network permission. */
 data class LocalNetworkState(
     /** The server's host when it is on the local network and the system blocks it, else null. */
@@ -40,7 +48,8 @@ data class LocalNetworkState(
 @HiltViewModel
 class LocalNetworkViewModel @Inject constructor(
     private val permission: LocalNetworkPermission,
-    private val resolver: HostResolver
+    private val resolver: HostResolver,
+    private val onAccessGranted: LocalNetworkGranted
 ) : ViewModel() {
     private val mutable = MutableStateFlow(LocalNetworkState())
     val state: StateFlow<LocalNetworkState> = mutable.asStateFlow()
@@ -49,8 +58,12 @@ class LocalNetworkViewModel @Inject constructor(
     /** Looks again: the screen was shown, the app came back from Settings, or the host changed. */
     fun check(host: String?) {
         checking?.cancel()
-        if (host == null || permission.isGranted()) {
+        if (host == null) {
             mutable.value = LocalNetworkState()
+            return
+        }
+        if (permission.isGranted()) {
+            unblock()
             return
         }
         checking = viewModelScope.launch {
@@ -70,14 +83,19 @@ class LocalNetworkViewModel @Inject constructor(
 
     /** The user answered the system prompt: granted closes everything, denied leads to Settings. */
     fun onPermissionResult(granted: Boolean) {
-        mutable.update {
-            if (granted) LocalNetworkState() else it.copy(showDialog = true, denied = true)
-        }
+        if (granted) unblock() else mutable.update { it.copy(showDialog = true, denied = true) }
     }
 
     /** "Not now": the explanation closes until the app is started again. */
     fun dismiss() {
         mutable.update { it.copy(showDialog = false) }
+    }
+
+    /** Clears the block; if there was one, the app may reach its server now: sync at once. */
+    private fun unblock() {
+        val wasBlocked = mutable.value.blockedHost != null
+        mutable.value = LocalNetworkState()
+        if (wasBlocked) viewModelScope.launch { onAccessGranted.onGranted() }
     }
 
     private suspend fun isLocalHost(host: String): Boolean {

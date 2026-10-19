@@ -7,8 +7,10 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.content.ContextCompat
+import com.qtekfun.ultimatecalendar.data.source.caldav.CalDavAccountRepository
 import com.qtekfun.ultimatecalendar.ui.localnet.HostResolver
 import com.qtekfun.ultimatecalendar.ui.localnet.LocalNetwork
+import com.qtekfun.ultimatecalendar.ui.localnet.LocalNetworkGranted
 import com.qtekfun.ultimatecalendar.ui.localnet.LocalNetworkPermission
 import com.qtekfun.ultimatecalendar.ui.localnet.SystemHostResolver
 import dagger.Module
@@ -32,4 +34,9 @@ object LocalNetworkModule {
 
     @Provides
     fun resolver(): HostResolver = SystemHostResolver()
+
+    /** Once the local network is allowed again, sync at once instead of after the retry delay. */
+    @Provides
+    fun granted(repository: CalDavAccountRepository): LocalNetworkGranted =
+        LocalNetworkGranted { repository.syncNow() }
 }
