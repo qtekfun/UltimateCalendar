@@ -1,0 +1,1 @@
+On Android 17 the app could not reach a server on your local network, such as a home server, and every sync timed out. Now, only when your server is on the local network, the app explains why it needs the "Nearby devices" permission and asks for it.
