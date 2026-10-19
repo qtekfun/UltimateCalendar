@@ -19,12 +19,16 @@ import com.qtekfun.ultimatecalendar.domain.layout.AdaptiveLayout
 import com.qtekfun.ultimatecalendar.domain.navigation.CalendarView
 import com.qtekfun.ultimatecalendar.notify.NotificationRoute
 import com.qtekfun.ultimatecalendar.ui.account.CalDavAccountRoute
+import com.qtekfun.ultimatecalendar.ui.account.CalDavLoginViewModel
 import com.qtekfun.ultimatecalendar.ui.adaptive.PaneDialog
 import com.qtekfun.ultimatecalendar.ui.adaptive.currentAdaptiveLayout
 import com.qtekfun.ultimatecalendar.ui.detail.EventDetailScreen
 import com.qtekfun.ultimatecalendar.ui.editor.EventEditorRoute
 import com.qtekfun.ultimatecalendar.ui.firstrun.LocalOpenWizard
 import com.qtekfun.ultimatecalendar.ui.invitations.InvitationsScreen
+import com.qtekfun.ultimatecalendar.ui.localnet.LocalNetwork
+import com.qtekfun.ultimatecalendar.ui.localnet.LocalNetworkAccess
+import com.qtekfun.ultimatecalendar.ui.localnet.ServerHostViewModel
 import com.qtekfun.ultimatecalendar.ui.search.SearchScreen
 import com.qtekfun.ultimatecalendar.ui.settings.SettingsScreen
 import com.qtekfun.ultimatecalendar.ui.shell.DetailPane
@@ -92,6 +96,22 @@ fun AppNavigation(routes: NotificationRoutes = remember { NotificationRoutes() }
             WideOverlays(nav, dialogs)
         }
     }
+    LocalNetworkCheck()
+}
+
+/**
+ * Asks for the local network permission when the CalDAV server is on the local network (Android
+ * 17 blocks it otherwise): the account's server, or, while signing in, the one being checked.
+ */
+@Composable
+private fun LocalNetworkCheck(
+    account: ServerHostViewModel = viewModel(),
+    login: CalDavLoginViewModel = viewModel()
+) {
+    val accountHost by account.host.collectAsStateWithLifecycle()
+    val loginState by login.state.collectAsStateWithLifecycle()
+    val host = accountHost ?: loginState.step?.let { LocalNetwork.hostOf(loginState.server) }
+    LocalNetworkAccess(viewModel(), host)
 }
 
 /** The shell's way out to the rest of the app. */

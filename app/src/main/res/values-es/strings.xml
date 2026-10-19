@@ -186,4 +186,11 @@
     <string name="settings_setup_open">Asistente de configuración</string>
     <string name="settings_setup_hint">Revisa los permisos, las restricciones de batería y los ajustes del teléfono para que los avisos lleguen a su hora.</string>
     <string name="wizard_restore_hint">¿Vienes de otro teléfono? Restaura la copia de seguridad que hiciste allí y te ahorras los ajustes.</string>
+
+    <string name="local_network_title">¿Permitir el acceso a tu red local?</string>
+    <string name="local_network_rationale">Tu servidor, %1$s, está en tu red local. Android impide que las apps lleguen a los dispositivos de esa red hasta que permites el acceso a «Dispositivos cercanos». UltimateCalendar lo usa solo para hablar con tu propio servidor.</string>
+    <string name="local_network_denied">Android sigue bloqueando la conexión con %1$s. Abre Ajustes, entra en Permisos y permite «Dispositivos cercanos» para UltimateCalendar; después vuelve.</string>
+    <string name="local_network_allow">Permitir</string>
+    <string name="local_network_open_settings">Abrir Ajustes</string>
+    <string name="local_network_not_now">Ahora no</string>
 </resources>

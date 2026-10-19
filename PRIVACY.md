@@ -12,6 +12,7 @@ UltimateCalendar has no servers, no analytics, no ads and no telemetry. Your cal
 | Permission | Why |
 |---|---|
 | Internet (`INTERNET`) | Reach the CalDAV server you sign in to and the subscription addresses you add, and nothing else. Unused until you add one of them. Syncs wait for a connection and for a battery that is not low (WorkManager, which also uses the system's network-state permission for this). |
+| Local network (`ACCESS_LOCAL_NETWORK`, Android 17+) | Only if your server is on your local network, for example a home server reached through split DNS: without it Android blocks the connection. Asked only in that case, naming your server, and used for nothing but talking to it. |
 | Read / write calendar (`READ_CALENDAR`, `WRITE_CALENDAR`) | Show your events, create and edit them, answer invitations. |
 | Notifications (`POST_NOTIFICATIONS`) | Reminders, new invitations and (optional) changes or cancellations. |
 | Alarms & reminders (`USE_EXACT_ALARM` / `SCHEDULE_EXACT_ALARM`) | Deliver reminders exactly on time. |

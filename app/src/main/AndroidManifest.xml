@@ -16,6 +16,8 @@
       telemetry, no other host.
     -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Android 17: reach a server on the local network (asked only when it is there). -->
+    <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK" />
 
     <!--
       Read-only state, to skip a sync request that cannot help (RF-06): the account's calendar
