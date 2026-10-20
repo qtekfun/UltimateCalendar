@@ -1,0 +1,1 @@
+After you allowed local network access, the CalDAV account waited for its next scheduled sync. Now it syncs at once.

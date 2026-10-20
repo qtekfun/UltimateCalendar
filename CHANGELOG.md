@@ -11,6 +11,13 @@ the notes of the tagged version.
 
 ## [Unreleased]
 
+## [1.0.0-rc.8] - 2026-10-20
+
+Sync right away once the local network is allowed.
+
+### Fixed
+- After you allowed local network access, the CalDAV account waited for its next scheduled sync. Now it syncs at once.
+
 ## [1.0.0-rc.7] - 2026-10-19
 
 Reach a server on your local network on Android 17.

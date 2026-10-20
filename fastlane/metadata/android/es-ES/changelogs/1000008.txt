@@ -1,0 +1,1 @@
+Tras permitir el acceso a la red local, la cuenta CalDAV esperaba a su siguiente sincronización programada. Ahora sincroniza al momento.
