@@ -11,8 +11,10 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextReplacement
+import com.qtekfun.ultimatecalendar.domain.editor.EventForms
 import dagger.hilt.android.testing.HiltAndroidTest
 import java.time.Instant
+import java.time.LocalDateTime
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -22,12 +24,13 @@ class CreateEventFlowTest : FlowTest() {
     @Test
     fun createdEventIsStoredWithItsTimeCalendarAndReminderAndShownInTheAgenda() {
         val title = calendars.unique("Dentist")
+        val hour = hourOtherThanTheFormsDefault()
         launchApp()
 
         clickDescribed("Create")
         waitUntil { compose.onAllNodes(hasSetTextAction()).fetchSemanticsNodes().isNotEmpty() }
         compose.onAllNodes(hasSetTextAction()).onFirst().performTextReplacement(title)
-        setStartTime(hour = 10, minute = 15)
+        setStartTime(hour = hour, minute = 15)
         chooseCalendar("UI Home")
         // A new event already has the default 10-minute reminder; add a second one.
         clickDescribed("Add a reminder", scroll = true)
@@ -38,13 +41,24 @@ class CreateEventFlowTest : FlowTest() {
         val stored = calendars.eventsTitled(title).single()
         assertEquals("calendar", calendars.home.value, stored.calendarId)
         val start = Instant.ofEpochMilli(stored.start).atZone(calendars.zone)
-        assertEquals("start hour", 10, start.hour)
+        assertEquals("start hour", hour, start.hour)
         assertEquals("start minute", 15, start.minute)
         assertEquals("one hour long", HOUR_MS, checkNotNull(stored.end) - stored.start)
         assertEquals("reminders", listOf(10, 60), calendars.reminderMinutes(stored.id))
 
         showAgenda()
         waitForRows(title, 1)
+    }
+
+    /**
+     * The hour to pick on the dial. A new event starts at the next half hour of the clock, and the
+     * dial does not offer the hour it already shows as a number to tap, so the test must not ask
+     * for that one: it would pass or fail with the time of day it runs at.
+     */
+    private fun hourOtherThanTheFormsDefault(): Int {
+        val now = LocalDateTime.now(calendars.zone)
+        val shown = EventForms.roundUpToSlot(now).hour % HOURS_ON_DIAL
+        return if (shown == WANTED_HOUR) WANTED_HOUR + 1 else WANTED_HOUR
     }
 
     /**
@@ -75,5 +89,7 @@ class CreateEventFlowTest : FlowTest() {
 
     private companion object {
         const val HOUR_MS = 3_600_000L
+        const val HOURS_ON_DIAL = 12
+        const val WANTED_HOUR = 10
     }
 }
